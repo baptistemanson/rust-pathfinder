@@ -87,7 +87,7 @@ pub fn view_stash(stash: &Stash) {
     for item in stash {
         match item {
             Item::TwoHandItem(e) => println!("A two hand item! {:?}", e),
-            Item::FaceItem(e) => println!("An unknwon thing! {:?}", e),
+            Item::FaceItem(e) => println!("A face item! {:?}", e),
             _ => println!("something else"),
         }
     }
