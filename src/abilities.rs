@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Ability {
     Strength,
     Dexterity,
@@ -8,29 +8,29 @@ pub enum Ability {
     Charisma,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Bonus {
     Enhancement,
     Natural,
     Alchemical,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AbilityScore {
-    strength: i32,
-    dexterity: i32,
-    constitution: i32,
-    intelligence: i32,
-    wisdom: i32,
-    charisma: i32,
-    bonuses: Vec<BonusAbility>,
+    pub strength: i64,
+    pub dexterity: i64,
+    pub constitution: i64,
+    pub intelligence: i64,
+    pub wisdom: i64,
+    pub charisma: i64,
+    pub bonuses: Vec<BonusAbility>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BonusAbility {
-    stat: Ability,
-    bonus: Bonus,
-    value: i32,
+    pub stat: Ability,
+    pub bonus: Bonus,
+    pub value: i64,
 }
 
 pub fn get_default_abilities() -> AbilityScore {

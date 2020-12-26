@@ -21,6 +21,7 @@
 * - I dont like the dep resolution by hand on serde. Sucks butt.
 * - had a very weird linker issue when I tried to init a vec with the result of a function
 * - string slice are pretty cool for immutable strings, but it requires some lifetime specs to allow rust to know when it can be dropped.
+* - lifetimes are hard. If you borrow something, you probably want it to have its own lifetime, otherwise you could have transfered ownership.
 *
 * Derive
 * - derive is asking the compiler to implement the trait for us. derive(Debug) is calling the macro Debug
@@ -37,27 +38,14 @@ Cool stuff: was able to create a struct and a trait by myself.
 */
 // flush trait/method is in std::io::Write
 mod abilities;
+mod character;
+mod check;
 mod dice;
 mod equipment;
 
 use std::io::stdout;
 use std::io::Write;
 
-struct Enemy<'a> {
-    max_hp: u64,
-    hp: u64,
-    name: &'a str,
-}
-
-impl<'a> Enemy<'a> {
-    fn create(name: &str, hp: u64) -> Enemy {
-        Enemy {
-            max_hp: hp,
-            hp,
-            name, // I think it is copied here.
-        }
-    }
-}
 // Result is clear
 // Box is because we cannot return a simple error straight, as errors can have different sizes
 // so we put it in a box, and heap allocate the error.
@@ -71,50 +59,64 @@ fn pause() {
     std::io::stdin().read_line(&mut line).unwrap();
 }
 
-struct EncounterState<'a> {
-    enemies: Vec<Box<Enemy<'a>>>,
+struct EncounterState<'a, 'b> {
+    participants: Vec<&'a mut character::Character<'b>>,
 }
 
-impl<'a> EncounterState<'a> {
+impl<'a, 'b> EncounterState<'a, 'b> {
     fn is_encounter_done(&mut self) -> bool {
-        for e in self.enemies.iter_mut() {
+        for e in self.participants.iter_mut() {
             if e.hp > 0 {
                 return false;
             }
         }
         return true;
     }
+
+    fn roll_initiative(&mut self) {
+        for character in self.participants.iter_mut() {
+            character.roll_initiative();
+            println!("{} rolled {}", character.name, character.initiative)
+        }
+        self.participants
+            .sort_by(|a, b| b.initiative.cmp(&a.initiative));
+    }
 }
 // we split it out of the main function, as main here returns an int, and if we want to use ? we need to return Result.
-fn fight_loop() -> BoxResult<()> {
+fn resolve_encounter() -> BoxResult<()> {
     println!("{:?}", abilities::get_default_abilities());
     // let equipment = equipment::get_default_equipment();
     // let backpack = equipment::get_backpack();
     // equipment::view_stash(&backpack);
 
-    let kobold1 = Box::new(Enemy::create("Kobold 1", 40));
-    let kobold2 = Box::new(Enemy::create("Kobold 2", 40));
-    let mut encounter_state = EncounterState {
-        enemies: vec![kobold1, kobold2],
-    };
+    let mut kobold1 = character::Character::create("Kobold 1", 40);
+    let mut kobold2 = character::Character::create("Kobold 2", 40);
+    // played with borrowing.
+    {
+        let mut encounter_state = EncounterState {
+            participants: vec![&mut kobold1, &mut kobold2],
+        };
+        encounter_state.roll_initiative();
 
-    // Step 1 - Initiative check p468
+        // Step 1 - Initiative check p468
 
-    // Step 2 - Play a round p468
-    while !encounter_state.is_encounter_done() {
-        pause();
-        for e in encounter_state.enemies.iter_mut() {
-            e.hp = e.hp.saturating_sub(dice::d20()); // instead of max(0, enemy.hp - d20())
-            println!("Remaining life for {}: {} hp", e.name, e.hp);
+        // Step 2 - Play a round p468
+        while !encounter_state.is_encounter_done() {
+            pause();
+            for character in encounter_state.participants.iter_mut() {
+                character.sub_hp(dice::d20());
+                println!("remaining life: {}", character.hp)
+            }
+            // Step 3 - Finish the round p468
         }
-        // Step 3 - Finish the round p468
     }
+    println!("{:?}", kobold1.name);
     println!("Enemy dead");
     Ok(())
 }
 
 fn main() {
-    match fight_loop() {
+    match resolve_encounter() {
         Ok(()) => println!("Thank you for playing my game"),
         Err(e) => println!("Error: {}", e),
     }
