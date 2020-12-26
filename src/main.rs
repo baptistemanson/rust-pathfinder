@@ -38,13 +38,17 @@ Cool stuff: was able to create a struct and a trait by myself.
 */
 // flush trait/method is in std::io::Write
 mod abilities;
+mod activity;
 mod character;
 mod check;
 mod dice;
+mod encounter_state;
 mod equipment;
 
 use std::io::stdout;
 use std::io::Write;
+
+use encounter_state::EncounterState;
 
 // Result is clear
 // Box is because we cannot return a simple error straight, as errors can have different sizes
@@ -59,29 +63,6 @@ fn pause() {
     std::io::stdin().read_line(&mut line).unwrap();
 }
 
-struct EncounterState<'a, 'b> {
-    participants: Vec<&'a mut character::Character<'b>>,
-}
-
-impl<'a, 'b> EncounterState<'a, 'b> {
-    fn is_encounter_done(&mut self) -> bool {
-        for e in self.participants.iter_mut() {
-            if e.hp > 0 {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    fn roll_initiative(&mut self) {
-        for character in self.participants.iter_mut() {
-            character.roll_initiative();
-            println!("{} rolled {}", character.name, character.initiative)
-        }
-        self.participants
-            .sort_by(|a, b| b.initiative.cmp(&a.initiative));
-    }
-}
 // we split it out of the main function, as main here returns an int, and if we want to use ? we need to return Result.
 fn resolve_encounter() -> BoxResult<()> {
     println!("{:?}", abilities::get_default_abilities());
@@ -89,12 +70,13 @@ fn resolve_encounter() -> BoxResult<()> {
     // let backpack = equipment::get_backpack();
     // equipment::view_stash(&backpack);
 
-    let mut kobold1 = character::Character::create("Kobold 1", 40);
-    let mut kobold2 = character::Character::create("Kobold 2", 40);
-    // played with borrowing.
     {
+        let mut kobold1 = character::Character::create("Kobold 1", 40);
+        let mut kobold2 = character::Character::create("Kobold 2", 40);
+        let mut kobold3 = character::Character::create("Kobold 3", 40);
         let mut encounter_state = EncounterState {
-            participants: vec![&mut kobold1, &mut kobold2],
+            participants: vec![&mut kobold1, &mut kobold2, &mut kobold3],
+            turn_number: 1,
         };
         encounter_state.roll_initiative();
 
@@ -103,15 +85,45 @@ fn resolve_encounter() -> BoxResult<()> {
         // Step 2 - Play a round p468
         while !encounter_state.is_encounter_done() {
             pause();
-            for character in encounter_state.participants.iter_mut() {
-                character.sub_hp(dice::d20());
-                println!("remaining life: {}", character.hp)
+            println!("Start of Round {}", encounter_state.turn_number);
+            for i in 0..encounter_state.participants.len() {
+                if let Some(activity_and_value) = encounter_state.participants[i]
+                    .activities
+                    .iter()
+                    .filter(|a| a.can_be_used(encounter_state.participants[i], &encounter_state))
+                    .map(|a| {
+                        (
+                            a,
+                            a.ai_playing_value(encounter_state.participants[i], &encounter_state),
+                        )
+                    })
+                    .max_by_key(|p| p.1)
+                {
+                    let d = dice::d20();
+                    println!(
+                        "{} {} for {}",
+                        encounter_state.participants[i].name,
+                        activity_and_value.0.get_name(),
+                        d
+                    );
+                    encounter_state.participants[i].sub_hp(d);
+                    if encounter_state.participants[i].hp < 0 {
+                        println!("{} is dead", encounter_state.participants[i].name)
+                    }
+                } else {
+                    println!("{} passes round", encounter_state.participants[i].name);
+                }
+                // declare which ability it will use
+                // then target
+                // resolve
+
+                println!("remaining life: {}", encounter_state.participants[i].hp)
             }
             // Step 3 - Finish the round p468
+            encounter_state.turn_number += 1;
         }
     }
-    println!("{:?}", kobold1.name);
-    println!("Enemy dead");
+    println!("All characters are dead");
     Ok(())
 }
 
