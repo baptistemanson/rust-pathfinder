@@ -76,52 +76,46 @@ fn resolve_encounter() -> BoxResult<()> {
     // equipment::view_stash(&backpack);
 
     {
-        let mut kobold1 = character::Character::create("Kobold 1", 40);
-        let mut kobold2 = character::Character::create("Kobold 2", 40);
-        let mut kobold3 = character::Character::create("Kobold 3", 40);
-        let mut encounter_state = EncounterState {
-            participants: vec![&mut kobold1, &mut kobold2, &mut kobold3],
-            turn_number: 1,
-        };
-        encounter_state.roll_initiative();
+        let kobold1 = character::Character::create("Kobold 1", 40);
+        let kobold2 = character::Character::create("Kobold 2", 40);
+        let kobold3 = character::Character::create("Kobold 3", 40);
+        let mut characters = vec![kobold1, kobold2, kobold3];
 
+        let mut encounter_state = EncounterState { turn_number: 0 };
         // Step 1 - Initiative check p468
+        encounter_state.roll_initiative(&mut characters);
+        characters.sort_by(|a, b| b.initiative.cmp(&a.initiative));
 
         // Step 2 - Play a round p468
-        while !encounter_state.is_encounter_done() {
+        while !encounter_state.is_encounter_done(&characters) {
             pause();
             println!("Start of Round {}", encounter_state.turn_number);
-            for i in 0..encounter_state.participants.len() {
+            for character in characters.iter_mut() {
                 // declare which activity it will use, on which target
-                if let Some(highest_prio_activity) = encounter_state.participants[i]
+                if let Some(highest_prio_activity) = character
                     .activities
                     .iter()
-                    .filter(|a| a.can_be_used(encounter_state.participants[i], &encounter_state))
-                    .map(|a| {
-                        (
-                            a,
-                            a.ai_playing_value(encounter_state.participants[i], &encounter_state),
-                        )
-                    })
+                    .filter(|a| a.can_be_used(&character, &encounter_state))
+                    .map(|a| (a, a.ai_playing_value(&character, &encounter_state)))
                     .max_by_key(|p| p.1)
                 {
                     let d = dice::d20();
                     println!(
                         "{} {} for {}",
-                        encounter_state.participants[i].name,
+                        character.name,
                         highest_prio_activity.0.get_name(),
                         d
                     );
-                    encounter_state.participants[i].sub_hp(d);
-                    if encounter_state.participants[i].hp < 0 {
-                        println!("{} is dead", encounter_state.participants[i].name)
+                    character.sub_hp(d);
+
+                    if character.hp < 0 {
+                        println!("{} is dead", character.name)
                     }
                 } else {
-                    println!("{} passes round", encounter_state.participants[i].name);
+                    println!("{} passes round", character.name);
                 }
                 // resolve
-
-                println!("remaining life: {}", encounter_state.participants[i].hp)
+                println!("remaining life: {}", character.hp)
             }
             // Step 3 - Finish the round p468
             encounter_state.turn_number += 1;
