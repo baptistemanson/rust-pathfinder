@@ -1,3 +1,8 @@
+// immutable
+// try changing the API for something fully immutable? It would maybe be easier to deal with?
+// would inform the ui on what needs redraw, but Ill probably redraw everything each frame...
+// so I would have 1 state pointer?
+
 /**
 * Findings:
 * - everything is a trait, no method per say.
@@ -87,7 +92,8 @@ fn resolve_encounter() -> BoxResult<()> {
             pause();
             println!("Start of Round {}", encounter_state.turn_number);
             for i in 0..encounter_state.participants.len() {
-                if let Some(activity_and_value) = encounter_state.participants[i]
+                // declare which activity it will use, on which target
+                if let Some(highest_prio_activity) = encounter_state.participants[i]
                     .activities
                     .iter()
                     .filter(|a| a.can_be_used(encounter_state.participants[i], &encounter_state))
@@ -103,7 +109,7 @@ fn resolve_encounter() -> BoxResult<()> {
                     println!(
                         "{} {} for {}",
                         encounter_state.participants[i].name,
-                        activity_and_value.0.get_name(),
+                        highest_prio_activity.0.get_name(),
                         d
                     );
                     encounter_state.participants[i].sub_hp(d);
@@ -113,8 +119,6 @@ fn resolve_encounter() -> BoxResult<()> {
                 } else {
                     println!("{} passes round", encounter_state.participants[i].name);
                 }
-                // declare which ability it will use
-                // then target
                 // resolve
 
                 println!("remaining life: {}", encounter_state.participants[i].hp)
