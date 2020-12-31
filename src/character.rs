@@ -1,30 +1,26 @@
-use crate::{
-    abilities::{get_default_abilities, AbilityScore},
-    activity::{Activity, ActivityAttackWithSpell, ActivityAttackWithWeapon},
-};
+use crate::abilities::{get_default_abilities, AbilityScore};
 
 #[derive(Debug)]
 pub struct Character<'a> {
+    pub id: &'a str,
     pub max_hp: i64,
-    pub hp: i64,
     pub name: &'a str,
+    pub party: &'a str,
+    pub hp: i64,
     pub initiative: i64,
     pub ability_score: AbilityScore,
-    pub activities: Vec<Box<dyn Activity>>,
 }
 
 impl<'a> Character<'a> {
-    pub fn create(name: &str, max_hp: i64) -> Character {
+    pub fn new(name: &'a str, party: &'a str, max_hp: i64) -> Character<'a> {
         Character {
+            id: name,
+            name,
+            party,
             initiative: 0,
             max_hp,
             hp: max_hp,
             ability_score: get_default_abilities(),
-            name, // I think it is copied here, because name is a slice
-            activities: vec![
-                Box::new(ActivityAttackWithSpell::new()),
-                Box::new(ActivityAttackWithWeapon::new()),
-            ],
         }
     }
 

@@ -3,6 +3,7 @@
 // would inform the ui on what needs redraw, but Ill probably redraw everything each frame...
 // so I would have 1 state pointer?
 
+mod abilities;
 /**
 * Findings:
 * - everything is a trait, no method per say.
@@ -42,18 +43,18 @@
 Cool stuff: was able to create a struct and a trait by myself.
 */
 // flush trait/method is in std::io::Write
-mod abilities;
-mod activity;
 mod character;
-mod check;
 mod dice;
-mod encounter_state;
-mod equipment;
+
+mod timeline;
+mod world;
 
 use std::io::stdout;
 use std::io::Write;
 
-use encounter_state::EncounterState;
+use character::Character;
+use timeline::{Activation, Timeline};
+use world::World;
 
 // Result is clear
 // Box is because we cannot return a simple error straight, as errors can have different sizes
@@ -68,65 +69,54 @@ fn pause() {
     std::io::stdin().read_line(&mut line).unwrap();
 }
 
+fn get_initiative<'a>(participants: Vec<&'a Character<'a>>) -> Vec<Activation<'a>> {
+    participants
+        .iter()
+        .map(|c| Activation {
+            character_id: c.id,
+            party: c.party,
+            initiative: c.roll_initiative(),
+        })
+        .collect()
+}
+
 // we split it out of the main function, as main here returns an int, and if we want to use ? we need to return Result.
-fn resolve_encounter() -> BoxResult<()> {
-    println!("{:?}", abilities::get_default_abilities());
-    // let equipment = equipment::get_default_equipment();
-    // let backpack = equipment::get_backpack();
-    // equipment::view_stash(&backpack);
-
+fn resolve_encounter(world: &mut World) -> BoxResult<()> {
     {
-        let kobold1 = character::Character::create("Kobold 1", 40);
-        let kobold2 = character::Character::create("Kobold 2", 40);
-        let kobold3 = character::Character::create("Kobold 3", 40);
-        let mut characters = vec![kobold1, kobold2, kobold3];
+        let mut timeline = Timeline::new();
+        let mut is_encounter_done = false;
 
-        let mut encounter_state = EncounterState { turn_number: 0 };
         // Step 1 - Initiative check p468
-        encounter_state.roll_initiative(&mut characters);
-        characters.sort_by(|a, b| b.initiative.cmp(&a.initiative));
-
-        // Step 2 - Play a round p468
-        while !encounter_state.is_encounter_done(&characters) {
+        let mut activations = get_initiative(world.get_characters());
+        println!("Start of Round {}", timeline.turn_counter);
+        while !is_encounter_done {
+            // Step 2 - Play a round p468
             pause();
-            println!("Start of Round {}", encounter_state.turn_number);
-            for character in characters.iter_mut() {
-                // declare which activity it will use, on which target
-                if let Some(highest_prio_activity) = character
-                    .activities
-                    .iter()
-                    .filter(|a| a.can_be_used(&character, &encounter_state))
-                    .map(|a| (a, a.ai_playing_value(&character, &encounter_state)))
-                    .max_by_key(|p| p.1)
-                {
-                    let d = dice::d20();
-                    println!(
-                        "{} {} for {}",
-                        character.name,
-                        highest_prio_activity.0.get_name(),
-                        d
-                    );
-                    character.sub_hp(d);
-
-                    if character.hp < 0 {
-                        println!("{} is dead", character.name)
-                    }
-                } else {
-                    println!("{} passes round", character.name);
+            let tick = timeline.next_tick(&activations);
+            match tick {
+                timeline::Tick::Over => is_encounter_done = true,
+                timeline::Tick::NewRound => {
+                    println!("Start of Round {}", timeline.turn_counter);
                 }
-                // resolve
-                println!("remaining life: {}", character.hp)
+                timeline::Tick::CharacterAction(c) => {
+                    println!("{} is activating", c);
+                    if dice::d20() > 15 {
+                        println!("{} died while activating", c);
+                        activations = activations
+                            .into_iter()
+                            .filter(|a| a.character_id != c)
+                            .collect::<Vec<Activation>>();
+                    }
+                }
             }
-            // Step 3 - Finish the round p468
-            encounter_state.turn_number += 1;
         }
     }
-    println!("All characters are dead");
     Ok(())
 }
 
 fn main() {
-    match resolve_encounter() {
+    let mut world = World::new();
+    match resolve_encounter(&mut world) {
         Ok(()) => println!("Thank you for playing my game"),
         Err(e) => println!("Error: {}", e),
     }
