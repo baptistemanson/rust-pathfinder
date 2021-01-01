@@ -24,7 +24,7 @@ impl<'world> World<'world> {
         characters.insert(String::from(paladin2.id), paladin2);
         World { characters }
     }
-    pub fn get_characters(&'world self) -> Vec<&Character<'world>> {
+    pub fn get_characters(&self) -> Vec<&Character<'world>> {
         self.characters.values().collect()
     }
     pub fn get_character(&self, key: &str) -> &Character<'world> {
