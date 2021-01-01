@@ -1,11 +1,9 @@
 # Rust Pathfinder
 
-Rust pathfinder is a simple implementation of the basic rules of pathfinder second edition.
-It is a toy project from me to learn Rust.
+Rust pathfinder is a toy implementation of the basic rules of Pathfinder Second Edition.
+My goal is to learn Rust.
 
-MIT and everything.
-
-author Baptiste Manson
+MIT and everything. Author Baptiste Manson
 
 
 ### Conditions
@@ -15,12 +13,14 @@ author Baptiste Manson
   - [ ] implement dying, bless as PoC
 
 ### Equipment
-- [ ] add equipment to characters
-- [ ] compute proper attack rules with AC
+- [x] add equipment to characters
+
+### Combat
+- [ ] compute proper attack rules with AC and correct bonus
 
 ### Performance
 - [ ] avoid clone on active_character
 
 ### Completed ✓
-- [x] action selector
+- [x] action selector / AI
 - [x] base project
