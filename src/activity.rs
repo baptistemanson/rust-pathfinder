@@ -1,69 +1,44 @@
-use crate::{character::Character, encounter_state::EncounterState};
+use crate::{character::Character, world::World};
+
+mod find_target;
+mod spell;
+mod weapon;
+
 use std::fmt;
 // Value AI:
 // 0 cannot be cast or pointless
 // 10 gives an advantage
 // 20 gives a major advantage
-
 pub trait Activity: fmt::Debug {
-    fn can_be_used(&self, character: &Character, context: &EncounterState) -> bool;
-    fn ai_playing_value(&self, character: &Character, context: &EncounterState) -> i64;
-    fn resolve(&self, context: &mut EncounterState);
+    fn can_be_used(&self, character: &Character, context: &World) -> bool;
+    fn ai_playing_value(&self, character: &Character, context: &World) -> i64;
+    fn resolve(&self, character: &Character, context: &mut World);
     fn get_name(&self) -> &str;
 }
 
-#[derive(Clone, Debug)]
-pub struct ActivityAttackWithWeapon<'a> {
-    name: &'a str,
-    //   character: &'a Character<'b>,
-}
-impl<'a> ActivityAttackWithWeapon<'a> {
-    pub fn new() -> Self {
-        Self { name: "Attack" }
-    }
-}
-impl<'a> Activity for ActivityAttackWithWeapon<'a> {
-    fn can_be_used(&self, character: &Character, _context: &EncounterState) -> bool {
-        return character.hp > 0;
-    }
-    fn ai_playing_value(&self, _character: &Character, _context: &EncounterState) -> i64 {
-        return 10;
-    }
-
-    fn resolve(&self, _context: &mut EncounterState) {
-        todo![];
-    }
-
-    fn get_name(&self) -> &str {
-        self.name
+/**
+Right now doesnt care about the specificity of a character.
+ */
+impl<'a> Character<'a> {
+    fn get_activities(&self) -> Vec<Box<dyn Activity>> {
+        vec![
+            Box::new(spell::ActivityAttackWithSpell::new()),
+            Box::new(weapon::ActivityAttackWithWeapon::new()),
+        ]
     }
 }
 
-#[derive(Clone, Debug)]
-pub struct ActivityAttackWithSpell<'a> {
-    name: &'a str,
-    // character: &'a Character<'b>,
-}
-
-impl<'a> ActivityAttackWithSpell<'a> {
-    pub fn new() -> Self {
-        Self { name: "Spell" }
-    }
-}
-
-impl<'a> Activity for ActivityAttackWithSpell<'a> {
-    fn can_be_used(&self, character: &Character, _context: &EncounterState) -> bool {
-        return character.hp > 0;
-    }
-    fn ai_playing_value(&self, _character: &Character, _context: &EncounterState) -> i64 {
-        return 10;
-    }
-
-    fn resolve(&self, _context: &mut EncounterState) {
-        todo![];
-    }
-
-    fn get_name(&self) -> &str {
-        self.name
+/**
+Return a new
+*/
+pub fn select_best_activity<'a>(character: &'a Character, world: &'a World) -> Box<dyn Activity> {
+    let activities = character.get_activities();
+    let best = activities
+        .into_iter()
+        .map(|act| (act.ai_playing_value(character, world), act))
+        .max_by(|a, b| a.0.cmp(&b.0));
+    match best {
+        Some((_, c)) => c,
+        None => panic!("Oh no"),
     }
 }

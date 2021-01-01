@@ -11,24 +11,24 @@ Timeline keeps track of rounds and which units already activated.
 
 */
 #[derive(PartialEq, Debug)]
-pub enum Tick<'a> {
-    CharacterAction(CharacterId<'a>),
+pub enum Tick {
+    CharacterAction(CharacterId),
     NewRound,
     Over,
 }
 
-pub type CharacterId<'a> = &'a str;
+pub type CharacterId = String;
 
 pub type PartyId<'a> = &'a str;
 
-pub struct Timeline<'a> {
+pub struct Timeline {
     pub turn_counter: i64,
-    activated: Vec<&'a str>,
+    activated: Vec<String>,
 }
 
 #[derive(PartialEq, Debug)]
 pub struct Activation<'a> {
-    pub character_id: CharacterId<'a>,
+    pub character_id: CharacterId,
     pub party: PartyId<'a>,
     pub initiative: i64, // dont know if u64 is not better
 }
@@ -42,7 +42,7 @@ fn _get_different_groups<'a>(activations: &'a Vec<Activation>) -> HashMap<&'a st
     groups
 }
 
-impl<'a> Timeline<'a> {
+impl Timeline {
     pub fn new() -> Self {
         Timeline {
             turn_counter: 1,
@@ -50,7 +50,7 @@ impl<'a> Timeline<'a> {
         }
     }
 
-    pub fn next_tick(&mut self, activations: &Vec<Activation<'a>>) -> Tick<'a> {
+    pub fn next_tick(&mut self, activations: &Vec<Activation>) -> Tick {
         // if there is only 1 party left, the fight is over
         let diff_active_groups = _get_different_groups(activations);
         if diff_active_groups.len() <= 1 {
@@ -70,8 +70,8 @@ impl<'a> Timeline<'a> {
         }
 
         to_be_activated.sort_by(|a, b| a.initiative.cmp(&b.initiative));
-        let next = to_be_activated[0].character_id;
-        self.activated.push(next);
+        let next = to_be_activated[0].character_id.clone();
+        self.activated.push(next.clone());
         return Tick::CharacterAction(next);
     }
 }
@@ -94,12 +94,12 @@ mod tests {
     fn encounter_all_friendly() {
         let activations: Vec<Activation> = vec![
             Activation {
-                character_id: "a",
+                character_id: String::from("a"),
                 initiative: 0,
                 party: "1",
             },
             Activation {
-                character_id: "b",
+                character_id: String::from("b"),
                 initiative: 0,
                 party: "1",
             },
@@ -112,23 +112,35 @@ mod tests {
     fn encounter_2_units() {
         let activations: Vec<Activation> = vec![
             Activation {
-                character_id: "a",
+                character_id: String::from("a"),
                 initiative: 0,
                 party: "1",
             },
             Activation {
-                character_id: "b",
+                character_id: String::from("b"),
                 initiative: 5,
                 party: "2",
             },
         ];
         let mut timeline = Timeline::new();
-        assert_eq!(timeline.next_tick(&activations), Tick::CharacterAction("a"));
-        assert_eq!(timeline.next_tick(&activations), Tick::CharacterAction("b"));
+        assert_eq!(
+            timeline.next_tick(&activations),
+            Tick::CharacterAction(String::from("a"))
+        );
+        assert_eq!(
+            timeline.next_tick(&activations),
+            Tick::CharacterAction(String::from("b"))
+        );
         assert_eq!(timeline.next_tick(&activations), Tick::NewRound);
         assert_eq!(timeline.turn_counter, 2);
-        assert_eq!(timeline.next_tick(&activations), Tick::CharacterAction("a"));
-        assert_eq!(timeline.next_tick(&activations), Tick::CharacterAction("b"));
+        assert_eq!(
+            timeline.next_tick(&activations),
+            Tick::CharacterAction(String::from("a"))
+        );
+        assert_eq!(
+            timeline.next_tick(&activations),
+            Tick::CharacterAction(String::from("b"))
+        );
         assert_eq!(timeline.next_tick(&activations), Tick::NewRound);
     }
 
@@ -136,32 +148,41 @@ mod tests {
     fn encounter_unit_die_join() {
         let activations: Vec<Activation> = vec![
             Activation {
-                character_id: "a",
+                character_id: String::from("a"),
                 initiative: 0,
                 party: "1",
             },
             Activation {
-                character_id: "b",
+                character_id: String::from("b"),
                 initiative: 5,
                 party: "2",
             },
         ];
         let mut timeline = Timeline::new();
-        assert_eq!(timeline.next_tick(&activations), Tick::CharacterAction("a"));
+        assert_eq!(
+            timeline.next_tick(&activations),
+            Tick::CharacterAction(String::from("a"))
+        );
         let activations = vec![
             Activation {
-                character_id: "b",
+                character_id: String::from("b"),
                 initiative: 0,
                 party: "2",
             },
             Activation {
-                character_id: "c",
+                character_id: String::from("c"),
                 initiative: 10,
                 party: "1",
             },
         ];
-        assert_eq!(timeline.next_tick(&activations), Tick::CharacterAction("b"));
-        assert_eq!(timeline.next_tick(&activations), Tick::CharacterAction("c"));
+        assert_eq!(
+            timeline.next_tick(&activations),
+            Tick::CharacterAction(String::from("b"))
+        );
+        assert_eq!(
+            timeline.next_tick(&activations),
+            Tick::CharacterAction(String::from("c"))
+        );
         assert_eq!(timeline.next_tick(&activations), Tick::NewRound);
     }
 }

@@ -1,6 +1,6 @@
 use crate::abilities::{get_default_abilities, AbilityScore};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Character<'a> {
     pub id: &'a str,
     pub max_hp: i64,
@@ -32,6 +32,7 @@ impl<'a> Character<'a> {
     // }
 
     // we can get negative HP in pathfinder
+    #[allow(dead_code)]
     pub fn sub_hp(&mut self, hp: i64) {
         self.hp = self.hp.saturating_sub(hp);
         if self.hp > self.max_hp {

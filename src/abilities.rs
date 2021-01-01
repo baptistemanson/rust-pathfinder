@@ -1,4 +1,5 @@
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub enum Ability {
     Strength,
     Dexterity,
@@ -9,6 +10,7 @@ pub enum Ability {
 }
 
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub enum Bonus {
     Enhancement,
     Natural,
@@ -45,6 +47,7 @@ pub fn get_default_abilities() -> AbilityScore {
     }
 }
 
+#[allow(dead_code)]
 pub fn get_default_bonus() -> BonusAbility {
     BonusAbility {
         bonus: Bonus::Enhancement,
