@@ -1,3 +1,5 @@
+use armor::scale_mail;
+
 use crate::item::weapons::greatsword;
 use crate::item::*;
 
@@ -12,21 +14,11 @@ pub fn get_paladin_loadout() -> Slots {
         head: Some(helmet),
         left_hand: Some(greatsword()),
         right_hand: None,
-        armor: Some(ArmorItem {
-            info: ItemInfo {
-                name: String::from("Scale mail"),
-                bulk: 2,
-            },
-            ac_bonus: 3,
-            dex_cap: 3,
-            check_penalty: -2,
-            ..Default::default()
-        }),
+        armor: Some(scale_mail()),
     }
 }
 
 // Slots
-
 #[derive(Clone, Debug)]
 pub struct Slots {
     pub left_hand: Option<WeaponItem>,

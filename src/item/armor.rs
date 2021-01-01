@@ -1,16 +1,29 @@
 use super::{ArmorItem, ItemInfo};
 
 pub fn leather() -> ArmorItem {
-    WeaponItem {
+    ArmorItem {
         info: ItemInfo {
-            name: String::from("Greatsword +1"),
+            name: String::from("Leather"),
+            bulk: 1,
+        },
+        ac_bonus: 1,
+        dex_cap: 4,
+        check_penalty: -1,
+        speed_penalty: 0,
+        min_strength: 10,
+    }
+}
+
+pub fn scale_mail() -> ArmorItem {
+    ArmorItem {
+        info: ItemInfo {
+            name: String::from("Scale mail"),
             bulk: 2,
         },
-        is_two_hands: true,
-        damage: DamageFormula::ClassicDamageFormula {
-            nb_dice: 1,
-            bonus: 1,
-            dice_faces: 12,
-        },
+        ac_bonus: 3,
+        dex_cap: 3,
+        check_penalty: -2,
+        speed_penalty: 0,
+        min_strength: 12,
     }
 }

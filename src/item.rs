@@ -1,3 +1,4 @@
+pub mod armor;
 pub mod weapons;
 
 use super::dice;
@@ -67,22 +68,6 @@ pub struct ArmorItem {
     pub check_penalty: i64,
     pub speed_penalty: i64,
     pub min_strength: i64,
-}
-
-impl Default for ArmorItem {
-    fn default() -> Self {
-        Self {
-            info: ItemInfo {
-                name: String::from("Leather"),
-                bulk: 1,
-            },
-            ac_bonus: 1,
-            dex_cap: 4,
-            check_penalty: -1,
-            speed_penalty: 0,
-            min_strength: 10,
-        }
-    }
 }
 
 impl Item for ArmorItem {
