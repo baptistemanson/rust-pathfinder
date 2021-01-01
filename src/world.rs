@@ -33,4 +33,10 @@ impl<'world> World<'world> {
         .get(key)
         .expect("couldnt find the character to activate in the world!")
     } 
+    pub fn get_mut_character(&mut self, key: &str) -> &mut Character<'world> {
+        self
+                    .characters
+                    .get_mut(key)
+                    .expect("Oh no, could not find the right target")
+    }
 }

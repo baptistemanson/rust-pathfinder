@@ -1,3 +1,4 @@
+use crate::timeline::CharacterId;
 use crate::world::World;
 /**
 Plenty of ideas:
@@ -8,15 +9,29 @@ Plenty of ideas:
 ...
 should read about it
 */
-pub fn find_first_conscious_target<'a>(party_id: &str, world: &'a World<'a>) -> Option<String> {
+pub fn find_first_conscious_enemy<'a>(party: &str, world: &'a World<'a>) -> Option<CharacterId> {
     let characters = world.get_characters();
     let ids: Vec<String> = characters
         .iter()
-        .filter(|c| c.party != party_id)
+        .filter(|c| c.party != party)
         .filter(|c| c.hp > 0)
         .map(|c| String::from(c.id))
         .collect();
-    // should not happen?
+    // find unconscious 
+    if ids.len() == 0 {
+        return find_first_enemy(party, world);
+    }
+    return Some(ids[0].clone());
+}
+
+pub fn find_first_enemy<'a>(party: &str, world: &'a World<'a>) -> Option<CharacterId> {
+    let characters = world.get_characters();
+    let ids: Vec<String> = characters
+        .iter()
+        .filter(|c| c.party != party)
+        .map(|c| String::from(c.id))
+        .collect();
+    // find unconscious 
     if ids.len() == 0 {
         return None;
     }

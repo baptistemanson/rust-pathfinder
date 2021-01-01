@@ -1,38 +1,32 @@
 use crate::{character::Character, dice, world::World};
 
-use super::{find_target::find_first_conscious_target, Activity};
+use super::{find_target::find_first_conscious_enemy, Activity};
 
 #[derive(Clone, Debug)]
-pub struct ActivityAttackWithSpell<'a> {
+pub struct Action<'a> {
     name: &'a str,
 }
 
-impl<'a> ActivityAttackWithSpell<'a> {
+impl<'a> Action<'a> {
     pub fn new() -> Self {
         Self { name: "Spell" }
     }
 }
 
-impl<'a> Activity for ActivityAttackWithSpell<'a> {
-    fn can_be_used(&self, character: &Character, _context: &World) -> bool {
-        character.hp > 0
-    }
+impl<'a> Activity for Action<'a> {
     fn ai_playing_value(&self, _character: &Character, _context: &World) -> i64 {
         10
     }
 
     fn resolve(&self, character: &Character, world: &mut World) {
         let dmg = dice::d20();
-        let target_id = find_first_conscious_target(&character.party, world);
+        let target_id = find_first_conscious_enemy(&character.party, world);
         match target_id {
             None => {
                 return;
             }
             Some(id) => {
-                let target: &mut Character = world
-                    .characters
-                    .get_mut(&id)
-                    .expect("Oh no, could not find the right target");
+                let target: &mut Character = world.get_mut_character(&id);
                 println!(
                     "\t{} casts a magic missile to {} for {} dmg",
                     character.name, target.name, dmg
