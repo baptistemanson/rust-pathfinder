@@ -89,3 +89,11 @@ impl Item for ArmorItem {
 pub struct HeadItem {
     pub info: ItemInfo,
 }
+
+#[derive(Clone, Debug)]
+pub struct Loadout {
+    pub left_hand: Option<WeaponItem>,
+    pub right_hand: Option<WeaponItem>,
+    pub head: Option<HeadItem>,
+    pub armor: Option<ArmorItem>,
+}

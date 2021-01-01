@@ -3,13 +3,19 @@
 // would inform the ui on what needs redraw, but Ill probably redraw everything each frame...
 // so I would have 1 state pointer?
 
-mod abilities;
-mod activity;
+// GENERAL
 mod character;
-mod slots;
-mod item;
 mod dice;
+
+// ITEMS and EQUIPMENT
+mod item;
+mod paladin;
+
+// TIMELINE
+mod activity;
 mod timeline;
+
+// UI
 mod ui;
 /**
 * Findings:
@@ -55,8 +61,9 @@ use world::World;
 // keyword dyn, I dont know why
 type BoxResult<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
-fn get_initiative<'a,'b>(world: &'b World<'a>) -> Vec<Activation> {
-    world.get_characters()
+fn get_initiative<'a, 'b>(world: &'b World<'a>) -> Vec<Activation> {
+    world
+        .get_characters()
         .into_iter()
         .map(|c| Activation {
             character_id: String::from(c.id),
@@ -92,7 +99,7 @@ fn resolve_encounter(mut world: &mut World) -> BoxResult<()> {
                     println!("Start of Round {}", timeline.turn_counter);
                 }
                 timeline::Tick::CharacterAction(c) => {
-                    let active_character = world.get_character(&c).clone(); 
+                    let active_character = world.get_character(&c).clone();
                     // had to clone because activity needs at the same time:
                     // an immutable ref to the character to know how much damage the attacker can do,
                     // a mutable ref to the world to resolve the action.
