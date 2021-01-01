@@ -9,7 +9,9 @@ Timeline keeps track of rounds and which units already activated.
 
 /!\ Could be migrated to a generator if needed later I guess.
 
+- A round is 6s. p13
 */
+
 #[derive(PartialEq, Debug)]
 pub enum Tick {
     CharacterAction(CharacterId),

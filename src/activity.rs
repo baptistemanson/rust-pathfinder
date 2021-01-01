@@ -34,7 +34,7 @@ impl<'a> Character<'a> {
 /**
 Return a new
 */
-pub fn select_best_activity<'a>(character: &'a Character, world: &'a World) -> Box<dyn Activity> {
+pub fn select_best_action<'a>(character: &'a Character, world: &'a World) -> Box<dyn Activity> {
     let activities = character.get_activities();
     let best = activities
         .into_iter()

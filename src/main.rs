@@ -43,7 +43,7 @@ Cool stuff: was able to create a struct and a trait by myself.
 // flush trait/method is in std::io::Write
 mod world;
 
-use activity::select_best_activity;
+use activity::select_best_action;
 use timeline::{Activation, Timeline};
 use world::World;
 
@@ -90,10 +90,15 @@ fn resolve_encounter(mut world: &mut World) -> BoxResult<()> {
                     println!("Start of Round {}", timeline.turn_counter);
                 }
                 timeline::Tick::CharacterAction(c) => {
-                    let character = world.get_character(&c).clone(); // had to clone because otherwise character is an immutable ref to world, but we need world as mutable.
-                    let activity = select_best_activity(&character, world);
+                    let active_character = world.get_character(&c).clone(); 
+                    // had to clone because activity needs at the same time:
+                    // an immutable ref to the character to know how much damage the attacker can do,
+                    // a mutable ref to the world to resolve the action.
+
+                    // @todo do not clone when I understand RefCell for performance reason.
+                    let best_action = select_best_action(&active_character, world);
                     // collect effects of an activity as list of characters in the world
-                    activity.resolve(&character, &mut world);
+                    best_action.resolve(&active_character, &mut world);
                 }
             }
         }
