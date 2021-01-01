@@ -2,27 +2,32 @@ use std::collections::HashMap;
 
 use crate::{character::Character, timeline::CharacterId};
 
-pub struct World<'a> {
-    pub characters: HashMap<CharacterId, Character<'a>>,
+/**
+ * Cannot delete characters during an encounter...
+ */
+pub struct World<'world> {
+    pub characters: HashMap<CharacterId, Character<'world>>,
 }
 
-impl<'a> World<'a> {
+impl<'world> World<'world> {
     pub fn new() -> Self {
         let kobold1 = Character::new("Kobold 1", "enemy", 40);
         let kobold2 = Character::new("Kobold 2", "enemy", 40);
         let kobold3 = Character::new("Kobold 3", "enemy", 40);
-        let paladin = Character::new("Paladin", "good guys", 300);
+        let paladin1 = Character::new("Paladin 1", "good guys", 300);
+        let paladin2 = Character::new("Paladin 2", "good guys", 300);
         let mut characters = HashMap::new();
         characters.insert(String::from(kobold1.id), kobold1);
         characters.insert(String::from(kobold2.id), kobold2);
         characters.insert(String::from(kobold3.id), kobold3);
-        characters.insert(String::from(paladin.id), paladin);
+        characters.insert(String::from(paladin1.id), paladin1);
+        characters.insert(String::from(paladin2.id), paladin2);
         World { characters }
     }
-    pub fn get_characters(&'a self) -> Vec<&Character<'a>> {
+    pub fn get_characters(&'world self) -> Vec<&Character<'world>> {
         self.characters.values().collect()
     }
-    pub fn get_character(&self, key: &str) -> &Character<'a> {
+    pub fn get_character(&self, key: &str) -> &Character<'world> {
         self
         .characters
         .get(key)

@@ -44,7 +44,6 @@ Cool stuff: was able to create a struct and a trait by myself.
 mod world;
 
 use activity::select_best_activity;
-use character::Character;
 use timeline::{Activation, Timeline};
 use world::World;
 
@@ -54,13 +53,13 @@ use world::World;
 // keyword dyn, I dont know why
 type BoxResult<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
-fn get_initiative<'a>(participants: Vec<&Character<'a>>) -> Vec<Activation<'a>> {
-    participants
+fn get_initiative<'a,'b>(world: &'b World<'a>) -> Vec<Activation> {
+    world.get_characters()
         .into_iter()
         .map(|c| Activation {
             character_id: String::from(c.id),
             initiative: c.roll_initiative(),
-            party: c.party,
+            party: String::from(c.party),
         })
         .collect()
 }
@@ -72,11 +71,12 @@ fn resolve_encounter(mut world: &mut World) -> BoxResult<()> {
         let mut is_encounter_done = false;
 
         // Step 1 - Initiative check p468
-        let mut activations = get_initiative(world.characters.values().collect());
+        let mut activations = get_initiative(&world);
         println!("Start of Round {}", timeline.turn_counter);
         ui::pause();
         while !is_encounter_done {
             // Step 2 - Play a round p468
+            // @todo move that to select_best_activity?
             activations = activations
                 .into_iter()
                 .filter(|a| world.characters.get(&a.character_id).expect("oh no").hp > 0)
@@ -86,14 +86,6 @@ fn resolve_encounter(mut world: &mut World) -> BoxResult<()> {
             match tick {
                 timeline::Tick::Over => is_encounter_done = true,
                 timeline::Tick::NewRound => {
-                    // println!(
-                    //     "{:?}",
-                    //     world
-                    //         .get_characters()
-                    //         .iter()
-                    //         .map(|c| { (c.name, c.hp) })
-                    //         .collect::<Vec<(&str, i64)>>()
-                    // );
                     ui::pause();
                     println!("Start of Round {}", timeline.turn_counter);
                 }

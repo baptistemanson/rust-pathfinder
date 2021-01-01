@@ -19,7 +19,7 @@ pub enum Tick {
 
 pub type CharacterId = String;
 
-pub type PartyId<'a> = &'a str;
+pub type PartyId= String;
 
 pub struct Timeline {
     pub turn_counter: i64,
@@ -27,16 +27,16 @@ pub struct Timeline {
 }
 
 #[derive(PartialEq, Debug)]
-pub struct Activation<'a> {
+pub struct Activation {
     pub character_id: CharacterId,
-    pub party: PartyId<'a>,
+    pub party: PartyId,
     pub initiative: i64, // dont know if u64 is not better
 }
 
-fn _get_different_groups<'a>(activations: &'a Vec<Activation>) -> HashMap<&'a str, u64> {
-    let mut groups: HashMap<&str, u64> = HashMap::new();
+fn _get_different_groups<'a>(activations: &'a Vec<Activation>) -> HashMap<String, u64> {
+    let mut groups: HashMap<String, u64> = HashMap::new();
     for a in activations {
-        let count = groups.entry(a.party).or_insert(0);
+        let count = groups.entry(a.party.clone()).or_insert(0);
         *count += 1;
     }
     groups
@@ -96,12 +96,12 @@ mod tests {
             Activation {
                 character_id: String::from("a"),
                 initiative: 0,
-                party: "1",
+                party: String::from("1"),
             },
             Activation {
                 character_id: String::from("b"),
                 initiative: 0,
-                party: "1",
+                party:String::from("1"),
             },
         ];
         let mut timeline = Timeline::new();
@@ -114,12 +114,12 @@ mod tests {
             Activation {
                 character_id: String::from("a"),
                 initiative: 0,
-                party: "1",
+                party: String::from("1"),
             },
             Activation {
                 character_id: String::from("b"),
                 initiative: 5,
-                party: "2",
+                party: String::from("2"),
             },
         ];
         let mut timeline = Timeline::new();
@@ -150,12 +150,12 @@ mod tests {
             Activation {
                 character_id: String::from("a"),
                 initiative: 0,
-                party: "1",
+                party: String::from("1"),
             },
             Activation {
                 character_id: String::from("b"),
                 initiative: 5,
-                party: "2",
+                party: String::from("2"),
             },
         ];
         let mut timeline = Timeline::new();
@@ -167,12 +167,12 @@ mod tests {
             Activation {
                 character_id: String::from("b"),
                 initiative: 0,
-                party: "2",
+                party: String::from("2"),
             },
             Activation {
                 character_id: String::from("c"),
                 initiative: 10,
-                party: "1",
+                party: String::from("1"),
             },
         ];
         assert_eq!(
