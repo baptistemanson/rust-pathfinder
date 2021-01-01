@@ -26,11 +26,12 @@ pub enum DamageFormula {
 
 pub struct DamageRollResults {
     pub value: i64,
+    pub is_critical: bool,
     pub details: String,
 }
 
 impl DamageFormula {
-    pub fn roll(&self) -> DamageRollResults {
+    pub fn roll(&self, is_critical: bool) -> DamageRollResults {
         match self {
             DamageFormula::ClassicDamageFormula {
                 dice_faces,
@@ -38,10 +39,18 @@ impl DamageFormula {
                 bonus,
             } => {
                 let roll = dice::dx(*dice_faces);
-                let value = roll * nb_dice + bonus;
+                let value = (roll * nb_dice + bonus) * if is_critical { 2 } else { 1 };
                 DamageRollResults {
-                    value: roll * nb_dice + bonus,
-                    details: format!("{} x d{} + {} = {}", nb_dice, dice_faces, bonus, value),
+                    value: value,
+                    is_critical,
+                    details: if is_critical {
+                        format!(
+                            "Critical 2x [{} x d{} + {}] = {}",
+                            nb_dice, dice_faces, bonus, value
+                        )
+                    } else {
+                        format!("{}d{} + {} = {}", nb_dice, dice_faces, bonus, value)
+                    },
                 }
             }
         }
