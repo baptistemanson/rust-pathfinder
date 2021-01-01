@@ -5,22 +5,27 @@ My goal is to learn Rust.
 
 MIT and everything. Author Baptiste Manson
 
-
 ### Conditions
+
 - [ ] develop condition engine
   - [ ] add concept of timers in timeline
   - [ ] add condition in character
   - [ ] implement dying, bless as PoC
 
 ### Equipment
+
 - [x] add equipment to characters
 
 ### Combat
-- [ ] compute proper attack rules with AC and correct bonus
+
+- [x] compute proper attack rules with AC and correct bonus
+- [ ] add a system for bonus and malus on AC and attack rolls.
 
 ### Performance
+
 - [ ] avoid clone on active_character
 
 ### Completed ✓
+
 - [x] action selector / AI
 - [x] base project
