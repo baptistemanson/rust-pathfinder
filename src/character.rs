@@ -38,5 +38,8 @@ impl<'a> Character<'a> {
         if self.hp > self.max_hp {
             self.hp = self.max_hp;
         }
+        if self.hp <= 0 {
+            println!("\t{} is unconscious!", self.name);
+        }
     }
 }

@@ -1,6 +1,6 @@
 use crate::{character::Character, dice, world::World};
 
-use super::{find_target::find_first_target, Activity};
+use super::{find_target::find_first_conscious_target, Activity};
 
 #[derive(Clone, Debug)]
 pub struct ActivityAttackWithWeapon<'a> {
@@ -23,7 +23,7 @@ impl<'a> Activity for ActivityAttackWithWeapon<'a> {
 
     fn resolve<'lworld>(&self, character: &Character, world: &mut World) {
         let dmg = dice::d20();
-        let target_id = find_first_target(&character.party, world);
+        let target_id = find_first_conscious_target(&character.party, world);
         match target_id {
             None => {
                 return;

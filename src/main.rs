@@ -74,13 +74,27 @@ fn resolve_encounter(mut world: &mut World) -> BoxResult<()> {
         // Step 1 - Initiative check p468
         let mut activations = get_initiative(world.characters.values().collect());
         println!("Start of Round {}", timeline.turn_counter);
+        ui::pause();
         while !is_encounter_done {
             // Step 2 - Play a round p468
-            ui::pause();
+            activations = activations
+                .into_iter()
+                .filter(|a| world.characters.get(&a.character_id).expect("oh no").hp > 0)
+                .collect::<Vec<Activation>>();
+            // println!("{:?}", activations);
             let tick = timeline.next_tick(&activations);
             match tick {
                 timeline::Tick::Over => is_encounter_done = true,
                 timeline::Tick::NewRound => {
+                    // println!(
+                    //     "{:?}",
+                    //     world
+                    //         .get_characters()
+                    //         .iter()
+                    //         .map(|c| { (c.name, c.hp) })
+                    //         .collect::<Vec<(&str, i64)>>()
+                    // );
+                    ui::pause();
                     println!("Start of Round {}", timeline.turn_counter);
                 }
                 timeline::Tick::CharacterAction(c) => {
@@ -93,13 +107,6 @@ fn resolve_encounter(mut world: &mut World) -> BoxResult<()> {
                     let activity = select_best_activity(&character, world);
                     // collect effects of an activity as list of characters in the world
                     activity.resolve(&character, &mut world);
-                    if dice::d20() > 15 {
-                        println!("\t{} died while activating", c);
-                        activations = activations
-                            .into_iter()
-                            .filter(|a| a.character_id != c)
-                            .collect::<Vec<Activation>>();
-                    }
                 }
             }
         }
