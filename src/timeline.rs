@@ -9,8 +9,12 @@ Timeline keeps track of rounds and which units already activated.
 
 /!\ Could be migrated to a generator if needed later I guess.
 
-- A round is 6s. p13
+
 */
+
+// - A round is 6s. p13
+#[allow(dead_code)]
+fn get_min_in_rounds(min: i64) -> i64{min*10}
 
 #[derive(PartialEq, Debug)]
 pub enum Tick {

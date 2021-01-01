@@ -6,6 +6,8 @@
 mod abilities;
 mod activity;
 mod character;
+mod slots;
+mod item;
 mod dice;
 mod timeline;
 mod ui;

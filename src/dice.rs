@@ -1,21 +1,28 @@
 use rand::prelude::*;
 
+pub fn dx(x:i64) -> i64 {
+    thread_rng().gen_range(1..=x)
+}
 pub fn d20() -> i64 {
-    thread_rng().gen_range(1..=20) // up to 21 but not included
+    thread_rng().gen_range(1..=20)
+}
+#[allow(dead_code)]
+pub fn d10() -> i64 {
+    thread_rng().gen_range(1..=10)
 }
 #[allow(dead_code)]
 pub fn d8() -> i64 {
-    thread_rng().gen_range(1..=8) // up to 21 but not included
+    thread_rng().gen_range(1..=8)
 }
 #[allow(dead_code)]
 pub fn d3() -> i64 {
-    thread_rng().gen_range(1..=3) // up to 21 but not included
+    thread_rng().gen_range(1..=3)
 }
 #[allow(dead_code)]
 pub fn d4() -> i64 {
-    thread_rng().gen_range(1..=4) // up to 21 but not included
+    thread_rng().gen_range(1..=4)
 }
 #[allow(dead_code)]
 pub fn d6() -> i64 {
-    thread_rng().gen_range(1..=6) // up to 21 but not included
+    thread_rng().gen_range(1..=6)
 }

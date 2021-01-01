@@ -1,3 +1,5 @@
+use crate::slots::get_paladin_loadout;
+use crate::slots::Slots;
 use crate::abilities::{get_default_abilities, AbilityScore};
 
 #[derive(Debug, Clone)]
@@ -9,6 +11,7 @@ pub struct Character<'a> {
     pub hp: i64,
     pub initiative: i64,
     pub ability_score: AbilityScore,
+    pub slots: Slots
 }
 
 impl<'a> Character<'a> {
@@ -21,6 +24,7 @@ impl<'a> Character<'a> {
             max_hp,
             hp: max_hp,
             ability_score: get_default_abilities(),
+            slots: get_paladin_loadout()
         }
     }
 
