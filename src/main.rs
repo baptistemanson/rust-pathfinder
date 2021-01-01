@@ -98,12 +98,7 @@ fn resolve_encounter(mut world: &mut World) -> BoxResult<()> {
                     println!("Start of Round {}", timeline.turn_counter);
                 }
                 timeline::Tick::CharacterAction(c) => {
-                    // println!("{} is activating", c);
-                    let character = world
-                        .characters
-                        .get(&c)
-                        .expect("couldnt find the character to activate in the world!")
-                        .clone(); // had to clone because otherwise Im reading char indirectly from world, and I try to mod world.
+                    let character = world.get_character(&c).clone(); // had to clone because otherwise character is an immutable ref to world, but we need world as mutable.
                     let activity = select_best_activity(&character, world);
                     // collect effects of an activity as list of characters in the world
                     activity.resolve(&character, &mut world);

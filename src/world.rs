@@ -22,4 +22,10 @@ impl<'a> World<'a> {
     pub fn get_characters(&'a self) -> Vec<&Character<'a>> {
         self.characters.values().collect()
     }
+    pub fn get_character(&self, key: &str) -> &Character<'a> {
+        self
+        .characters
+        .get(key)
+        .expect("couldnt find the character to activate in the world!")
+    } 
 }
