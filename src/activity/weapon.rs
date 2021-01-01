@@ -1,9 +1,10 @@
-use crate::item::DamageFormula;
+use dice::d20;
+
 use crate::item::DamageRollResults;
 use crate::{character::Character, dice, world::World};
+use crate::{item::weapons::fist, timeline::get_modifier};
 
 use super::{find_target::find_first_conscious_enemy, Activity};
-use crate::slots::*;
 
 #[derive(Clone, Debug)]
 pub struct Action<'a> {
@@ -16,27 +17,35 @@ impl<'a> Action<'a> {
     }
 }
 
-// p280 fist
-fn fist() -> DamageFormula {
-    DamageFormula::ClassicDamageFormula{nb_dice: 1, bonus:0, dice_faces: 4}
+fn compute_attack_roll(source: &Character, _target: &Character) -> i64 {
+    d20() + get_modifier(source.ability_score.strength)
 }
+
 // @todo eventually, there will be some deduction and addition here
-fn compute_damage_weapon(source: &Character, _target: &Character) -> DamageRollResults {
-    match &source.slots.hands {
-        HandSlot::SingleHands(Some(w), _) => w.damage.roll(),
-        HandSlot::SingleHands(None, Some(w)) => w.damage.roll(),
-        HandSlot::SingleHands(None, None) => fist().roll(),
-        HandSlot::TwoHands(w) => w.damage.roll(),
-        }
+fn compute_damage_roll(source: &Character, _target: &Character) -> DamageRollResults {
+    let f = fist();
+    let weapon = match (&source.slots.left_hand, &source.slots.right_hand) {
+        (_, Some(w)) => w, // @todo check the rules on lefty/righty rules.
+        (Some(w), None) => w,
+        (None, None) => &f,
+    };
+    weapon.damage.roll()
+}
+
+fn compute_ac(target: &Character) -> i64 {
+    let armor_bonus = if let Some(armor) = &target.slots.armor {
+        armor.ac_bonus
+    } else {
+        0
+    };
+    10 + armor_bonus
 }
 impl<'a> Activity for Action<'a> {
-    
     fn ai_playing_value(&self, _character: &Character, _context: &World) -> i64 {
         dice::d20()
     }
 
     fn resolve<'lworld>(&self, source: &Character, world: &mut World) {
-        
         let target_id = find_first_conscious_enemy(&source.party, world);
         match target_id {
             None => {
@@ -44,9 +53,22 @@ impl<'a> Activity for Action<'a> {
             }
             Some(id) => {
                 let target: &mut Character = world.get_mut_character(&id);
-                let dmg_result = compute_damage_weapon(source, target);
+                let attack_roll = compute_attack_roll(source, target);
+                let ac_bonus = compute_ac(target);
+                if ac_bonus > attack_roll {
+                    println!(
+                        "\t{} missed {} ({} vs {} AC)",
+                        source.name, target.name, attack_roll, ac_bonus
+                    );
+                    return;
+                }
                 println!(
-                    "\t{} attacks {} for {} damage ({})",
+                    "\t{} hits {} ({} vs {} AC)",
+                    source.name, target.name, attack_roll, ac_bonus
+                );
+                let dmg_result = compute_damage_roll(source, target);
+                println!(
+                    "\t{} causes {} for {} damage ({})",
                     source.name, target.name, dmg_result.value, dmg_result.details
                 );
                 (*target).sub_hp(dmg_result.value);
