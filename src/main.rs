@@ -84,18 +84,17 @@ fn resolve_encounter(mut world: &mut World) -> BoxResult<()> {
                     println!("Start of Round {}", timeline.turn_counter);
                 }
                 timeline::Tick::CharacterAction(c) => {
-                    println!("{} is activating", c);
+                    // println!("{} is activating", c);
                     let character = world
                         .characters
                         .get(&c)
                         .expect("couldnt find the character to activate in the world!")
                         .clone(); // had to clone because otherwise Im reading char indirectly from world, and I try to mod world.
                     let activity = select_best_activity(&character, world);
-                    println!("{:?} activity", activity);
                     // collect effects of an activity as list of characters in the world
                     activity.resolve(&character, &mut world);
                     if dice::d20() > 15 {
-                        println!("{} died while activating", c);
+                        println!("\t{} died while activating", c);
                         activations = activations
                             .into_iter()
                             .filter(|a| a.character_id != c)

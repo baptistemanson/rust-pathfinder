@@ -5,7 +5,6 @@ use super::{find_target::find_first_target, Activity};
 #[derive(Clone, Debug)]
 pub struct ActivityAttackWithSpell<'a> {
     name: &'a str,
-    // character: &'a Character<'b>,
 }
 
 impl<'a> ActivityAttackWithSpell<'a> {
@@ -34,7 +33,10 @@ impl<'a> Activity for ActivityAttackWithSpell<'a> {
                     .characters
                     .get_mut(&id)
                     .expect("Oh no, could not find the right target");
-                println!("{} attacks {} for {} dmg", character.name, target.name, dmg);
+                println!(
+                    "\t{} casts a magic missile to {} for {} dmg",
+                    character.name, target.name, dmg
+                );
                 (*target).sub_hp(dmg);
             }
         }

@@ -5,7 +5,6 @@ use super::{find_target::find_first_target, Activity};
 #[derive(Clone, Debug)]
 pub struct ActivityAttackWithWeapon<'a> {
     name: &'a str,
-    //   character: &'a Character<'b>,
 }
 
 impl<'a> ActivityAttackWithWeapon<'a> {
@@ -34,7 +33,10 @@ impl<'a> Activity for ActivityAttackWithWeapon<'a> {
                     .characters
                     .get_mut(&id)
                     .expect("Oh no, could not find the right target");
-                println!("{} attacks {} for {} dmg", character.name, target.name, dmg);
+                println!(
+                    "\t{} attacks {} for {} dmg",
+                    character.name, target.name, dmg
+                );
                 (*target).sub_hp(dmg);
             }
         }
