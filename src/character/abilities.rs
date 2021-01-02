@@ -19,8 +19,9 @@ pub struct AbilityScore {
     pub charisma: i64,
 }
 
-pub fn get_default_abilities() -> AbilityScore {
-    AbilityScore {
+impl Default for AbilityScore {
+    fn default() -> Self {
+        AbilityScore {
         strength: 10,
         dexterity: 10,
         constitution: 10,
@@ -28,4 +29,5 @@ pub fn get_default_abilities() -> AbilityScore {
         wisdom: 10,
         charisma: 10,
     }
+}
 }
