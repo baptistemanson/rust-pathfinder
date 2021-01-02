@@ -4,7 +4,7 @@ use crate::timeline::get_modifier;
 use crate::{
     character::Character,
     dice,
-    item::weapon::{unarmed, CombatProperties, DamageRollResults, WeaponItem},
+    item::weapon::{unarmed, CombatProperties, DamageRollResults, DamageType, WeaponItem},
     world::World,
 };
 
@@ -124,9 +124,14 @@ impl<'a> Activity for Action<'a> {
                     attack_roll.details, attack_roll.value, ac_bonus
                 );
                 let dmg_result = compute_damage_roll(weapon, source, target, is_critical);
+                let verb = match dmg_result.damage_type {
+                    DamageType::Bludgeoning => "was bludgeoned for",
+                    DamageType::Piercing => "was pierced for",
+                    DamageType::Slashing => "was slashed for",
+                };
                 println!(
-                    "\t{} takes {} damage ({})",
-                    target.name, dmg_result.value, dmg_result.details
+                    "\t{} {} {} damage ({})",
+                    target.name, verb, dmg_result.value, dmg_result.details
                 );
                 (*target).sub_hp(dmg_result.value);
             }

@@ -1,3 +1,4 @@
+use crate::item::weapon::sling;
 use std::collections::HashMap;
 
 use crate::{character::Character, item::weapon::longbow, timeline::CharacterId};
@@ -11,11 +12,12 @@ pub struct World<'world> {
 
 impl<'world> World<'world> {
     pub fn new() -> Self {
-        let mut sleeping_kobold = Character::new("Disarmed Kobold", "enemy", 40);
-        sleeping_kobold.loadout.right_hand = None;
-        sleeping_kobold.loadout.left_hand = None;
+        let mut kobold_monk = Character::new("Kobold Monk", "enemy", 40);
+        kobold_monk.loadout.right_hand = None;
+        kobold_monk.loadout.left_hand = None;
 
-        let kobold_knight = Character::new("Kobold Knight", "enemy", 40);
+        let mut kobold_sling = Character::new("Kobold Sling", "enemy", 40);
+        kobold_sling.loadout.right_hand = Some(sling());
 
         let mut ranger = Character::new("Kobold Ranger", "enemy", 40);
         ranger.loadout.right_hand = Some(longbow());
@@ -28,8 +30,8 @@ impl<'world> World<'world> {
         cavalier.ability_score.strength = 14;
 
         let mut characters = HashMap::new();
-        characters.insert(String::from(sleeping_kobold.id), sleeping_kobold);
-        characters.insert(String::from(kobold_knight.id), kobold_knight);
+        characters.insert(String::from(kobold_monk.id), kobold_monk);
+        characters.insert(String::from(kobold_sling.id), kobold_sling);
         characters.insert(String::from(ranger.id), ranger);
         characters.insert(String::from(paladin.id), paladin);
         characters.insert(String::from(cavalier.id), cavalier);

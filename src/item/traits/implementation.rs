@@ -39,9 +39,24 @@ pub fn striking(weapon:&WeaponItem) -> ResolvedBonus {
     {no_bonus()}
 }
 
-pub fn ability(weapon:&WeaponItem, character: &Character) -> ResolvedBonus {
+pub fn attack_ability_modifier(weapon:&WeaponItem, character: &Character) -> ResolvedBonus {
     if !weapon.is_ranged {
         let str_mod = get_modifier(character.ability_score.strength);
-        ResolvedBonus{value: str_mod, details: format!(" + {} str", str_mod)}
-    } else {no_bonus()}
+        // finesse
+        let dex_mod = get_modifier(character.ability_score.dexterity);
+        if str_mod <=dex_mod && weapon.info.traits.contains(Trait::Propulsive) {
+            ResolvedBonus{value: dex_mod, details: format!(" + {} dex", dex_mod)}
+        }
+        else {ResolvedBonus{value: str_mod, details: format!(" + {} str", str_mod)}}
+    } else {
+        if weapon.info.traits.contains(Trait::Propulsive)
+        {
+            let str_mod = get_modifier(character.ability_score.strength);
+            //@todo check rounding rules for propulsive
+            if str_mod >= 0 {ResolvedBonus{value: str_mod/2, details: format!(" + {} str", str_mod/2)}} else {
+                ResolvedBonus{value: str_mod, details: format!(" + {} str", str_mod)}
+            }
+        }
+        else {no_bonus()}
+    }
 }

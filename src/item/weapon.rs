@@ -1,4 +1,4 @@
-use crate::item::traits::implementation::ability;
+use crate::item::traits::implementation::attack_ability_modifier;
 use crate::character::Character;
 use crate::item::traits::implementation::striking;
 use crate::item::traits::implementation::deadly;
@@ -26,14 +26,23 @@ impl GameItem for WeaponItem {
 
 #[derive(Clone, Debug)]
 pub struct CombatProperties {
+    pub damage_type: DamageType,
     pub dice_faces: i64,
     pub nb_dice: i64,
     pub striking_level: i64, // runes
     pub potency_level: i64,  // runes
 }
 
+#[derive(Copy, Clone, Debug)]
+pub enum DamageType {
+    Bludgeoning,
+    Piercing,
+    Slashing
+}
+
 pub struct DamageRollResults {
     pub value: i64,
+    pub damage_type: DamageType,
     pub is_critical: bool,
     pub details: String,
 }
@@ -52,7 +61,8 @@ impl WeaponItem {
         // striking bonus: modify number of dices
         let striking_bonus = striking(self);
         
-        let ability_modifier = ability(self, source);
+        // ability mod
+        let ability_modifier = attack_ability_modifier(self, source);
 
         // deadly bonus: add flat after critical
         let deadly_bonus = deadly(self, is_critical);
@@ -64,6 +74,7 @@ impl WeaponItem {
 
         DamageRollResults {
             value: total,
+            damage_type: self.damage.damage_type, // because I turned it to a copy type... no prob bob
             is_critical,
             details: if is_critical {
                 format!(
@@ -93,6 +104,7 @@ pub fn greatsword() -> WeaponItem {
         range: 0,
         damage: CombatProperties {
             nb_dice: 1,
+            damage_type: DamageType::Slashing,
             striking_level: 1,
             potency_level: 1,
             dice_faces: 12,
@@ -113,6 +125,7 @@ pub fn fist() -> WeaponItem {
         range: 0,
         damage: CombatProperties {
             nb_dice: 1,
+            damage_type: DamageType::Bludgeoning,
             striking_level: 0,
             potency_level: 0,
             dice_faces: 4,
@@ -134,12 +147,14 @@ pub fn unarmed() -> WeaponItem {
         range: 0,
         damage: CombatProperties {
             nb_dice: 1,
+            damage_type: DamageType::Bludgeoning,
             striking_level: 0,
             potency_level: 0,
             dice_faces: 4,
         },
     }
 }
+
 pub fn longbow() -> WeaponItem {
     WeaponItem {
         info: ItemInfo {
@@ -152,7 +167,28 @@ pub fn longbow() -> WeaponItem {
         range: 100,
         damage: CombatProperties {
             nb_dice: 1,
+            damage_type: DamageType::Piercing,
             dice_faces: 8,
+            striking_level: 0,
+            potency_level: 0,
+        },
+    }
+}
+
+pub fn sling() -> WeaponItem {
+    WeaponItem {
+        info: ItemInfo {
+            bulk: 2,
+            name: String::from("Sling"),
+            traits: TraitSet::from(Trait::Propulsive),
+        },
+        is_two_hands: false,
+        is_ranged: true,
+        range: 100,
+        damage: CombatProperties {
+            nb_dice: 1,
+            dice_faces: 6,
+            damage_type: DamageType::Bludgeoning,
             striking_level: 0,
             potency_level: 0,
         },

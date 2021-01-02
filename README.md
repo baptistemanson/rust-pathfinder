@@ -5,7 +5,7 @@ My goal is to learn Rust.
 
 MIT and everything. Author Baptiste Manson
 
-Most interesting to code: damage PBS, bonus malus (will be done ad-hoc?), traits (done!), table of weapons
+Most interesting to code: unit tests, condition engine, dice systems
 
 ## UT
 
@@ -29,18 +29,16 @@ Most interesting to code: damage PBS, bonus malus (will be done ad-hoc?), traits
 - [x] Attack Rolls: bonus malus
 - [ ] Attack Rolls: Multiple Attack Penalty
 - [x] Damage Rolls: melee
-- [ ] Damage Rolls: ranged, propulsive, thrown
-- [ ] Damage Rolls: damage type PBS
+- [x] Damage Rolls: ranged
+- [x] Damage Rolls: damage type PBS
 - [x] Critical Hits
 - [x] Unarmed Attacks
 - [x] Unarmed Attacks: bonus different body parts
 - [ ] Improvised Weapons (just cook the -2 in the weapon bonus malus system)
 - [ ] Range penalty
 - [ ] Reload
-- [ ] Bulk (no rule per say)
+- [x] Bulk (no rule per say)
 - [x] Hands: general
-- [ ] Hands: option of 1 hand or 2 hand attacks
-- [ ] Hands: two hand trait
 - [x] Hands: general
 - [ ] Group: general and crit modifiers
 - [ ] Ammunitions
@@ -55,7 +53,7 @@ Most interesting to code: damage PBS, bonus malus (will be done ad-hoc?), traits
 - [ ] Weapons traits: dwarf
 - [ ] Weapons traits: elf
 - [ ] Weapons traits: fatal
-- [ ] Weapons traits: finesse
+- [x] Weapons traits: finesse
 - [ ] Weapons traits: forceful
 - [ ] Weapons traits: free-hand
 - [ ] Weapons traits: gnome
@@ -67,7 +65,7 @@ Most interesting to code: damage PBS, bonus malus (will be done ad-hoc?), traits
 - [ ] Weapons traits: nonlethal
 - [ ] Weapons traits: orc
 - [ ] Weapons traits: parry
-- [ ] Weapons traits: propulsive
+- [x] Weapons traits: propulsive
 - [ ] Weapons traits: reach
 - [ ] Weapons traits: shove
 - [ ] Weapons traits: sweep
@@ -75,7 +73,7 @@ Most interesting to code: damage PBS, bonus malus (will be done ad-hoc?), traits
 - [ ] Weapons traits: trip
 - [ ] Weapons traits: twin
 - [ ] Weapons traits: two-hand
-- [ ] Weapons traits: unarmed
+- [x] Weapons traits: unarmed
 - [ ] Weapons traits: versatile
 - [ ] Weapons traits: volley
 - [ ] Critical specialization: model p282

@@ -6,13 +6,12 @@ pub type TraitSet = FlagSet<Trait>;
 
 flags! {
     pub enum Trait: u64 {
-        Agile,
-        Attached,
-        Backstabber,
-        Backswing,
         DeadlyD6,
         DeadlyD8,
         DeadlyD10,
+        Propulsive,
+        Unarmed,
+        Finesse
     }
 }
 
