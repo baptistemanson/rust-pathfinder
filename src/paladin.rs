@@ -1,6 +1,6 @@
 use crate::item::{armor::scale_mail, weapons::greatsword, HeadItem, ItemInfo, Loadout};
 
-pub fn get_paladin_loadout() -> Loadout {
+pub fn det_default_loadout() -> Loadout {
     let helmet = HeadItem {
         info: ItemInfo {
             name: String::from("Helmet"),
@@ -9,8 +9,8 @@ pub fn get_paladin_loadout() -> Loadout {
     };
     Loadout {
         head: Some(helmet),
-        left_hand: Some(greatsword()),
-        right_hand: None,
+        left_hand: None,
+        right_hand: Some(greatsword()),
         armor: Some(scale_mail()),
     }
 }

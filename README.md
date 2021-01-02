@@ -91,6 +91,13 @@ Most interesting to code: damage PBS, bonus malus, traits, table of weapons
 - [ ] Critical specialization: spear
 - [ ] Critical specialization: sword
 
+### Runes
+
+- [x] Weapon Potency
+- [x] Striking
+- [ ] Armor Potency
+- [ ] Resilient
+
 ### Performance
 
 - [ ] avoid clone on active_character

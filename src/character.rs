@@ -1,5 +1,5 @@
 use crate::item::Loadout;
-use crate::paladin::get_paladin_loadout;
+use crate::paladin::det_default_loadout;
 
 use self::abilities::{get_default_abilities, AbilityScore};
 pub mod abilities;
@@ -27,7 +27,7 @@ impl<'a> Character<'a> {
             max_hp,
             hp: max_hp,
             ability_score: get_default_abilities(),
-            loadout: get_paladin_loadout(),
+            loadout: det_default_loadout(),
         }
     }
 

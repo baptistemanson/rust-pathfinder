@@ -1,5 +1,20 @@
-use super::{ArmorItem, ItemInfo};
+use super::{GameItem, ItemInfo};
 
+#[derive(Clone, Debug)]
+pub struct ArmorItem {
+    pub info: ItemInfo,
+    pub ac_bonus: i64,
+    pub dex_cap: i64,
+    pub check_penalty: i64,
+    pub speed_penalty: i64,
+    pub min_strength: i64,
+}
+
+impl GameItem for ArmorItem {
+    fn get_info(&self) -> &ItemInfo {
+        &self.info
+    }
+}
 pub fn leather() -> ArmorItem {
     ArmorItem {
         info: ItemInfo {
