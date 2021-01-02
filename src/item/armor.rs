@@ -20,6 +20,7 @@ pub fn leather() -> ArmorItem {
         info: ItemInfo {
             name: String::from("Leather"),
             bulk: 1,
+            traits: 0,
         },
         ac_bonus: 1,
         dex_cap: 4,
@@ -34,6 +35,7 @@ pub fn scale_mail() -> ArmorItem {
         info: ItemInfo {
             name: String::from("Scale mail"),
             bulk: 2,
+            traits: 0,
         },
         ac_bonus: 3,
         dex_cap: 3,

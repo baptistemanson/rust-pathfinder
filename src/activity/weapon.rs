@@ -1,12 +1,12 @@
 use dice::d20;
 
+use crate::timeline::get_modifier;
 use crate::{
     character::Character,
     dice,
-    item::weapons::{CombatProperties, DamageRollResults, WeaponItem},
+    item::weapon::{unarmed, CombatProperties, DamageRollResults, WeaponItem},
     world::World,
 };
-use crate::{item::weapons::fist, timeline::get_modifier};
 
 use super::{find_target::find_first_conscious_enemy, Activity};
 
@@ -31,36 +31,35 @@ fn compute_attack_roll(weapon: &WeaponItem, source: &Character, _target: &Charac
     let roll = d20();
 
     // potency? => refactor because it is a bonus like any other
-    let (item_bonus, item_detail) =
-        if let CombatProperties::Standard { potency_level, .. } = weapon.damage {
-            (
-                potency_level,
-                if potency_level > 0 {
-                    format!(" + {} item bonus", potency_level)
-                } else {
-                    String::new()
-                },
-            )
-        } else {
-            (0, String::new())
-        };
+    let CombatProperties { potency_level, .. } = weapon.damage;
+    let (item_bonus, item_detail) = if potency_level > 0 {
+        (potency_level, format!(" + {} item", potency_level))
+    } else {
+        (0, String::new())
+    };
 
-    // strength
-    let strength_modifier = get_modifier(source.ability_score.strength);
-    let strength_modifier_details = if strength_modifier > 0 {
-        format!(" + {}", strength_modifier)
+    // strength or dexterity bonus
+    let ability_score = if weapon.is_ranged {
+        source.ability_score.dexterity
+    } else {
+        source.ability_score.strength
+    };
+    let ability_modifier = get_modifier(ability_score);
+    let ability = if ability_modifier > 0 {
+        format!(
+            " + {} {}",
+            ability_modifier,
+            if weapon.is_ranged { "dex" } else { "str" }
+        )
     } else {
         String::new()
     };
 
     // total
-    let value = roll + strength_modifier + item_bonus;
+    let value = roll + ability_modifier + item_bonus;
     AttackRoll {
         value,
-        details: format!(
-            "⚅ {}{}{} = {}",
-            roll, strength_modifier_details, item_detail, value
-        ),
+        details: format!("⬡ {}{}{}", roll, ability, item_detail),
         natural_20: roll == 20,
     }
 }
@@ -72,6 +71,7 @@ fn compute_damage_roll(
     _target: &Character,
     is_critical: bool,
 ) -> DamageRollResults {
+    // @todo add strength modifier
     weapon.damage.roll(is_critical)
 }
 
@@ -96,7 +96,7 @@ impl<'a> Activity for Action<'a> {
             }
             Some(id) => {
                 let target: &mut Character = world.get_mut_character(&id);
-                let f = &fist();
+                let f = &unarmed();
                 let weapon = match (&source.loadout.left_hand, &source.loadout.right_hand) {
                     (_, Some(ref w)) => w, // @todo check the rules on lefty/righty rules.
                     (Some(ref w), None) => w,

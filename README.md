@@ -21,21 +21,21 @@ Most interesting to code: damage PBS, bonus malus, traits, table of weapons
 ### Weapons p278 - p283
 
 - [x] Attack Rolls: melee
-- [ ] Attack Rolls: ranged
+- [x] Attack Rolls: ranged
 - [ ] Attack Rolls: bonus malus
 - [ ] Attack Rolls: Multiple Attack Penalty
-- [x] Damage Rolls: melee
-- [x] Damage Rolls: ranged, propulsive, thrown
+- [x] Damage Rolls: melee / missing STR mod
+- [ ] Damage Rolls: ranged, propulsive, thrown
 - [ ] Damage Rolls: damage type PBS
 - [x] Critical Hits
 - [x] Unarmed Attacks
-- [ ] Unarmed Attacks: bonus different body parts
+- [x] Unarmed Attacks: bonus different body parts
 - [ ] Improvised Weapons (just cook the -2 in the weapon bonus malus system)
 - [ ] Range penalty
 - [ ] Reload
 - [ ] Bulk (no rule per say)
 - [x] Hands: general
-- [ ] Hands: option of 1 hand or 2 attacks
+- [ ] Hands: option of 1 hand or 2 hand attacks
 - [ ] Hands: two hand trait
 - [x] Hands: general
 - [ ] Group: general and crit modifiers

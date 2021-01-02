@@ -7,6 +7,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4785bdd1c96b2a846b2bd7cc02e86b6b3dbf14e7e53446c4f54c92a361040822"
 
 [[package]]
+name = "flagset"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "890349692c0d0f8e030f84549bdc7257d7cbc8d9bcfcc93b77e17b3b6e05a6d1"
+
+[[package]]
 name = "getrandom"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -73,6 +79,7 @@ dependencies = [
 name = "rust-pathfinder"
 version = "0.1.0"
 dependencies = [
+ "flagset",
  "rand",
 ]
 

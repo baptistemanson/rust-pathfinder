@@ -1,11 +1,10 @@
 pub mod armor;
-pub mod weapons;
+pub mod itemtrait;
+pub mod weapon;
 
 use crate::character::bonus::Bonus;
 
-use self::{armor::ArmorItem, weapons::WeaponItem};
-
-use super::dice;
+use self::{armor::ArmorItem, weapon::WeaponItem};
 
 pub trait GameItem {
     fn get_info(&self) -> &ItemInfo;
@@ -17,6 +16,7 @@ pub trait GameItem {
 pub struct ItemInfo {
     pub name: String,
     pub bulk: i64,
+    pub traits: u64,
 }
 
 #[derive(Clone, Debug)]
