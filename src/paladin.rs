@@ -1,11 +1,13 @@
-use crate::item::{armor::scale_mail, weapon::greatsword, HeadItem, ItemInfo, Loadout};
+use crate::item::{
+    armor::scale_mail, traits::none, weapon::greatsword, HeadItem, ItemInfo, Loadout,
+};
 
 pub fn det_default_loadout() -> Loadout {
     let helmet = HeadItem {
         info: ItemInfo {
             name: String::from("Helmet"),
             bulk: 1,
-            traits: 0,
+            traits: none(),
         },
     };
     Loadout {

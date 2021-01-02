@@ -5,7 +5,7 @@ My goal is to learn Rust.
 
 MIT and everything. Author Baptiste Manson
 
-Most interesting to code: damage PBS, bonus malus, traits, table of weapons
+Most interesting to code: damage PBS, bonus malus (will be done ad-hoc?), traits (done!), table of weapons
 
 ### Conditions
 
@@ -41,12 +41,12 @@ Most interesting to code: damage PBS, bonus malus, traits, table of weapons
 - [ ] Group: general and crit modifiers
 - [ ] Ammunitions
 - [ ] Port table of weapons
-- [ ] Weapons traits: model and a few of the 33 core traits (flag set on a 64 bit I think)
+- [x] Weapons traits: model and a few of the 33 core traits (flag set on a 64 bit I think)
 - [ ] Weapons traits: agile
 - [ ] Weapons traits: attached
 - [ ] Weapons traits: backstabber
 - [ ] Weapons traits: backswing
-- [ ] Weapons traits: deadly
+- [x] Weapons traits: deadly
 - [ ] Weapons traits: disarm
 - [ ] Weapons traits: dwarf
 - [ ] Weapons traits: elf

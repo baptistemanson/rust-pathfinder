@@ -1,6 +1,8 @@
 pub mod armor;
-pub mod itemtrait;
+pub mod traits;
 pub mod weapon;
+
+use traits::TraitSet;
 
 use crate::character::bonus::Bonus;
 
@@ -16,7 +18,7 @@ pub trait GameItem {
 pub struct ItemInfo {
     pub name: String,
     pub bulk: i64,
-    pub traits: u64,
+    pub traits: TraitSet,
 }
 
 #[derive(Clone, Debug)]

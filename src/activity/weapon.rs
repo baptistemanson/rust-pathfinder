@@ -26,6 +26,7 @@ struct AttackRoll {
     details: String,
     natural_20: bool,
 }
+
 fn compute_attack_roll(weapon: &WeaponItem, source: &Character, _target: &Character) -> AttackRoll {
     // roll
     let roll = d20();
@@ -38,7 +39,7 @@ fn compute_attack_roll(weapon: &WeaponItem, source: &Character, _target: &Charac
         (0, String::new())
     };
 
-    // strength or dexterity bonus
+    // strength or dexterity modifier
     let ability_score = if weapon.is_ranged {
         source.ability_score.dexterity
     } else {
@@ -59,7 +60,7 @@ fn compute_attack_roll(weapon: &WeaponItem, source: &Character, _target: &Charac
     let value = roll + ability_modifier + item_bonus;
     AttackRoll {
         value,
-        details: format!("⬡ {}{}{}", roll, ability, item_detail),
+        details: format!("1d20[{}]{}{}", roll, ability, item_detail),
         natural_20: roll == 20,
     }
 }
@@ -72,7 +73,7 @@ fn compute_damage_roll(
     is_critical: bool,
 ) -> DamageRollResults {
     // @todo add strength modifier
-    weapon.damage.roll(is_critical)
+    weapon.roll(is_critical)
 }
 
 fn compute_ac(target: &Character) -> i64 {
@@ -102,6 +103,7 @@ impl<'a> Activity for Action<'a> {
                     (Some(ref w), None) => w,
                     (None, None) => f,
                 };
+
                 let attack_roll = compute_attack_roll(weapon, source, target);
                 let ac_bonus = compute_ac(target);
                 if ac_bonus > attack_roll.value {
