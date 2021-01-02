@@ -6,7 +6,11 @@ use traits::TraitSet;
 
 use crate::character::bonus::Bonus;
 
-use self::{armor::ArmorItem, weapon::WeaponItem};
+use self::{
+    armor::{scale_mail, ArmorItem},
+    traits::none,
+    weapon::{greatsword, WeaponItem},
+};
 
 pub trait GameItem {
     fn get_info(&self) -> &ItemInfo;
@@ -57,5 +61,21 @@ impl Loadout {
         };
 
         loadout
+    }
+}
+
+pub fn det_default_loadout() -> Loadout {
+    let helmet = HeadItem {
+        info: ItemInfo {
+            name: String::from("Helmet"),
+            bulk: 1,
+            traits: none(),
+        },
+    };
+    Loadout {
+        head: Some(helmet),
+        left_hand: None,
+        right_hand: Some(greatsword()),
+        armor: Some(scale_mail()),
     }
 }

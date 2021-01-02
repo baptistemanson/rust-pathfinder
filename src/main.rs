@@ -9,7 +9,6 @@ mod dice;
 
 // ITEMS and EQUIPMENT
 mod item;
-mod paladin;
 
 // TIMELINE
 mod activity;

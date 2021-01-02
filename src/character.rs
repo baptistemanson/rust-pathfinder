@@ -1,5 +1,4 @@
-use crate::item::Loadout;
-use crate::paladin::det_default_loadout;
+use crate::item::{det_default_loadout, Loadout};
 
 use self::abilities::{get_default_abilities, AbilityScore};
 pub mod abilities;
