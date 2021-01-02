@@ -68,12 +68,12 @@ fn compute_attack_roll(weapon: &WeaponItem, source: &Character, _target: &Charac
 // @todo eventually, there will be some deduction and addition here
 fn compute_damage_roll(
     weapon: &WeaponItem,
-    _source: &Character,
+    source: &Character,
     _target: &Character,
     is_critical: bool,
 ) -> DamageRollResults {
     // @todo add strength modifier
-    weapon.roll(is_critical)
+    weapon.damage_roll(source,is_critical)
 }
 
 fn compute_ac(target: &Character) -> i64 {
@@ -108,21 +108,20 @@ impl<'a> Activity for Action<'a> {
                 let ac_bonus = compute_ac(target);
                 if ac_bonus > attack_roll.value {
                     println!(
-                        "\t{} missed {} with {} ({} vs {} AC)",
-                        source.name, target.name, weapon.info.name, attack_roll.details, ac_bonus
+                        "\t{} missed {} with {} ({} = {} vs {} AC)",
+                        source.name, target.name, weapon.info.name, attack_roll.details, attack_roll.value, ac_bonus
                     );
                     return;
                 }
                 // p278 critical hits
                 let is_critical = attack_roll.natural_20 || (attack_roll.value - ac_bonus) >= 10;
                 println!(
-                    "\t{} {}hits {} with {} ({} vs {} AC)",
+                    "\t{} {}hits {} with {} ({} = {} vs {} AC)",
                     source.name,
                     if is_critical { "critically " } else { "" },
                     target.name,
                     weapon.info.name,
-                    attack_roll.value,
-                    ac_bonus
+                    attack_roll.details, attack_roll.value, ac_bonus
                 );
                 let dmg_result = compute_damage_roll(weapon, source, target, is_critical);
                 println!(

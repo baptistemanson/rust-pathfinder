@@ -1,5 +1,6 @@
 use flagset::flags;
 use flagset::FlagSet;
+pub mod implementation;
 
 pub type TraitSet = FlagSet<Trait>;
 
@@ -9,7 +10,9 @@ flags! {
         Attached,
         Backstabber,
         Backswing,
-        DeadlyD10
+        DeadlyD6,
+        DeadlyD8,
+        DeadlyD10,
     }
 }
 

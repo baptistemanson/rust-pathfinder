@@ -1,3 +1,7 @@
+use crate::item::traits::implementation::ability;
+use crate::character::Character;
+use crate::item::traits::implementation::striking;
+use crate::item::traits::implementation::deadly;
 use crate::dice;
 use rand::prelude::*;
 
@@ -34,52 +38,42 @@ pub struct DamageRollResults {
     pub details: String,
 }
 
+
 impl WeaponItem {
-    pub fn roll(&self, is_critical: bool) -> DamageRollResults {
+
+    pub fn damage_roll(&self, source: &Character, is_critical: bool) -> DamageRollResults {
         let CombatProperties {
             dice_faces,
             nb_dice,
-            striking_level,
             ..
         } = self.damage;
 
-        let roll = dice::dx(dice_faces);
+        
+        // striking bonus: modify number of dices
+        let striking_bonus = striking(self);
+        
+        let ability_modifier = ability(self, source);
 
-        // deadly bonus
-        let (deadly_bonus, deadly_details) =
-            if is_critical && self.info.traits.contains(Trait::DeadlyD10) {
-                // p282
-                let nb_to_roll = match self.damage.striking_level {
-                    0 => 1,
-                    1 => 1,
-                    2 => 2,
-                    _ => 3,
-                };
-                let size_to_roll = dice_faces; //@todo put real formula
-                let deadly_value = nb_to_roll * dice::dx(size_to_roll);
-                (
-                    deadly_value,
-                    format!(" + {}d{} {} deadly", nb_to_roll, size_to_roll, deadly_value),
-                )
-            } else {
-                (0, String::from(""))
-            };
+        // deadly bonus: add flat after critical
+        let deadly_bonus = deadly(self, is_critical);
+        
+        let roll = dice::dxx(dice_faces, nb_dice + striking_bonus.value);
 
-        let value =
-            (roll * nb_dice + striking_level) * if is_critical { 2 } else { 1 } + deadly_bonus;
+        let total =
+            (roll + ability_modifier.value) * if is_critical { 2 } else { 1 } + deadly_bonus.value;
 
         DamageRollResults {
-            value: value,
+            value: total,
             is_critical,
             details: if is_critical {
                 format!(
-                    "Critical 2x ({}d{}[{}] + {}){} = {}",
-                    nb_dice, dice_faces, roll, striking_level, deadly_details, value
+                    "Critical 2x ({}d{}[{}]{}){} = {} dmg",
+                  nb_dice + striking_bonus.value, dice_faces, roll, ability_modifier.details, deadly_bonus.details, total
                 )
             } else {
                 format!(
-                    "{}d{}[{}] + {} = {}",
-                    nb_dice, dice_faces, roll, striking_level, value
+                    "{}d{}[{}]{} = {} dmg",
+                    nb_dice + striking_bonus.value, dice_faces, roll, ability_modifier.details, total
                 )
             },
         }

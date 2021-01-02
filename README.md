@@ -7,6 +7,10 @@ MIT and everything. Author Baptiste Manson
 
 Most interesting to code: damage PBS, bonus malus (will be done ad-hoc?), traits (done!), table of weapons
 
+## UT
+
+- [ ] add unit tests
+
 ### Conditions
 
 - [ ] develop condition engine
@@ -22,9 +26,9 @@ Most interesting to code: damage PBS, bonus malus (will be done ad-hoc?), traits
 
 - [x] Attack Rolls: melee
 - [x] Attack Rolls: ranged
-- [ ] Attack Rolls: bonus malus
+- [x] Attack Rolls: bonus malus
 - [ ] Attack Rolls: Multiple Attack Penalty
-- [x] Damage Rolls: melee / missing STR mod
+- [x] Damage Rolls: melee
 - [ ] Damage Rolls: ranged, propulsive, thrown
 - [ ] Damage Rolls: damage type PBS
 - [x] Critical Hits
@@ -41,7 +45,7 @@ Most interesting to code: damage PBS, bonus malus (will be done ad-hoc?), traits
 - [ ] Group: general and crit modifiers
 - [ ] Ammunitions
 - [ ] Port table of weapons
-- [x] Weapons traits: model and a few of the 33 core traits (flag set on a 64 bit I think)
+- [x] Weapons traits: model and a few of the 33 core traits I have 63 traits capability
 - [ ] Weapons traits: agile
 - [ ] Weapons traits: attached
 - [ ] Weapons traits: backstabber
