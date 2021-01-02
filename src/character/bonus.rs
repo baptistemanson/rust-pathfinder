@@ -3,26 +3,10 @@
 pub struct ResolvedBonus {
     pub value: i64,
     pub details: String,
+    pub roll: Roll,
 }
 
-#[allow(dead_code)]
-pub struct AvailableBonus {
-    pub name: BonusType,
-    pub roll_type: RollType,
-    pub resolve: dyn Fn(i32) -> i32,
-}
-#[allow(dead_code)]
-pub enum BonusType {
-    Deadly,
-    Striking,
-    Bless
-}
-#[allow(dead_code)]
-pub enum RollType {
-    AttackRoll,
-    DamageRollPreCrit,
-    DamageRollPostCrit,
-}
+pub type Roll = (i64, i64, i64); // XdY + Z
 
 // pub fn get_bonuses(character: &Character) -> Vec<Bonus> {
 //     character

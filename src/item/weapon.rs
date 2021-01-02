@@ -1,8 +1,8 @@
-use crate::item::traits::implementation::attack_ability_modifier;
 use crate::character::Character;
-use crate::item::traits::implementation::striking;
-use crate::item::traits::implementation::deadly;
 use crate::dice;
+use crate::item::traits::implementation::attack_ability_modifier;
+use crate::item::traits::implementation::deadly;
+use crate::item::traits::implementation::striking;
 use rand::prelude::*;
 
 use super::{
@@ -37,7 +37,7 @@ pub struct CombatProperties {
 pub enum DamageType {
     Bludgeoning,
     Piercing,
-    Slashing
+    Slashing,
 }
 
 pub struct DamageRollResults {
@@ -47,9 +47,7 @@ pub struct DamageRollResults {
     pub details: String,
 }
 
-
 impl WeaponItem {
-
     pub fn damage_roll(&self, source: &Character, is_critical: bool) -> DamageRollResults {
         let CombatProperties {
             dice_faces,
@@ -57,16 +55,15 @@ impl WeaponItem {
             ..
         } = self.damage;
 
-        
         // striking bonus: modify number of dices
         let striking_bonus = striking(self);
-        
+
         // ability mod
         let ability_modifier = attack_ability_modifier(self, source);
 
         // deadly bonus: add flat after critical
         let deadly_bonus = deadly(self, is_critical);
-        
+
         let roll = dice::dxx(dice_faces, nb_dice + striking_bonus.value);
 
         let total =
@@ -79,12 +76,21 @@ impl WeaponItem {
             details: if is_critical {
                 format!(
                     "Critical 2x ({}d{}[{}]{}){} = {} dmg",
-                  nb_dice + striking_bonus.value, dice_faces, roll, ability_modifier.details, deadly_bonus.details, total
+                    nb_dice + striking_bonus.value,
+                    dice_faces,
+                    roll,
+                    ability_modifier.details,
+                    deadly_bonus.details,
+                    total
                 )
             } else {
                 format!(
                     "{}d{}[{}]{} = {} dmg",
-                    nb_dice + striking_bonus.value, dice_faces, roll, ability_modifier.details, total
+                    nb_dice + striking_bonus.value,
+                    dice_faces,
+                    roll,
+                    ability_modifier.details,
+                    total
                 )
             },
         }

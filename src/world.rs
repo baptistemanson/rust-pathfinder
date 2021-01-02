@@ -1,7 +1,7 @@
-use crate::item::weapon::sling;
+use crate::{character::Character, item::weapon::sling};
 use std::collections::HashMap;
 
-use crate::{character::Character, item::weapon::longbow, timeline::CharacterId};
+use crate::{item::weapon::longbow, timeline::CharacterId};
 
 /**
  * Cannot delete characters during an encounter...

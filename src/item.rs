@@ -2,9 +2,9 @@ pub mod armor;
 pub mod traits;
 pub mod weapon;
 
-use crate::character::bonus::ResolvedBonus;
 use traits::TraitSet;
 
+use crate::character::bonus::ResolvedBonus;
 
 use self::{
     armor::{scale_mail, ArmorItem},
@@ -65,19 +65,19 @@ impl Loadout {
 }
 
 impl Default for Loadout {
- fn default() -> Loadout {
-    let helmet = HeadItem {
-        info: ItemInfo {
-            name: String::from("Helmet"),
-            bulk: 1,
-            traits: none(),
-        },
-    };
-    Loadout {
-        head: Some(helmet),
-        left_hand: None,
-        right_hand: Some(greatsword()),
-        armor: Some(scale_mail()),
+    fn default() -> Loadout {
+        let helmet = HeadItem {
+            info: ItemInfo {
+                name: String::from("Helmet"),
+                bulk: 1,
+                traits: none(),
+            },
+        };
+        Loadout {
+            head: Some(helmet),
+            left_hand: None,
+            right_hand: Some(greatsword()),
+            armor: Some(scale_mail()),
+        }
     }
-}
 }

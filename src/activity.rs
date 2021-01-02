@@ -1,9 +1,9 @@
 use crate::{character::Character, world::World};
 
 mod find_target;
+mod pass;
 mod spell;
 mod weapon;
-mod pass;
 
 use std::fmt;
 // Value AI:

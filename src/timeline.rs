@@ -14,7 +14,9 @@ Timeline keeps track of rounds and which units already activated.
 
 // - A round is 6s. p13
 #[allow(dead_code)]
-fn get_min_in_rounds(min: i64) -> i64{min*10}
+fn get_min_in_rounds(min: i64) -> i64 {
+    min * 10
+}
 
 #[derive(PartialEq, Debug)]
 pub enum Tick {
@@ -25,7 +27,7 @@ pub enum Tick {
 
 pub type CharacterId = String;
 
-pub type PartyId= String;
+pub type PartyId = String;
 
 pub struct Timeline {
     pub turn_counter: i64,
@@ -107,7 +109,7 @@ mod tests {
             Activation {
                 character_id: String::from("b"),
                 initiative: 0,
-                party:String::from("1"),
+                party: String::from("1"),
             },
         ];
         let mut timeline = Timeline::new();
@@ -193,7 +195,9 @@ mod tests {
     }
 }
 
-use super::{character, dice};
+use crate::dice;
+
+use super::character;
 
 pub fn get_modifier(score: i64) -> i64 {
     match score {
