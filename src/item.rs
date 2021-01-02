@@ -64,7 +64,8 @@ impl Loadout {
     }
 }
 
-pub fn det_default_loadout() -> Loadout {
+impl Default for Loadout {
+ fn default() -> Loadout {
     let helmet = HeadItem {
         info: ItemInfo {
             name: String::from("Helmet"),
@@ -78,4 +79,5 @@ pub fn det_default_loadout() -> Loadout {
         right_hand: Some(greatsword()),
         armor: Some(scale_mail()),
     }
+}
 }

@@ -1,4 +1,4 @@
-use crate::item::{det_default_loadout, Loadout};
+use crate::item::{Loadout};
 
 use self::abilities::{AbilityScore};
 pub mod abilities;
@@ -25,8 +25,8 @@ impl<'a> Character<'a> {
             initiative: 0,
             max_hp,
             hp: max_hp,
-            ability_score: AbilityScore::default(),
-            loadout: det_default_loadout(),
+            ability_score: Default::default(),
+            loadout: Default::default(),
         }
     }
 
