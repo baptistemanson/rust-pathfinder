@@ -36,7 +36,7 @@ fn compute_damage_roll(
     is_critical: bool,
 ) -> DamageRollResults {
     let f = fist();
-    let weapon = match (&source.slots.left_hand, &source.slots.right_hand) {
+    let weapon = match (&source.loadout.left_hand, &source.loadout.right_hand) {
         (_, Some(w)) => w, // @todo check the rules on lefty/righty rules.
         (Some(w), None) => w,
         (None, None) => &f,
@@ -45,7 +45,7 @@ fn compute_damage_roll(
 }
 
 fn compute_ac(target: &Character) -> i64 {
-    let armor_bonus = if let Some(armor) = &target.slots.armor {
+    let armor_bonus = if let Some(armor) = &target.loadout.armor {
         armor.ac_bonus
     } else {
         0

@@ -1,3 +1,5 @@
+use super::Character;
+
 pub struct Bonus {
     bonus_type: BonusType,
     roll_type: RollType,
@@ -15,6 +17,11 @@ pub enum RollType {
     DamageRoll,
 }
 
-// pub fn get_attack_roll_bonuses(character: &Character) -> Vec<Bonus> {
-//     character.
-// }
+pub fn get_bonuses(character: &Character) -> Vec<Bonus> {
+    character
+        .loadout
+        .as_vec()
+        .iter()
+        .flat_map(|i| i.get_bonuses())
+        .collect()
+}
