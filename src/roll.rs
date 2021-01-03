@@ -1,7 +1,11 @@
+use crate::dice::dx;
 use regex::Regex;
 use std::ops;
 
 type Dice = i64;
+
+// @todo add concept of roll name / modifier name, to keep track of the flat bonus origins
+// 2d4 weapon + 1d8 striking + 2 strength for instance!
 
 /// Represents a collection of dice and a flat bonus
 /// Provides some convenient functionalities, like being to collect several number of dices from different bonuses,
@@ -110,7 +114,7 @@ impl Roll {
     }
 
     pub fn roll(&self) -> i64 {
-        self.dices.iter().fold(0, |a, b| a + b) + self.flat_bonus
+        self.dices.iter().fold(0, |a, b| a + dx(*b)) + self.flat_bonus
     }
 }
 
