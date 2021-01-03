@@ -1,6 +1,7 @@
 use crate::{
-    character::{Character, Duration, StatusEffect, StatusType},
+    character::Character,
     dice,
+    status::{Duration, StatusEffect, StatusType},
     world::World,
 };
 

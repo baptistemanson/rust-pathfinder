@@ -3,6 +3,7 @@ mod character;
 mod dice;
 mod item;
 pub mod roll;
+mod status;
 mod timeline;
 mod ui;
 mod world;

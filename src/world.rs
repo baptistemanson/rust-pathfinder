@@ -1,4 +1,7 @@
-use crate::{character::Character, item::weapon::sling};
+use crate::{
+    character::Character,
+    item::{weapon::sling, GameItem, ItemId},
+};
 use std::collections::HashMap;
 
 use crate::{item::weapon::longbow, timeline::CharacterId};
@@ -8,6 +11,7 @@ use crate::{item::weapon::longbow, timeline::CharacterId};
  */
 pub struct World<'world> {
     pub characters: HashMap<CharacterId, Character<'world>>,
+    pub items: HashMap<ItemId, Box<dyn GameItem>>,
 }
 
 impl<'world> World<'world> {
@@ -35,7 +39,10 @@ impl<'world> World<'world> {
         characters.insert(String::from(ranger.id), ranger);
         characters.insert(String::from(paladin.id), paladin);
         characters.insert(String::from(cavalier.id), cavalier);
-        World { characters }
+        World {
+            characters,
+            items: HashMap::new(),
+        }
     }
     pub fn get_characters(&self) -> Vec<&Character<'world>> {
         self.characters.values().collect()

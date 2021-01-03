@@ -1,10 +1,11 @@
 use dice::d20;
 
 use crate::{
-    character::{Character, StatusType},
+    character::Character,
     dice,
     item::weapon::{unarmed, CombatProperties, DamageType, WeaponItem},
     roll::Roll,
+    status::StatusType,
     world::World,
 };
 use crate::{

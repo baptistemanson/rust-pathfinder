@@ -6,6 +6,8 @@ use traits::TraitSet;
 
 use crate::roll::Roll;
 
+pub type ItemId = String;
+
 use self::{
     armor::{scale_mail, ArmorItem},
     traits::none,
