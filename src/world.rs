@@ -1,48 +1,52 @@
 use crate::{
     character::Character,
-    item::{weapon::sling, GameItem, ItemId},
+    item::{armor, weapon::sling, AnyItem, GameItem, ItemId},
 };
 use std::collections::HashMap;
 
-use crate::{item::weapon::longbow, timeline::CharacterId};
+use crate::timeline::CharacterId;
 
 /**
  * Cannot delete characters during an encounter...
  */
 pub struct World<'world> {
     pub characters: HashMap<CharacterId, Character<'world>>,
-    pub items: HashMap<ItemId, Box<dyn GameItem>>,
+    pub items: HashMap<ItemId, AnyItem>,
 }
 
 impl<'world> World<'world> {
     pub fn new() -> Self {
-        let mut kobold_monk = Character::new("Kobold Monk", "enemy", 40);
-        kobold_monk.loadout.right_hand = None;
-        kobold_monk.loadout.left_hand = None;
+        let mut items: HashMap<ItemId, AnyItem> = HashMap::new();
+        let mut characters = HashMap::new();
 
-        let mut kobold_sling = Character::new("Kobold Sling", "enemy", 40);
-        kobold_sling.loadout.right_hand = Some(sling());
+        let mut enemy = Character::new("Kobold Monk", "enemy", 40);
+        let armor = armor::leather();
+        enemy.loadout.armor = Some(armor.info.id.clone());
+        items.insert(armor.info.id.clone(), AnyItem::ArmorItem(armor));
+        characters.insert(String::from(enemy.id), enemy);
+
+        let mut enemy = Character::new("Kobold Slinger", "enemy", 40);
+        let armor = armor::leather();
+        enemy.loadout.armor = Some(armor.info.id.clone());
+        items.insert(armor.info.id.clone(), AnyItem::ArmorItem(armor));
+        let weapon = sling();
+        enemy.loadout.right_hand = Some(weapon.info.id.clone());
+        items.insert(weapon.info.id.clone(), AnyItem::WeaponItem(weapon));
+        characters.insert(String::from(enemy.id), enemy);
 
         let mut ranger = Character::new("Kobold Ranger", "enemy", 40);
-        ranger.loadout.right_hand = Some(longbow());
         ranger.ability_score.dexterity = 14;
+        characters.insert(String::from(ranger.id), ranger);
 
         let mut paladin = Character::new("Paladin Leader", "good guys", 300);
         paladin.ability_score.strength = 18;
+        characters.insert(String::from(paladin.id), paladin);
 
         let mut cavalier = Character::new("Cavalier", "good guys", 300);
         cavalier.ability_score.strength = 14;
-
-        let mut characters = HashMap::new();
-        characters.insert(String::from(kobold_monk.id), kobold_monk);
-        characters.insert(String::from(kobold_sling.id), kobold_sling);
-        characters.insert(String::from(ranger.id), ranger);
-        characters.insert(String::from(paladin.id), paladin);
         characters.insert(String::from(cavalier.id), cavalier);
-        World {
-            characters,
-            items: HashMap::new(),
-        }
+
+        World { characters, items }
     }
     pub fn get_characters(&self) -> Vec<&Character<'world>> {
         self.characters.values().collect()

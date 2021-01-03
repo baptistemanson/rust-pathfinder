@@ -3,7 +3,10 @@ use dice::d20;
 use crate::{
     character::Character,
     dice,
-    item::weapon::{unarmed, CombatProperties, DamageType, WeaponItem},
+    item::{
+        weapon::{unarmed, CombatProperties, DamageType, WeaponItem},
+        AnyItem, Loadout,
+    },
     roll::Roll,
     status::StatusType,
     world::World,
@@ -26,6 +29,23 @@ impl<'a> Action<'a> {
     }
 }
 
+fn get_weapon_from_loadout(loadout: &Loadout, world: &World) -> WeaponItem {
+    let id = match (&loadout.left_hand, &loadout.right_hand) {
+        (_, Some(ref w)) => w, // @todo check the rules on lefty/righty rules.
+        (Some(ref w), None) => w,
+        (None, None) => "",
+    };
+    if id == "" {
+        unarmed()
+    } else {
+        if let AnyItem::WeaponItem(item) = world.items.get(id).expect("cannot find weapon") {
+            item.clone()
+        } else {
+            panic!("this is not a weapon")
+        }
+    }
+}
+
 impl<'a> Activity for Action<'a> {
     fn ai_playing_value(&self, _character: &Character, _context: &World) -> i64 {
         dice::d20()
@@ -38,16 +58,11 @@ impl<'a> Activity for Action<'a> {
                 return;
             }
             Some(id) => {
-                let target: &mut Character = world.get_mut_character(&id);
-                let f = &unarmed();
-                let weapon = match (&source.loadout.left_hand, &source.loadout.right_hand) {
-                    (_, Some(ref w)) => w, // @todo check the rules on lefty/righty rules.
-                    (Some(ref w), None) => w,
-                    (None, None) => f,
-                };
+                let target: &Character = world.get_character(&id);
+                let weapon = get_weapon_from_loadout(&source.loadout, world);
 
-                let attack_roll = compute_attack_roll(weapon, source, target);
-                let ac_bonus = compute_ac(target);
+                let attack_roll = compute_attack_roll(&weapon, source, target);
+                let ac_bonus = compute_ac(target, world);
                 if ac_bonus > attack_roll.value {
                     println!(
                         "\t{} missed {} with {} ({} = {} vs {} AC)",
@@ -72,7 +87,7 @@ impl<'a> Activity for Action<'a> {
                     attack_roll.value,
                     ac_bonus
                 );
-                let dmg_result = compute_damage_roll(weapon, source, target, is_critical);
+                let dmg_result = compute_damage_roll(&weapon, source, target, is_critical);
                 let verb = match dmg_result.damage_type {
                     DamageType::Bludgeoning => "was bludgeoned for",
                     DamageType::Piercing => "was pierced for",
@@ -82,6 +97,10 @@ impl<'a> Activity for Action<'a> {
                     "\t{} {} {} damage ({})",
                     target.name, verb, dmg_result.value, dmg_result.details
                 );
+
+                // apply damage and statuses and loosing objects and...
+                // create struct for those changes and apply it to each object of the collection in the main
+                let target: &mut Character = world.get_mut_character(&id); // could this be avoided? maybe
                 (*target).sub_hp(dmg_result.value);
             }
         }
@@ -186,11 +205,17 @@ fn compute_damage_roll(
     }
 }
 
-fn compute_ac(target: &Character) -> i64 {
-    let armor_bonus = if let Some(armor) = &target.loadout.armor {
-        armor.ac_bonus
-    } else {
-        0
+fn compute_ac(target: &Character, world: &World) -> i64 {
+    let ac_bonus_armor = {
+        if let Some(armor_id) = &target.loadout.armor {
+            let item = world.items.get(armor_id).expect("lost armor");
+            match item {
+                AnyItem::ArmorItem(a) => a.ac_bonus,
+                _ => panic!("do not know"),
+            }
+        } else {
+            0
+        }
     };
-    10 + armor_bonus
+    10 + ac_bonus_armor
 }

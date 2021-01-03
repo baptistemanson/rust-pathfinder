@@ -38,11 +38,7 @@ pub enum DamageType {
 // p280 greatsword
 pub fn greatsword() -> WeaponItem {
     WeaponItem {
-        info: ItemInfo {
-            name: String::from("Greatsword +1"),
-            bulk: 2,
-            traits: TraitSet::from(Trait::DeadlyD10),
-        },
+        info: ItemInfo::new("Greatsword +1", 2, TraitSet::from(Trait::DeadlyD10)),
         is_two_hands: true,
         is_ranged: false,
         range: 0,
@@ -60,11 +56,7 @@ pub fn greatsword() -> WeaponItem {
 #[allow(dead_code)]
 pub fn fist() -> WeaponItem {
     WeaponItem {
-        info: ItemInfo {
-            bulk: 0,
-            name: String::from("Fist"),
-            traits: none(),
-        },
+        info: ItemInfo::new("Fist", 0, none()),
         is_two_hands: false,
         is_ranged: false,
         range: 0,
@@ -82,11 +74,7 @@ pub fn unarmed() -> WeaponItem {
     let names = vec!["Fist", "Head", "Knee", "Foot"];
     let pick = thread_rng().gen_range(0..names.len());
     WeaponItem {
-        info: ItemInfo {
-            bulk: 0,
-            name: String::from(names[pick]),
-            traits: none(),
-        },
+        info: ItemInfo::new(names[pick], 0, none()),
         is_two_hands: false,
         is_ranged: false,
         range: 0,
@@ -102,11 +90,7 @@ pub fn unarmed() -> WeaponItem {
 
 pub fn longbow() -> WeaponItem {
     WeaponItem {
-        info: ItemInfo {
-            bulk: 2,
-            name: String::from("Longbow"),
-            traits: none(),
-        },
+        info: ItemInfo::new("Longbow", 2, none()),
         is_two_hands: true,
         is_ranged: true,
         range: 100,
@@ -122,11 +106,7 @@ pub fn longbow() -> WeaponItem {
 
 pub fn sling() -> WeaponItem {
     WeaponItem {
-        info: ItemInfo {
-            bulk: 2,
-            name: String::from("Sling"),
-            traits: TraitSet::from(Trait::Propulsive),
-        },
+        info: ItemInfo::new("Sling", 2, TraitSet::from(Trait::Propulsive)),
         is_two_hands: false,
         is_ranged: true,
         range: 100,
