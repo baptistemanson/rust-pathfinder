@@ -50,4 +50,7 @@ impl<'world> World<'world> {
             .get_mut(key)
             .expect("Oh no, could not find the right target")
     }
+    pub fn tick_down(&mut self) {
+        self.characters.iter_mut().for_each(|(_s, c)| c.tick_down());
+    }
 }

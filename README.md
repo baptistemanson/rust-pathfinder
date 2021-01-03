@@ -13,10 +13,10 @@ Most interesting to code: unit tests, condition engine, dice systems
 
 ### Conditions
 
-- [ ] develop condition engine
-  - [ ] add concept of timers in timeline
-  - [ ] add condition in character
-  - [ ] implement dying, bless as PoC
+- [x] develop condition engine
+  - [x] add concept of timers in timeline
+  - [x] add condition in character
+  - [x] implement dying, bless as PoC
 
 ### Equipment
 

@@ -9,7 +9,9 @@ pub struct Action<'a> {
 
 impl<'a> Action<'a> {
     pub fn new() -> Self {
-        Self { name: "Spell" }
+        Self {
+            name: "Magic Missile",
+        }
     }
 }
 

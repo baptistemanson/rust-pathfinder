@@ -17,7 +17,7 @@ pub fn find_first_conscious_enemy<'a>(party: &str, world: &'a World<'a>) -> Opti
         .filter(|c| c.hp > 0)
         .map(|c| String::from(c.id))
         .collect();
-    // find unconscious 
+    // find unconscious
     if ids.len() == 0 {
         return find_first_enemy(party, world);
     }
@@ -31,9 +31,23 @@ pub fn find_first_enemy<'a>(party: &str, world: &'a World<'a>) -> Option<Charact
         .filter(|c| c.party != party)
         .map(|c| String::from(c.id))
         .collect();
-    // find unconscious 
+    // find unconscious
     if ids.len() == 0 {
         return None;
     }
     return Some(ids[0].clone());
+}
+
+pub fn find_all_friends(party: &str, world: &World) -> Vec<CharacterId> {
+    world
+        .get_characters()
+        .iter()
+        .filter_map(|c| {
+            if c.party == party {
+                Some(c.id.to_string())
+            } else {
+                None
+            }
+        })
+        .collect()
 }

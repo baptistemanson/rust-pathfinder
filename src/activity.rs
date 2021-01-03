@@ -1,9 +1,10 @@
 use crate::{character::Character, world::World};
 
 mod attack;
+mod bless;
 mod find_target;
+mod magicmissile;
 mod pass;
-mod spell;
 
 use std::fmt;
 // Value AI:
@@ -25,8 +26,9 @@ Right now doesnt care about the specificity of a character.
 impl<'a> Character<'a> {
     fn get_activities(&self) -> Vec<Box<dyn Activity>> {
         vec![
-            Box::new(spell::Action::new()),
+            Box::new(magicmissile::Action::new()),
             Box::new(attack::Action::new()),
+            Box::new(bless::Action::new()),
         ]
     }
 }

@@ -54,6 +54,7 @@ fn resolve_encounter(mut world: &mut World) -> BoxResult<()> {
                 timeline::Tick::NewRound => {
                     ui::pause();
                     println!("Start of Round {}", timeline.turn_counter);
+                    world.tick_down()
                 }
                 timeline::Tick::CharacterAction(c) => {
                     let active_character = world.get_character(&c).clone();
