@@ -15,6 +15,7 @@ impl GameItem for ArmorItem {
         &self.info
     }
 }
+#[allow(dead_code)]
 pub fn leather() -> ArmorItem {
     ArmorItem {
         info: ItemInfo {

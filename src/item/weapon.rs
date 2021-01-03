@@ -57,6 +57,7 @@ pub fn greatsword() -> WeaponItem {
 }
 
 // p280 fist
+#[allow(dead_code)]
 pub fn fist() -> WeaponItem {
     WeaponItem {
         info: ItemInfo {

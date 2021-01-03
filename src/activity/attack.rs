@@ -1,7 +1,7 @@
 use dice::d20;
 
 use crate::{
-    character::{self, Character, StatusType},
+    character::{Character, StatusType},
     dice,
     item::weapon::{unarmed, CombatProperties, DamageType, WeaponItem},
     roll::Roll,

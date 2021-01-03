@@ -45,6 +45,7 @@ pub struct Loadout {
 }
 
 impl Loadout {
+    #[allow(dead_code)]
     pub fn as_vec<'a>(&'a self) -> Vec<Box<dyn GameItem>> {
         let mut loadout: Vec<Box<dyn GameItem>> = Vec::new();
         if let Some(i) = self.left_hand.clone() {

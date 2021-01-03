@@ -30,7 +30,7 @@ impl<'a> Activity for Action<'a> {
         for key in &keys {
             let target = world.get_mut_character(key);
             target.add_status(StatusEffect {
-                duration: Duration::Round(2),
+                duration: Duration::Round(10),
                 status_type: StatusType::Bless,
             });
             println!("\t{} blessed {}", character.name, target.name)

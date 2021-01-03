@@ -34,7 +34,7 @@ Most interesting to code: unit tests, condition engine, dice systems
 - [x] Critical Hits
 - [x] Unarmed Attacks
 - [x] Unarmed Attacks: bonus different body parts
-- [ ] Improvised Weapons (just cook the -2 in the weapon bonus malus system)
+- [x] Improvised Weapons (just cook the -2 in the weapon)
 - [ ] Range penalty
 - [ ] Reload
 - [x] Bulk (no rule per say)

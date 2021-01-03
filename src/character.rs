@@ -79,7 +79,6 @@ impl<'a> Character<'a> {
                     duration: Duration::Round(x - 1),
                     status_type: s.status_type,
                 }),
-                _ => None,
             })
             .collect();
         self.status = new_status;
