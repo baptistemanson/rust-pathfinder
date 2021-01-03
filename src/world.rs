@@ -2,7 +2,7 @@ use crate::{
     character::Character,
     item::{
         armor::{leather, scale_mail, ArmorItem},
-        weapon::{greatsword, sling, WeaponItem},
+        weapon::{greatsword, longbow, sling, WeaponItem},
         AnyItem, ItemId,
     },
 };
@@ -23,8 +23,8 @@ pub struct World {
 
 impl World {
     pub fn new() -> Self {
-        let mut items: HashMap<ItemId, AnyItem> = HashMap::new();
-        let mut characters = HashMap::new();
+        let items: HashMap<ItemId, AnyItem> = HashMap::new();
+        let characters = HashMap::new();
         World { characters, items }
     }
 
@@ -62,6 +62,7 @@ impl World {
 
 pub fn init(world: &mut World) {
     init_unit(world, "Kobold Slinger", "kobolds", 40, &sling, &leather);
+    init_unit(world, "Kobold Archer", "kobolds", 40, &longbow, &leather);
     init_unit(world, "Paladin", "knights", 400, &greatsword, &scale_mail);
 }
 
