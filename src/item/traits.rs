@@ -11,7 +11,10 @@ flags! {
         DeadlyD10,
         Propulsive,
         Unarmed,
-        Finesse
+        Finesse,
+        Silver,
+        Adamantine,
+        ColdIron,
     }
 }
 

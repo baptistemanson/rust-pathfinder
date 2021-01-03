@@ -108,3 +108,19 @@ Most interesting to code: unit tests, condition engine, dice systems
 
 - [x] action selector / AI
 - [x] base project
+
+Weapons that can be modelled with simple callback based hashmap of timings (I scanned 50% of those)
+
+- bloodletting kukri (after attack, src, target, with critical info)
+- caterwaul sling (freq)
+- dagger of Venom (freq. after attack, activate w/ trigger on damage enemy)
+- dwarven thrower
+- fighter's fork (activate, position)
+- flame tongue (activate)
+- frost brand (activate, notion of fire)
+- gloomblade (need notion of light, detection, special upgrade)
+- holy avenger (at start of round, activate, freq, after attack, on action after successful attack)
+
+- start of action - offer new actions / apply temp reaction status. Need to have previous action.
+- end of attack roll - allow to modify results.
+- end of damage - modify results.

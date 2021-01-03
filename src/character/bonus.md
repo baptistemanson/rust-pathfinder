@@ -1,3 +1,0 @@
-get_all_bonuses
-filter_higher_of_each_kind
-get_best_bonuses
