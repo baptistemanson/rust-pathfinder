@@ -1,3 +1,5 @@
+use nanoid::generate;
+
 use crate::{item::Loadout, status::StatusEffect};
 
 use self::abilities::AbilityScore;
@@ -18,7 +20,7 @@ pub struct Character {
 impl Character {
     pub fn new(name: String, party: String, max_hp: i64) -> Character {
         Character {
-            id: name.clone(),
+            id: format!("{}-{}", name, generate(5)),
             name,
             party,
             max_hp,
