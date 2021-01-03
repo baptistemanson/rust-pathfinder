@@ -9,13 +9,13 @@ Plenty of ideas:
 ...
 should read about it
 */
-pub fn find_first_conscious_enemy<'a>(party: &str, world: &'a World<'a>) -> Option<CharacterId> {
+pub fn find_first_conscious_enemy(party: &str, world: &World) -> Option<CharacterId> {
     let characters = world.get_characters();
     let ids: Vec<String> = characters
         .iter()
         .filter(|c| c.party != party)
         .filter(|c| c.hp > 0)
-        .map(|c| String::from(c.id))
+        .map(|c| String::from(&c.id))
         .collect();
     // find unconscious
     if ids.len() == 0 {
@@ -24,12 +24,12 @@ pub fn find_first_conscious_enemy<'a>(party: &str, world: &'a World<'a>) -> Opti
     return Some(ids[0].clone());
 }
 
-pub fn find_first_enemy<'a>(party: &str, world: &'a World<'a>) -> Option<CharacterId> {
+pub fn find_first_enemy(party: &str, world: &World) -> Option<CharacterId> {
     let characters = world.get_characters();
     let ids: Vec<String> = characters
         .iter()
         .filter(|c| c.party != party)
-        .map(|c| String::from(c.id))
+        .map(|c| String::from(&c.id))
         .collect();
     // find unconscious
     if ids.len() == 0 {

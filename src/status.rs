@@ -26,7 +26,7 @@ pub enum Duration {
     Round(i64),
 }
 
-impl<'a> Character<'a> {
+impl Character {
     // @todo other durations should be implemented as well I guess.
     pub fn tick_down(&mut self) {
         let new_status = self

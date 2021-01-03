@@ -4,21 +4,21 @@ use self::abilities::AbilityScore;
 pub mod abilities;
 
 #[derive(Clone, Default)]
-pub struct Character<'a> {
-    pub id: &'a str,
+pub struct Character {
+    pub id: String,
     pub max_hp: i64,
-    pub name: &'a str,
-    pub party: &'a str,
+    pub name: String,
+    pub party: String,
     pub hp: i64,
     pub initiative: i64,
     pub ability_score: AbilityScore,
     pub loadout: Loadout,
     pub status: Vec<StatusEffect>,
 }
-impl<'a> Character<'a> {
-    pub fn new(name: &'a str, party: &'a str, max_hp: i64) -> Character<'a> {
+impl Character {
+    pub fn new(name: String, party: String, max_hp: i64) -> Character {
         Character {
-            id: name,
+            id: name.clone(),
             name,
             party,
             max_hp,

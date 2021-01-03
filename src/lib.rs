@@ -10,24 +10,25 @@ mod world;
 
 use activity::select_best_action;
 use timeline::{Activation, Timeline};
-use world::World;
+use world::{init, World};
 
 type BoxResult<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
-fn get_initiative<'a, 'b>(world: &'b World<'a>) -> Vec<Activation> {
+fn get_initiative<'b>(world: &'b World) -> Vec<Activation> {
     world
         .get_characters()
         .into_iter()
         .map(|c| Activation {
-            character_id: String::from(c.id),
+            character_id: String::from(&c.id),
             initiative: c.roll_initiative(),
-            party: String::from(c.party),
+            party: String::from(&c.party),
         })
         .collect()
 }
 
 pub fn main_loop() -> BoxResult<()> {
     let mut world = World::new();
+    init(&mut world);
     resolve_encounter(&mut world)
 }
 

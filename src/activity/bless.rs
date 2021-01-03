@@ -27,7 +27,7 @@ impl<'a> Activity for Action<'a> {
     }
 
     fn resolve<'lworld>(&self, character: &Character, world: &mut World) {
-        let keys: Vec<String> = find_all_friends(character.party, world);
+        let keys: Vec<String> = find_all_friends(&character.party, world);
         for key in &keys {
             let target = world.get_mut_character(key);
             target.add_status(StatusEffect {

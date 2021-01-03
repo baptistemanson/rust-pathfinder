@@ -23,7 +23,7 @@ pub trait Activity: fmt::Debug {
 /**
 Right now doesnt care about the specificity of a character.
  */
-impl<'a> Character<'a> {
+impl Character {
     fn get_activities(&self) -> Vec<Box<dyn Activity>> {
         vec![
             Box::new(magicmissile::Action::new()),

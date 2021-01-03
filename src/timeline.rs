@@ -205,7 +205,7 @@ pub fn get_modifier(score: i64) -> i64 {
         _ => score / 2 - 5,
     }
 }
-impl<'a, 'b> character::Character<'a> {
+impl character::Character {
     pub fn roll_perception_check(&self) -> i64 {
         // Perception check result = d20 roll + Wisdom modifier + proficiency bonus + other bonuses + penalties
         dice::d20() + get_modifier(self.ability_score.wisdom)
