@@ -28,9 +28,6 @@ struct AttackRoll {
 }
 
 fn compute_attack_roll(weapon: &WeaponItem, source: &Character, _target: &Character) -> AttackRoll {
-    // roll
-    let roll = d20();
-
     // potency? => refactor because it is a bonus like any other
     let CombatProperties { potency_level, .. } = weapon.damage;
     let (item_bonus, item_detail) = if potency_level > 0 {
@@ -57,6 +54,9 @@ fn compute_attack_roll(weapon: &WeaponItem, source: &Character, _target: &Charac
     };
 
     // total
+    // roll
+    let roll = d20();
+
     let value = roll + ability_modifier + item_bonus;
     AttackRoll {
         value,
@@ -73,7 +73,7 @@ fn compute_damage_roll(
     is_critical: bool,
 ) -> DamageRollResults {
     // @todo add strength modifier
-    weapon.damage_roll(source,is_critical)
+    weapon.damage_roll(source, is_critical)
 }
 
 fn compute_ac(target: &Character) -> i64 {
@@ -109,7 +109,12 @@ impl<'a> Activity for Action<'a> {
                 if ac_bonus > attack_roll.value {
                     println!(
                         "\t{} missed {} with {} ({} = {} vs {} AC)",
-                        source.name, target.name, weapon.info.name, attack_roll.details, attack_roll.value, ac_bonus
+                        source.name,
+                        target.name,
+                        weapon.info.name,
+                        attack_roll.details,
+                        attack_roll.value,
+                        ac_bonus
                     );
                     return;
                 }
@@ -121,7 +126,9 @@ impl<'a> Activity for Action<'a> {
                     if is_critical { "critically " } else { "" },
                     target.name,
                     weapon.info.name,
-                    attack_roll.details, attack_roll.value, ac_bonus
+                    attack_roll.details,
+                    attack_roll.value,
+                    ac_bonus
                 );
                 let dmg_result = compute_damage_roll(weapon, source, target, is_critical);
                 let verb = match dmg_result.damage_type {
