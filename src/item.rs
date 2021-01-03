@@ -4,7 +4,7 @@ pub mod weapon;
 
 use traits::TraitSet;
 
-use crate::character::bonus::ResolvedBonus;
+use crate::roll::Roll;
 
 use self::{
     armor::{scale_mail, ArmorItem},
@@ -14,7 +14,7 @@ use self::{
 
 pub trait GameItem {
     fn get_info(&self) -> &ItemInfo;
-    fn get_bonuses(&self) -> Vec<ResolvedBonus> {
+    fn get_bonuses(&self) -> Vec<Roll> {
         vec![]
     }
 }

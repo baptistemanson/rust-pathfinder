@@ -1,9 +1,9 @@
 use crate::{character::Character, world::World};
 
+mod attack;
 mod find_target;
 mod pass;
 mod spell;
-mod weapon;
 
 use std::fmt;
 // Value AI:
@@ -26,7 +26,7 @@ impl<'a> Character<'a> {
     fn get_activities(&self) -> Vec<Box<dyn Activity>> {
         vec![
             Box::new(spell::Action::new()),
-            Box::new(weapon::Action::new()),
+            Box::new(attack::Action::new()),
         ]
     }
 }

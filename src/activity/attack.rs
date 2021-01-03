@@ -1,11 +1,15 @@
 use dice::d20;
 
-use crate::timeline::get_modifier;
 use crate::{
     character::Character,
     dice,
-    item::weapon::{unarmed, CombatProperties, DamageRollResults, DamageType, WeaponItem},
+    item::weapon::{unarmed, CombatProperties, DamageType, WeaponItem},
+    roll::Roll,
     world::World,
+};
+use crate::{
+    item::traits::implementation::{attack_ability_modifier, deadly, striking},
+    timeline::get_modifier,
 };
 
 use super::{find_target::find_first_conscious_enemy, Activity};
@@ -21,13 +25,24 @@ impl<'a> Action<'a> {
     }
 }
 
-struct AttackRoll {
+struct AttackRollResults {
     value: i64,
     details: String,
     natural_20: bool,
 }
 
-fn compute_attack_roll(weapon: &WeaponItem, source: &Character, _target: &Character) -> AttackRoll {
+pub struct DamageRollResults {
+    pub value: i64,
+    pub damage_type: DamageType,
+    pub is_critical: bool,
+    pub details: String,
+}
+
+fn compute_attack_roll(
+    weapon: &WeaponItem,
+    source: &Character,
+    _target: &Character,
+) -> AttackRollResults {
     // potency? => refactor because it is a bonus like any other
     let CombatProperties { potency_level, .. } = weapon.damage;
     let (item_bonus, item_detail) = if potency_level > 0 {
@@ -58,7 +73,7 @@ fn compute_attack_roll(weapon: &WeaponItem, source: &Character, _target: &Charac
     let roll = d20();
 
     let value = roll + ability_modifier + item_bonus;
-    AttackRoll {
+    AttackRollResults {
         value,
         details: format!("1d20[{}]{}{}", roll, ability, item_detail),
         natural_20: roll == 20,
@@ -73,7 +88,31 @@ fn compute_damage_roll(
     is_critical: bool,
 ) -> DamageRollResults {
     // @todo add strength modifier
-    weapon.damage_roll(source, is_critical)
+    let CombatProperties {
+        dice_faces,
+        nb_dice,
+        ..
+    } = weapon.damage;
+
+    let striking_bonus = striking(weapon);
+    let ability_modifier = attack_ability_modifier(weapon, source);
+
+    let mut pre_crit = Roll::new(nb_dice + striking_bonus, dice_faces, 0) + ability_modifier;
+    let mut post_crit = deadly(weapon, is_critical);
+    let total = pre_crit.resolve() * if is_critical { 2 } else { 1 } + post_crit.resolve();
+
+    DamageRollResults {
+        value: total,
+        damage_type: weapon.damage.damage_type, // because I turned it to a copy type... no prob bob
+        is_critical,
+        details: format!(
+            "{crit}{precrit}{postcrit} = {total} dmg",
+            crit = if is_critical { "critical 2x" } else { "" },
+            precrit = pre_crit.get_summary(),
+            postcrit = post_crit.get_summary(),
+            total = total
+        ),
+    }
 }
 
 fn compute_ac(target: &Character) -> i64 {

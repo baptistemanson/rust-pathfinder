@@ -1,8 +1,7 @@
-use crate::item::{Loadout};
+use crate::item::Loadout;
 
-use self::abilities::{AbilityScore};
+use self::abilities::AbilityScore;
 pub mod abilities;
-pub mod bonus;
 
 #[derive(Debug, Clone)]
 pub struct Character<'a> {

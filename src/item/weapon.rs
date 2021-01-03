@@ -1,8 +1,3 @@
-use crate::character::Character;
-use crate::dice;
-use crate::item::traits::implementation::attack_ability_modifier;
-use crate::item::traits::implementation::deadly;
-use crate::item::traits::implementation::striking;
 use rand::prelude::*;
 
 use super::{
@@ -28,7 +23,7 @@ impl GameItem for WeaponItem {
 pub struct CombatProperties {
     pub damage_type: DamageType,
     pub dice_faces: i64,
-    pub nb_dice: i64,
+    pub nb_dice: usize,
     pub striking_level: i64, // runes
     pub potency_level: i64,  // runes
 }
@@ -38,63 +33,6 @@ pub enum DamageType {
     Bludgeoning,
     Piercing,
     Slashing,
-}
-
-pub struct DamageRollResults {
-    pub value: i64,
-    pub damage_type: DamageType,
-    pub is_critical: bool,
-    pub details: String,
-}
-
-impl WeaponItem {
-    pub fn damage_roll(&self, source: &Character, is_critical: bool) -> DamageRollResults {
-        let CombatProperties {
-            dice_faces,
-            nb_dice,
-            ..
-        } = self.damage;
-
-        // striking bonus: modify number of dices
-        let striking_bonus = striking(self);
-
-        // ability mod
-        let ability_modifier = attack_ability_modifier(self, source);
-
-        // deadly bonus: add flat after critical
-        let deadly_bonus = deadly(self, is_critical);
-
-        let roll = dice::dxx(dice_faces, nb_dice + striking_bonus.value);
-
-        let total =
-            (roll + ability_modifier.value) * if is_critical { 2 } else { 1 } + deadly_bonus.value;
-
-        DamageRollResults {
-            value: total,
-            damage_type: self.damage.damage_type, // because I turned it to a copy type... no prob bob
-            is_critical,
-            details: if is_critical {
-                format!(
-                    "Critical 2x ({}d{}[{}]{}){} = {} dmg",
-                    nb_dice + striking_bonus.value,
-                    dice_faces,
-                    roll,
-                    ability_modifier.details,
-                    deadly_bonus.details,
-                    total
-                )
-            } else {
-                format!(
-                    "{}d{}[{}]{} = {} dmg",
-                    nb_dice + striking_bonus.value,
-                    dice_faces,
-                    roll,
-                    ability_modifier.details,
-                    total
-                )
-            },
-        }
-    }
 }
 
 // p280 greatsword

@@ -73,8 +73,13 @@ impl Roll {
     /// When the dice has been rolled, the rolled value is appended, such as:
     /// ```
     ///use pathfinder::roll::Roll;
-    ///let mut roll = Roll::new(2, 1, 1).roll();
+    ///let mut roll = Roll::new(2, 1, 1);
+    ///roll.resolve();
     ///assert_eq!(roll.get_summary(), "2d1+1 [3]");
+    ///
+    ///let mut roll = Roll::new(0, 0, 0);
+    ///roll.resolve();
+    ///assert_eq!(roll.get_summary(), "");
     ///```
     pub fn get_summary(&self) -> String {
         let roll_desc = match (self.dices.len(), self.flat_bonus) {
@@ -83,8 +88,8 @@ impl Roll {
             (_, 0) => format!("{}d{}", self.dices.len(), self.dices[0]),
             _ => format!("{}d{}+{}", self.dices.len(), self.dices[0], self.flat_bonus),
         };
-        if self.has_been_rolled {
-            format!("{} [{}]", roll_desc, self.value)
+        if self.has_been_rolled && self.value > 0 {
+            format!("{}={}", roll_desc, self.value)
         } else {
             roll_desc
         }
@@ -95,13 +100,13 @@ impl Roll {
     ///let mut roll = Roll::new(6, 1, 3);
     ///assert_eq!(roll.resolve(), 9);
     ///```
-    pub fn resolve(&mut self) -> &Self {
+    pub fn resolve(&mut self) -> i64 {
         if self.has_been_rolled {
             panic!("This roll already happened");
         }
         self.has_been_rolled = true;
         self.value = self.roll();
-        self
+        self.value
     }
 
     pub fn roll(&self) -> i64 {
