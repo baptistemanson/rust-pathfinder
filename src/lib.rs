@@ -1,7 +1,8 @@
 mod activity;
 mod character;
-pub mod dice;
+mod dice;
 mod item;
+pub mod roll;
 mod timeline;
 mod ui;
 mod world;
