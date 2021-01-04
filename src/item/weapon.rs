@@ -22,8 +22,6 @@ pub struct CombatProperties {
     pub damage_type: DamageType,
     pub dice_faces: i64,
     pub nb_dice: usize,
-    pub striking_level: i64, // runes
-    pub potency_level: i64,  // runes
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -43,8 +41,6 @@ pub fn greatswordplus2() -> WeaponItem {
         damage: CombatProperties {
             nb_dice: 1,
             damage_type: DamageType::Slashing,
-            striking_level: 1,
-            potency_level: 1,
             dice_faces: 12,
         },
     }
@@ -59,8 +55,6 @@ pub fn greatswordplus1() -> WeaponItem {
         damage: CombatProperties {
             nb_dice: 1,
             damage_type: DamageType::Slashing,
-            striking_level: 1,
-            potency_level: 1,
             dice_faces: 12,
         },
     }
@@ -76,8 +70,6 @@ pub fn fist() -> WeaponItem {
         damage: CombatProperties {
             nb_dice: 1,
             damage_type: DamageType::Bludgeoning,
-            striking_level: 0,
-            potency_level: 0,
             dice_faces: 4,
         },
     }
@@ -94,8 +86,6 @@ pub fn unarmed() -> WeaponItem {
         damage: CombatProperties {
             nb_dice: 1,
             damage_type: DamageType::Bludgeoning,
-            striking_level: 0,
-            potency_level: 0,
             dice_faces: 4,
         },
     }
@@ -111,8 +101,6 @@ pub fn longbow() -> WeaponItem {
             nb_dice: 1,
             damage_type: DamageType::Piercing,
             dice_faces: 8,
-            striking_level: 0,
-            potency_level: 0,
         },
     }
 }
@@ -127,8 +115,6 @@ pub fn sling() -> WeaponItem {
             nb_dice: 1,
             dice_faces: 6,
             damage_type: DamageType::Bludgeoning,
-            striking_level: 0,
-            potency_level: 0,
         },
     }
 }

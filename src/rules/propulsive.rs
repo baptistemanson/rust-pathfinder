@@ -5,7 +5,7 @@ use crate::{
 
 pub struct PropulsiveRule {}
 impl RuleImplementation for PropulsiveRule {
-    fn attack_ability_modifier(&self, r: Roll, c: &Character, w: &World) -> Roll {
+    fn dmg_pre_crit(&self, r: Roll, c: &Character, w: &World) -> Roll {
         let str_mod = get_modifier(c.ability_score.strength);
         //@todo check rounding rules for propulsive
         if str_mod >= 0 {

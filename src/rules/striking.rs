@@ -5,7 +5,7 @@ pub struct StrikingRule {
 }
 
 impl RuleImplementation for StrikingRule {
-    fn attack_ability_modifier(&self, r: Roll, _: &Character, _: &World) -> Roll {
+    fn dmg_pre_crit(&self, r: Roll, _: &Character, _: &World) -> Roll {
         let extra_die = if r.dices.len() > 0 {
             r.dices[0]
         } else {

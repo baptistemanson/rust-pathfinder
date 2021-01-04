@@ -127,13 +127,14 @@ fn compute_attack_roll(
     _target: &Character,
 ) -> AttackRollResults {
     // potency? => refactor because it is a bonus like any other
-    let CombatProperties { potency_level, .. } = weapon.damage;
-    let (item_bonus, item_detail) = if potency_level > 0 {
-        (potency_level, format!(" + {} item", potency_level))
-    } else {
-        (0, String::new())
-    };
-
+    // let CombatProperties { potency_level, .. } = weapon.damage;
+    // let (item_bonus, item_detail) = if potency_level > 0 {
+    //     (potency_level, format!(" + {} item", potency_level))
+    // } else {
+    //     (0, String::new())
+    // };
+    let item_bonus = 0;
+    let item_detail = "";
     // strength or dexterity modifier
     let ability_score = if weapon.is_ranged {
         source.ability_score.dexterity
@@ -182,16 +183,18 @@ fn compute_damage_roll(
         ..
     } = weapon.damage;
 
-    //  let striking_bonus = striking(weapon);
-
     let mut pre_crit = Roll::new(nb_dice, dice_faces, 0);
     // rules
-    pre_crit =
+    pre_crit = world
+        .rules
+        .dmg_pre_crit(&weapon.info.rules, pre_crit, source, world);
+
+    let mut post_crit =
         world
             .rules
-            .apply_attack_ability_modifier(&weapon.info.rules, pre_crit, source, world);
+            .dmg_post_crit(&weapon.info.rules, Roll::new(0, 0, 0), source, world);
 
-    let total = pre_crit.resolve() * if is_critical { 2 } else { 1 };
+    let total = pre_crit.resolve() * if is_critical { 2 } else { 1 } + post_crit.resolve();
 
     DamageRollResults {
         value: total,

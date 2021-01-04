@@ -5,7 +5,7 @@ use crate::{
 
 pub struct FinessRule {}
 impl RuleImplementation for FinessRule {
-    fn attack_ability_modifier(&self, r: Roll, c: &Character, w: &World) -> Roll {
+    fn dmg_pre_crit(&self, r: Roll, c: &Character, w: &World) -> Roll {
         let str_mod = get_modifier(c.ability_score.strength);
         let dex_mod = get_modifier(c.ability_score.dexterity);
         if str_mod < dex_mod {
