@@ -1,9 +1,13 @@
 use std::collections::HashMap;
 
-use regex::internal::Char;
-
+use crate::world::World;
 use crate::{character::Character, roll::Roll};
-use crate::{timeline::get_modifier, world::World};
+
+use self::{finesse::FinessRule, propulsive::PropulsiveRule, striking::StrikingRule};
+
+mod finesse;
+mod propulsive;
+mod striking;
 
 /*
 per character
@@ -34,48 +38,6 @@ pub trait RuleImplementation {
     }
 }
 
-struct FinessRule {}
-impl RuleImplementation for FinessRule {
-    fn attack_ability_modifier(&self, r: Roll, c: &Character, w: &World) -> Roll {
-        let str_mod = get_modifier(c.ability_score.strength);
-        let dex_mod = get_modifier(c.ability_score.dexterity);
-        if str_mod < dex_mod {
-            r + (dex_mod - str_mod) // replace str by dex
-        } else {
-            r
-        }
-    }
-}
-/*
-
-*/
-struct PropulsiveRule {}
-impl RuleImplementation for PropulsiveRule {
-    fn attack_ability_modifier(&self, r: Roll, c: &Character, w: &World) -> Roll {
-        let str_mod = get_modifier(c.ability_score.strength);
-        //@todo check rounding rules for propulsive
-        if str_mod >= 0 {
-            r + (str_mod / 2)
-        } else {
-            r + str_mod
-        }
-    }
-}
-
-struct StrikingRule {
-    level: usize,
-}
-
-impl RuleImplementation for StrikingRule {
-    fn attack_ability_modifier(&self, r: Roll, _: &Character, _: &World) -> Roll {
-        let extra_die = if r.dices.len() > 0 {
-            r.dices[0]
-        } else {
-            panic!("Striking cannot find the prev die")
-        };
-        r + Roll::new(self.level, extra_die, 0)
-    }
-}
 pub struct RuleBook {
     pub rules: HashMap<Rule, Box<dyn RuleImplementation>>,
 }
