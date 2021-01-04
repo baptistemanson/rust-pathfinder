@@ -1,17 +1,18 @@
 use dice::d20;
 
-use crate::timeline::get_modifier;
 use crate::{
     character::Character,
     dice,
     item::{
-        weapon::{unarmed, CombatProperties, DamageType, WeaponItem},
-        AnyItem, Loadout,
+        weapon::{CombatProperties, DamageType, WeaponItem},
+        AnyItem,
     },
     roll::Roll,
+    rules::Rule,
     status::StatusType,
     world::World,
 };
+use crate::{timeline::get_modifier, utils::get_active_weapon};
 
 use super::{find_target::find_first_conscious_enemy, Activity};
 
@@ -23,23 +24,6 @@ pub struct Action<'a> {
 impl<'a> Action<'a> {
     pub fn new() -> Self {
         Action { name: "Attack" }
-    }
-}
-
-fn get_weapon_from_loadout(loadout: &Loadout, world: &World) -> WeaponItem {
-    let id = match (&loadout.left_hand, &loadout.right_hand) {
-        (_, Some(ref w)) => w, // @todo check the rules on lefty/righty rules.
-        (Some(ref w), None) => w,
-        (None, None) => "",
-    };
-    if id == "" {
-        unarmed()
-    } else {
-        if let AnyItem::WeaponItem(item) = world.items.get(id).expect("cannot find weapon") {
-            item.clone()
-        } else {
-            panic!("this is not a weapon")
-        }
     }
 }
 
@@ -56,7 +40,7 @@ impl<'a> Activity for Action<'a> {
             }
             Some(id) => {
                 let target: &Character = world.get_character(&id);
-                let weapon = get_weapon_from_loadout(&source.loadout, world);
+                let weapon = get_active_weapon(&source, world);
 
                 let attack_roll = compute_attack_roll(&weapon, source, target);
                 let ac_bonus = compute_ac(target, world);
@@ -168,7 +152,6 @@ fn compute_attack_roll(
     }
 }
 
-// @todo eventually, there will be some deduction and addition here
 fn compute_damage_roll(
     weapon: &WeaponItem,
     source: &Character,
@@ -176,7 +159,6 @@ fn compute_damage_roll(
     world: &World,
     is_critical: bool,
 ) -> DamageRollResults {
-    // @todo add strength modifier
     let CombatProperties {
         dice_faces,
         nb_dice,
@@ -184,10 +166,14 @@ fn compute_damage_roll(
     } = weapon.damage;
 
     let mut pre_crit = Roll::new(nb_dice, dice_faces, 0);
-    // rules
+    // rules, @todo add strength modifier as a rule
+
+    let mut all_rules = vec![Rule::StrengthModDamage];
+    all_rules.extend(weapon.info.rules.clone());
+
     pre_crit = world
         .rules
-        .dmg_pre_crit(&weapon.info.rules, pre_crit, source, world);
+        .dmg_pre_crit(&all_rules, pre_crit, source, world);
 
     let mut post_crit =
         world

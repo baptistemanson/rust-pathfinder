@@ -2,10 +2,11 @@ mod activity;
 mod character;
 mod dice;
 mod item;
-pub mod roll;
+pub mod roll; // needed when using doctest
 mod status;
 mod timeline;
 mod ui;
+mod utils;
 mod world;
 
 mod rules;
@@ -46,12 +47,11 @@ fn resolve_encounter(mut world: &mut World) -> BoxResult<()> {
         ui::pause();
         while !is_encounter_done {
             // Step 2 - Play a round p468
-            // @todo move that to select_best_activity?
             activations = activations
                 .into_iter()
                 .filter(|a| world.characters.get(&a.character_id).expect("oh no").hp > 0)
                 .collect::<Vec<Activation>>();
-            // println!("{:?}", activations);
+
             let tick = timeline.next_tick(&activations);
             match tick {
                 timeline::Tick::Over => is_encounter_done = true,

@@ -17,6 +17,7 @@ pub trait GameItem {
 pub enum AnyItem {
     WeaponItem(WeaponItem),
     ArmorItem(ArmorItem),
+    #[allow(dead_code)]
     HeadItem(HeadItem),
 }
 

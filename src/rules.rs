@@ -1,5 +1,6 @@
 use self::{
-    deadly::DeadlyRule, finesse::FinessRule, propulsive::PropulsiveRule, striking::StrikingRule,
+    deadly::DeadlyRule, finesse::FinessRule, propulsive::PropulsiveRule,
+    str_mod_damage::StrengthModDamageRule, striking::StrikingRule,
 };
 use crate::world::World;
 use crate::{character::Character, roll::Roll};
@@ -8,6 +9,7 @@ use std::collections::HashMap;
 mod deadly;
 mod finesse;
 mod propulsive;
+mod str_mod_damage;
 mod striking;
 
 #[derive(PartialEq, Eq, Hash, Debug, Clone)]
@@ -16,6 +18,7 @@ pub enum Rule {
     Finesse,
     Striking(usize),
     Deadly(usize),
+    StrengthModDamage,
 }
 
 // pub enum PrevActionResult {
@@ -25,10 +28,10 @@ pub enum Rule {
 // }
 
 pub trait RuleImplementation {
-    fn dmg_pre_crit(&self, r: Roll, c: &Character, w: &World) -> Roll {
+    fn dmg_pre_crit(&self, r: Roll, _: &Character, _: &World) -> Roll {
         r
     }
-    fn dmg_post_crit(&self, r: Roll, c: &Character, w: &World) -> Roll {
+    fn dmg_post_crit(&self, r: Roll, _: &Character, _: &World) -> Roll {
         r
     }
 }
@@ -57,6 +60,7 @@ impl RuleBook {
         self.load_rule(Rule::Deadly(1), Box::new(DeadlyRule { die: 1 }));
         self.load_rule(Rule::Deadly(2), Box::new(DeadlyRule { die: 2 }));
         self.load_rule(Rule::Deadly(3), Box::new(DeadlyRule { die: 3 }));
+        self.load_rule(Rule::StrengthModDamage, Box::new(StrengthModDamageRule {}));
     }
 
     pub fn dmg_pre_crit(
@@ -69,7 +73,7 @@ impl RuleBook {
         for rule in active_rules {
             let maybe_rule = self.rules.get(&rule);
             match maybe_rule {
-                None => eprintln!("missing rule"),
+                None => eprintln!("missing rule from the rulebook"),
                 Some(rule_impl) => roll = rule_impl.dmg_pre_crit(roll, character, world),
             }
         }
@@ -86,7 +90,7 @@ impl RuleBook {
         for rule in active_rules {
             let maybe_rule = self.rules.get(&rule);
             match maybe_rule {
-                None => eprintln!("missing rule"),
+                None => eprintln!("missing rule from the rulebook"),
                 Some(rule_impl) => roll = rule_impl.dmg_post_crit(roll, character, world),
             }
         }

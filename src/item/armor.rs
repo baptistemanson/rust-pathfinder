@@ -38,6 +38,7 @@ pub fn scale_mail() -> ArmorItem {
     }
 }
 
+#[allow(dead_code)]
 pub fn helmet() -> HeadItem {
     HeadItem {
         info: ItemInfo::new("Helmet", 1, vec![]),
