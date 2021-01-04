@@ -10,6 +10,7 @@ use crate::{
     roll::Roll,
     rules::Rule,
     status::StatusType,
+    utils::get_armor,
     world::World,
 };
 use crate::{timeline::get_modifier, utils::get_active_weapon};
@@ -155,7 +156,7 @@ fn compute_attack_roll(
 fn compute_damage_roll(
     weapon: &WeaponItem,
     source: &Character,
-    _target: &Character,
+    target: &Character,
     world: &World,
     is_critical: bool,
 ) -> DamageRollResults {
@@ -166,10 +167,12 @@ fn compute_damage_roll(
     } = weapon.damage;
 
     let mut pre_crit = Roll::new(nb_dice, dice_faces, 0);
-    // rules, @todo add strength modifier as a rule
 
     let mut all_rules = vec![Rule::StrengthModDamage];
     all_rules.extend(weapon.info.rules.clone());
+    // i dont think it will do anything here?
+    let defender_armor = get_armor(target, world);
+    all_rules.extend(defender_armor.info.rules);
 
     pre_crit = world
         .rules

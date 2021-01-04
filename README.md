@@ -5,15 +5,15 @@ My goal is to learn Rust.
 
 MIT and everything. Author Baptiste Manson
 
-Most interesting to code: unit tests, condition engine, dice systems
+Most interesting to code: benchmark, improve roll, 3 actions, position, visual
 
 ## UT
 
-- [ ] add unit tests
+- [x] add unit tests
 
 ### Rules engine
 
-- [ ] add a rule engine
+- [x] add a rule engine
 - [ ] add multiple actions per turn
 
 ### Conditions
@@ -49,6 +49,9 @@ Most interesting to code: unit tests, condition engine, dice systems
 - [ ] Group: general and crit modifiers
 - [ ] Ammunitions
 - [ ] Port table of weapons
+
+## Weapon Traits
+
 - [x] Weapons traits: model and a few of the 33 core traits I have 63 traits capability
 - [ ] Weapons traits: agile
 - [ ] Weapons traits: attached

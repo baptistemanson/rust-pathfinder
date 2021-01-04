@@ -1,5 +1,5 @@
 use self::{
-    deadly::DeadlyRule, finesse::FinessRule, propulsive::PropulsiveRule,
+    deadly::DeadlyRule, finesse::FinessRule, passthrough::Passthrough, propulsive::PropulsiveRule,
     str_mod_damage::StrengthModDamageRule, striking::StrikingRule,
 };
 use crate::world::World;
@@ -8,6 +8,7 @@ use std::collections::HashMap;
 
 mod deadly;
 mod finesse;
+mod passthrough;
 mod propulsive;
 mod str_mod_damage;
 mod striking;
@@ -19,6 +20,15 @@ pub enum Rule {
     Striking(usize),
     Deadly(usize),
     StrengthModDamage,
+    Dwarf,
+    Elf,
+    Gnome,
+    Goblin,
+    Monk,
+    Orc,
+    ColdIron,
+    Adamantine,
+    Silver,
 }
 
 // pub enum PrevActionResult {
@@ -32,6 +42,9 @@ pub trait RuleImplementation {
         r
     }
     fn dmg_post_crit(&self, r: Roll, _: &Character, _: &World) -> Roll {
+        r
+    }
+    fn dmg_reduction(&self, r: Roll, _: &Character, _: &World) -> Roll {
         r
     }
 }
@@ -51,18 +64,34 @@ impl RuleBook {
     }
 
     pub fn load_rules(&mut self) {
+        // basic rules
+        self.load_rule(Rule::StrengthModDamage, Box::new(StrengthModDamageRule {}));
+
+        // weapon traits
         self.load_rule(Rule::Finesse, Box::new(FinessRule {}));
         self.load_rule(Rule::Propulsive, Box::new(PropulsiveRule {}));
-        // kinda cool. could also forward the rule to the function if it gets too messy
         self.load_rule(Rule::Striking(1), Box::new(StrikingRule { level: 1 }));
         self.load_rule(Rule::Striking(2), Box::new(StrikingRule { level: 2 }));
         self.load_rule(Rule::Striking(3), Box::new(StrikingRule { level: 3 }));
         self.load_rule(Rule::Deadly(1), Box::new(DeadlyRule { die: 1 }));
         self.load_rule(Rule::Deadly(2), Box::new(DeadlyRule { die: 2 }));
         self.load_rule(Rule::Deadly(3), Box::new(DeadlyRule { die: 3 }));
-        self.load_rule(Rule::StrengthModDamage, Box::new(StrengthModDamageRule {}));
+
+        // races
+        self.load_rule(Rule::Dwarf, Box::new(Passthrough {}));
+        self.load_rule(Rule::Elf, Box::new(Passthrough {}));
+        self.load_rule(Rule::Gnome, Box::new(Passthrough {}));
+        self.load_rule(Rule::Goblin, Box::new(Passthrough {}));
+        self.load_rule(Rule::Monk, Box::new(Passthrough {}));
+        self.load_rule(Rule::Orc, Box::new(Passthrough {}));
+
+        // weapon material
+        self.load_rule(Rule::Adamantine, Box::new(Passthrough {}));
+        self.load_rule(Rule::ColdIron, Box::new(Passthrough {}));
+        self.load_rule(Rule::Silver, Box::new(Passthrough {}));
     }
 
+    // @todo group in a CombatContext all the fields, add is_critical, prev_action_result, action_nb
     pub fn dmg_pre_crit(
         &self,
         active_rules: &Vec<Rule>,
