@@ -16,7 +16,6 @@ Rules {
 */
 #[derive(PartialEq, Eq, Hash)]
 pub enum Rule {
-    Deadly(i32),
     Propulsive,
     Finesse,
 }
@@ -88,8 +87,11 @@ impl RuleBook {
         world: &World,
     ) -> Roll {
         for rule in active_rules {
-            let rule_impl = self.rules.get(&rule).expect("Unknow rule");
-            roll = rule_impl.attack_ability_modifier(roll, character, world);
+            let maybe_rule = self.rules.get(&rule);
+            match maybe_rule {
+                None => eprintln!("missing rule"),
+                Some(rule_impl) => roll = rule_impl.attack_ability_modifier(roll, character, world),
+            }
         }
         roll
     }
