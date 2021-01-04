@@ -47,7 +47,7 @@ pub fn attack_ability_modifier(weapon: &WeaponItem, character: &Character) -> Ro
         let str_mod = get_modifier(character.ability_score.strength);
         // finesse
         let dex_mod = get_modifier(character.ability_score.dexterity);
-        if str_mod <= dex_mod && weapon.info.traits.contains(Trait::Propulsive) {
+        if str_mod <= dex_mod && weapon.info.traits.contains(Trait::Finesse) {
             Roll::new(0, 0, dex_mod)
         } else {
             Roll::new(0, 0, str_mod)

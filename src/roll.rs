@@ -13,7 +13,7 @@ type Dice = i64;
 ///
 /// Can only model a dice roll with all dice of the same color (they can have different number of faces),
 /// and cannot model complicated equations.
-#[derive(Clone, Default)]
+#[derive(Clone, Default, Debug, PartialEq, Eq)]
 pub struct Roll {
     pub dices: Vec<Dice>,
     pub flat_bonus: i64,

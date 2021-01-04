@@ -8,6 +8,8 @@ mod timeline;
 mod ui;
 mod world;
 
+mod rules;
+
 use activity::select_best_action;
 use timeline::{Activation, Timeline};
 use world::{init, World};

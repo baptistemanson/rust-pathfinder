@@ -12,9 +12,6 @@ flags! {
         Propulsive,
         Unarmed,
         Finesse,
-        Silver,
-        Adamantine,
-        ColdIron,
     }
 }
 

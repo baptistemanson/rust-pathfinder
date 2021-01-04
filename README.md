@@ -11,6 +11,11 @@ Most interesting to code: unit tests, condition engine, dice systems
 
 - [ ] add unit tests
 
+### Rules engine
+
+- [ ] add a rule engine
+- [ ] add multiple actions per turn
+
 ### Conditions
 
 - [x] develop condition engine
@@ -21,6 +26,7 @@ Most interesting to code: unit tests, condition engine, dice systems
 ### Equipment
 
 - [x] add equipment to characters
+- [x] provide an ergonomic API to add characters and loadouts.
 
 ### Weapons p278 - p283
 

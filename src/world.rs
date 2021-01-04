@@ -73,12 +73,15 @@ fn init_unit(
     hp: i64,
     weapon: WeaponSpawner,
     armor: ArmorSpawner,
-) {
+) -> CharacterId {
     let mut character = Character::new(String::from(name), String::from(party), hp);
     let id = world.spawn_armor(armor);
     character.loadout.armor = id;
 
     let id = world.spawn_weapon(weapon);
     character.loadout.right_hand = id;
-    world.characters.insert(character.id.clone(), character);
+    let char_id = character.id.clone();
+    let out = char_id.clone();
+    world.characters.insert(char_id, character);
+    out
 }
