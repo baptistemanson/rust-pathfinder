@@ -1,4 +1,4 @@
-use super::{traits::none, GameItem, HeadItem, ItemInfo};
+use super::{GameItem, HeadItem, ItemInfo};
 
 #[derive(Clone, Debug)]
 pub struct ArmorItem {
@@ -18,7 +18,7 @@ impl GameItem for ArmorItem {
 
 pub fn leather() -> ArmorItem {
     ArmorItem {
-        info: ItemInfo::new("Leather", 1, none()),
+        info: ItemInfo::new("Leather", 1, vec![]),
         ac_bonus: 1,
         dex_cap: 4,
         check_penalty: -1,
@@ -29,7 +29,7 @@ pub fn leather() -> ArmorItem {
 
 pub fn scale_mail() -> ArmorItem {
     ArmorItem {
-        info: ItemInfo::new("Scale Mail", 2, none()),
+        info: ItemInfo::new("Scale Mail", 2, vec![]),
         ac_bonus: 3,
         dex_cap: 3,
         check_penalty: -2,
@@ -40,6 +40,6 @@ pub fn scale_mail() -> ArmorItem {
 
 pub fn helmet() -> HeadItem {
     HeadItem {
-        info: ItemInfo::new("Helmet", 1, none()),
+        info: ItemInfo::new("Helmet", 1, vec![]),
     }
 }

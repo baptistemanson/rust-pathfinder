@@ -14,10 +14,11 @@ Rules {
 }
 
 */
-#[derive(PartialEq, Eq, Hash)]
+#[derive(PartialEq, Eq, Hash, Debug, Clone)]
 pub enum Rule {
     Propulsive,
     Finesse,
+    Striking(usize),
 }
 
 // pub enum PrevActionResult {
@@ -38,7 +39,6 @@ impl RuleImplementation for FinessRule {
     fn attack_ability_modifier(&self, r: Roll, c: &Character, w: &World) -> Roll {
         let str_mod = get_modifier(c.ability_score.strength);
         let dex_mod = get_modifier(c.ability_score.dexterity);
-        println!("{} {}", str_mod, dex_mod);
         if str_mod < dex_mod {
             r + (dex_mod - str_mod) // replace str by dex
         } else {
@@ -46,7 +46,9 @@ impl RuleImplementation for FinessRule {
         }
     }
 }
+/*
 
+*/
 struct PropulsiveRule {}
 impl RuleImplementation for PropulsiveRule {
     fn attack_ability_modifier(&self, r: Roll, c: &Character, w: &World) -> Roll {
@@ -60,6 +62,20 @@ impl RuleImplementation for PropulsiveRule {
     }
 }
 
+struct StrikingRule {
+    level: usize,
+}
+
+impl RuleImplementation for StrikingRule {
+    fn attack_ability_modifier(&self, r: Roll, _: &Character, _: &World) -> Roll {
+        let extra_die = if r.dices.len() > 0 {
+            r.dices[0]
+        } else {
+            panic!("Striking cannot find the prev die")
+        };
+        r + Roll::new(self.level, extra_die, 0)
+    }
+}
 pub struct RuleBook {
     pub rules: HashMap<Rule, Box<dyn RuleImplementation>>,
 }
@@ -77,6 +93,10 @@ impl RuleBook {
     pub fn load_rules(&mut self) {
         self.load_rule(Rule::Finesse, Box::new(FinessRule {}));
         self.load_rule(Rule::Propulsive, Box::new(PropulsiveRule {}));
+        // kinda cool. could also forward the rule to the function if it gets too messy
+        self.load_rule(Rule::Striking(1), Box::new(StrikingRule { level: 1 }));
+        self.load_rule(Rule::Striking(2), Box::new(StrikingRule { level: 2 }));
+        self.load_rule(Rule::Striking(3), Box::new(StrikingRule { level: 3 }));
     }
 
     pub fn apply_attack_ability_modifier(

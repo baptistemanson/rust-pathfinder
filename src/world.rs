@@ -2,9 +2,10 @@ use crate::{
     character::Character,
     item::{
         armor::{leather, scale_mail, ArmorItem},
-        weapon::{greatsword, longbow, sling, WeaponItem},
+        weapon::{greatswordplus1, greatswordplus2, longbow, sling, WeaponItem},
         AnyItem, ItemId,
     },
+    rules::RuleBook,
 };
 use std::collections::HashMap;
 
@@ -19,13 +20,20 @@ type ArmorSpawner = &'static dyn Fn() -> ArmorItem;
 pub struct World {
     pub characters: HashMap<CharacterId, Character>,
     pub items: HashMap<ItemId, AnyItem>,
+    pub rules: RuleBook,
 }
 
 impl World {
     pub fn new() -> Self {
         let items: HashMap<ItemId, AnyItem> = HashMap::new();
         let characters = HashMap::new();
-        World { characters, items }
+        let mut rules = RuleBook::new();
+        rules.load_rules();
+        World {
+            characters,
+            items,
+            rules,
+        }
     }
 
     pub fn spawn_armor(&mut self, f: ArmorSpawner) -> Option<ItemId> {
@@ -63,7 +71,22 @@ impl World {
 pub fn init(world: &mut World) {
     init_unit(world, "Kobold Slinger", "kobolds", 40, &sling, &leather);
     init_unit(world, "Kobold Archer", "kobolds", 40, &longbow, &leather);
-    init_unit(world, "Paladin", "knights", 400, &greatsword, &scale_mail);
+    init_unit(
+        world,
+        "Paladin",
+        "knights",
+        400,
+        &greatswordplus1,
+        &scale_mail,
+    );
+    init_unit(
+        world,
+        "Barbarian",
+        "knights",
+        400,
+        &greatswordplus2,
+        &scale_mail,
+    );
 }
 
 fn init_unit(

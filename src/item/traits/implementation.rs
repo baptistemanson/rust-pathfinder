@@ -33,36 +33,3 @@ pub fn deadly(weapon: &WeaponItem, is_critical: bool) -> Roll {
         Roll::default()
     }
 }
-
-pub fn striking(weapon: &WeaponItem) -> usize {
-    if weapon.damage.striking_level > 0 {
-        1
-    } else {
-        0
-    }
-}
-
-pub fn attack_ability_modifier(weapon: &WeaponItem, character: &Character) -> Roll {
-    if !weapon.is_ranged {
-        let str_mod = get_modifier(character.ability_score.strength);
-        // finesse
-        let dex_mod = get_modifier(character.ability_score.dexterity);
-        if str_mod <= dex_mod && weapon.info.traits.contains(Trait::Finesse) {
-            Roll::new(0, 0, dex_mod)
-        } else {
-            Roll::new(0, 0, str_mod)
-        }
-    } else {
-        if weapon.info.traits.contains(Trait::Propulsive) {
-            let str_mod = get_modifier(character.ability_score.strength);
-            //@todo check rounding rules for propulsive
-            if str_mod >= 0 {
-                Roll::new(0, 0, str_mod / 2)
-            } else {
-                Roll::new(0, 0, str_mod)
-            }
-        } else {
-            Roll::default()
-        }
-    }
-}

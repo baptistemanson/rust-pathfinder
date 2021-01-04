@@ -1,10 +1,10 @@
 pub mod armor;
-pub mod traits;
 pub mod weapon;
 
 use nanoid::generate;
-use traits::TraitSet;
 use weapon::WeaponItem;
+
+use crate::rules::Rule;
 
 use self::armor::ArmorItem;
 
@@ -25,20 +25,21 @@ pub struct ItemInfo {
     pub id: String,
     pub name: String,
     pub bulk: i64,
-    pub traits: TraitSet,
+    pub rules: Vec<Rule>,
 }
 
 impl ItemInfo {
-    pub fn new(name: &str, bulk: i64, traits: TraitSet) -> Self {
+    pub fn new(name: &str, bulk: i64, rules: Vec<Rule>) -> Self {
         let name = String::from(name);
         ItemInfo {
             id: format!("{}-{}", name, generate(5)),
             name,
             bulk,
-            traits,
+            rules,
         }
     }
 }
+
 #[derive(Clone, Debug)]
 pub struct HeadItem {
     pub info: ItemInfo,

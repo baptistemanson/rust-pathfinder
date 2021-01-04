@@ -1,5 +1,6 @@
 use dice::d20;
 
+use crate::timeline::get_modifier;
 use crate::{
     character::Character,
     dice,
@@ -10,10 +11,6 @@ use crate::{
     roll::Roll,
     status::StatusType,
     world::World,
-};
-use crate::{
-    item::traits::implementation::{attack_ability_modifier, deadly, striking},
-    timeline::get_modifier,
 };
 
 use super::{find_target::find_first_conscious_enemy, Activity};
@@ -87,7 +84,7 @@ impl<'a> Activity for Action<'a> {
                     attack_roll.value,
                     ac_bonus
                 );
-                let dmg_result = compute_damage_roll(&weapon, source, target, is_critical);
+                let dmg_result = compute_damage_roll(&weapon, source, target, world, is_critical);
                 let verb = match dmg_result.damage_type {
                     DamageType::Bludgeoning => "was bludgeoned for",
                     DamageType::Piercing => "was pierced for",
@@ -175,6 +172,7 @@ fn compute_damage_roll(
     weapon: &WeaponItem,
     source: &Character,
     _target: &Character,
+    world: &World,
     is_critical: bool,
 ) -> DamageRollResults {
     // @todo add strength modifier
@@ -184,12 +182,16 @@ fn compute_damage_roll(
         ..
     } = weapon.damage;
 
-    let striking_bonus = striking(weapon);
-    let ability_modifier = attack_ability_modifier(weapon, source);
+    //  let striking_bonus = striking(weapon);
 
-    let mut pre_crit = Roll::new(nb_dice + striking_bonus, dice_faces, 0) + ability_modifier;
-    let mut post_crit = deadly(weapon, is_critical);
-    let total = pre_crit.resolve() * if is_critical { 2 } else { 1 } + post_crit.resolve();
+    let mut pre_crit = Roll::new(nb_dice, dice_faces, 0);
+    // rules
+    pre_crit =
+        world
+            .rules
+            .apply_attack_ability_modifier(&weapon.info.rules, pre_crit, source, world);
+
+    let total = pre_crit.resolve() * if is_critical { 2 } else { 1 };
 
     DamageRollResults {
         value: total,
@@ -199,7 +201,7 @@ fn compute_damage_roll(
             "{crit}{precrit}{postcrit} = {total} dmg",
             crit = if is_critical { "critical 2x" } else { "" },
             precrit = pre_crit.get_summary(),
-            postcrit = post_crit.get_summary(),
+            postcrit = Roll::new(0, 0, 0).get_summary(),
             total = total
         ),
     }
