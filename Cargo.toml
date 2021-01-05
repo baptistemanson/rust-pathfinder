@@ -3,3 +3,4 @@
 members = [
     "rules", "dice", "app"
 ]
+default-members = ["rules"]
