@@ -21,7 +21,7 @@ impl GameItem for WeaponItem {
 pub struct CombatProperties {
     pub damage_type: DamageType,
     pub dice_faces: i64,
-    pub nb_dice: usize,
+    pub nb_dice: i64,
 }
 
 #[derive(Copy, Clone, Debug)]

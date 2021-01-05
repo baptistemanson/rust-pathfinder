@@ -7,9 +7,6 @@ lazy_static! {
     static ref MY_REGEX: Regex = Regex::new(r"^(?:(?P<nb_dice>\d+)d(?P<faces>\d+))?(?:\+(?P<flat>\d+))?$").unwrap();
 }
 
-
-type Dice = i64;
-
 #[cfg(test)]
 pub fn dx(x: i64) -> i64 {
     match x {
@@ -41,23 +38,24 @@ pub fn dx(x: i64) -> i64 {
 /// Represents "1d6+1".
 #[derive(Clone, Default, Debug, PartialEq, Eq)]
 pub struct Bonus {
-    pub dices: Vec<Dice>,
+    pub nb_dice: i64,
+    pub face: i64,
     pub flat_bonus: i64,
 }
 
 impl Bonus {
     pub fn roll(&self) -> i64 {
-        self.dices.iter().fold(0, |a, d| a + dx(*d)) + self.flat_bonus
+        (1..=self.nb_dice).map(|_| dx(self.face)).sum::<i64>() + self.flat_bonus
     }
 }
 
 impl Bonus {
     fn to_string(&self) -> Option<String> {
-        match (self.dices.len(), self.flat_bonus) {
+        match (self.nb_dice, self.flat_bonus) {
             (0, 0) => None,
             (0, x) => Some(format!("{}", x)),
-            (_, 0) => Some(format!("{}d{}", self.dices.len(), self.dices[0])),
-            _ => Some(format!("{}d{}+{}", self.dices.len(), self.dices[0], self.flat_bonus)),
+            (_, 0) => Some(format!("{}d{}", self.nb_dice, self.face)),
+            _ => Some(format!("{}d{}+{}", self.nb_dice, self.face, self.flat_bonus)),
         }
     }
 }
@@ -107,7 +105,7 @@ impl Roll {
         let mut flat_bonus = 0;
 
         if let Some(nb_dice_match) = matches.name("nb_dice") {
-            nb_dice = nb_dice_match.as_str().parse::<usize>().unwrap();
+            nb_dice = nb_dice_match.as_str().parse::<i64>().unwrap();
         }
         if let Some(faces_match) = matches.name("faces") {
             faces = faces_match.as_str().parse::<i64>().unwrap();
@@ -141,12 +139,13 @@ impl Roll {
     ///let roll = Roll::new("", 1, 6, 2);
     ///assert_eq!(roll, dice::Roll::from("1d6+2"));
     ///```
-    pub fn new(tag: &str, nb_dice: usize, face: i64, flat_bonus: i64) -> Self {
+    pub fn new(tag: &str, nb_dice: i64, face: i64, flat_bonus: i64) -> Self {
         let mut bonuses = vec![];
         bonuses.push((
             tag.to_string(),
             Bonus {
-                dices: vec![face; nb_dice],
+                nb_dice, 
+                face,
                 flat_bonus,
             },
         ));
@@ -170,7 +169,7 @@ impl Roll {
     ///use dice::Roll;
     ///assert_eq!(Roll::d("my_tag", 1, 6), Roll::from("1d6").tag("my_tag"));
     ///```
-    pub fn d(tag: &str, nb_dice: usize, face: i64) -> Self {
+    pub fn d(tag: &str, nb_dice: i64, face: i64) -> Self {
         Self::new(tag, nb_dice, face, 0)
     }
 
@@ -255,19 +254,15 @@ impl ToString for Roll {
 impl ops::Add<Roll> for Roll {
     type Output = Roll;
 
-    fn add(self, rhs: Roll) -> Roll {
+    fn add(mut self, mut rhs: Roll) -> Roll {
         if rhs.has_been_rolled || self.has_been_rolled {
             panic!("You cannot modify dice rolls after having resolved them");
         }
         // @todo if same label on bonuses, merge the vecs instead.
-        let mut bonuses = vec![];
-        bonuses.extend(self.bonuses);
-        bonuses.extend(rhs.bonuses);
-        Roll {
-            bonuses,
-            has_been_rolled: false,
-            value: 0,
-        }
+        self.bonuses.append(&mut rhs.bonuses);
+        self.has_been_rolled = false;
+        self.value = 0;
+        self
     }
 }
 

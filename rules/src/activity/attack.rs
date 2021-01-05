@@ -162,6 +162,8 @@ fn compute_damage_roll(
     let total =
         pre_crit_roll.resolve() * if is_critical { 2 } else { 1 } + post_crit_roll.resolve();
 
+    let pc_str = post_crit_roll.to_string();
+
     DamageRollResults {
         value: total,
         damage_type: weapon.damage.damage_type, // because I turned it to a copy type... no prob bob
@@ -175,9 +177,10 @@ fn compute_damage_roll(
             )
         } else {
             format!(
-                "{precrit} + {postcrit} = {total} dmg",
+                "{precrit}{sep}{postcrit} = {total} dmg",
                 precrit = pre_crit_roll.to_string(),
-                postcrit = post_crit_roll.to_string(),
+                sep = if pc_str != "" {" + "} else {""},
+                postcrit = pc_str,
                 total = total
             )
         },

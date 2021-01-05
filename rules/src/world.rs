@@ -1,3 +1,4 @@
+use crate::item::weapon::unarmed;
 use crate::{
     character::Character,
     item::{
@@ -69,13 +70,14 @@ impl World {
 }
 
 pub fn init(world: &mut World) {
-    init_unit(world, "Kobold Slinger", "kobolds", 1000, &sling, &leather);
-    init_unit(world, "Kobold Archer", "kobolds", 1000, &longbow, &leather);
+    world.spawn_weapon(&unarmed);
+    init_unit(world, "Kobold Slinger", "kobolds", 40, &sling, &leather);
+    init_unit(world, "Kobold Archer", "kobolds", 40, &longbow, &leather);
     init_unit(
         world,
         "Paladin",
         "knights",
-        1000,
+        100,
         &greatswordplus1,
         &scale_mail,
     );
@@ -83,7 +85,7 @@ pub fn init(world: &mut World) {
         world,
         "Barbarian",
         "knights",
-        1000,
+        100,
         &greatswordplus2,
         &scale_mail,
     );
