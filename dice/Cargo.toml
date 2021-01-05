@@ -1,0 +1,14 @@
+[package]
+name = "dice"
+version = "0.1.0"
+authors = ["Baptiste Manson <baptiste.manson@gmail.com>"]
+edition = "2018"
+
+
+[lib]
+name = "dice"
+path = "src/lib.rs"
+
+[dependencies]
+rand = "0.8.0"
+regex = "1"
