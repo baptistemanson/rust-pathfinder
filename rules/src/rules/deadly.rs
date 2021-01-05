@@ -1,4 +1,6 @@
-use crate::{character::Character, roll::Roll, rules::RuleImplementation, world::World};
+use dice::Roll;
+
+use crate::{character::Character, rules::RuleImplementation, world::World};
 
 pub struct DeadlyRule {
     pub die: usize,
@@ -13,6 +15,6 @@ impl RuleImplementation for DeadlyRule {
         //     2 => 2,
         //     _ => 3,
         // };
-        r + Roll::new(1, self.die as i64, 0)
+        r + Roll::new("deadly", 1, self.die as i64, 0)
     }
 }

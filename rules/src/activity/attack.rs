@@ -1,13 +1,11 @@
-use dice::d20;
+use dice::Roll;
 
 use crate::{
     character::Character,
-    dice,
     item::{
         weapon::{CombatProperties, DamageType, WeaponItem},
         AnyItem,
     },
-    roll::Roll,
     rules::Rule,
     status::StatusType,
     utils::get_armor,
@@ -30,7 +28,7 @@ impl<'a> Action<'a> {
 
 impl<'a> Activity for Action<'a> {
     fn ai_playing_value(&self, _character: &Character, _context: &World) -> i64 {
-        dice::d20()
+        Roll::from("1d20").roll()
     }
 
     fn resolve<'lworld>(&self, source: &Character, world: &mut World) {
@@ -111,45 +109,28 @@ fn compute_attack_roll(
     source: &Character,
     _target: &Character,
 ) -> AttackRollResults {
-    // potency? => refactor because it is a bonus like any other
-    // let CombatProperties { potency_level, .. } = weapon.damage;
-    // let (item_bonus, item_detail) = if potency_level > 0 {
-    //     (potency_level, format!(" + {} item", potency_level))
-    // } else {
-    //     (0, String::new())
-    // };
-    let item_bonus = 0;
-    let item_detail = "";
+    let item_bonus = Roll::flat("item", 0);
+
     // strength or dexterity modifier
     let ability_score = if weapon.is_ranged {
-        source.ability_score.dexterity
+        Roll::flat("dex", get_modifier(source.ability_score.dexterity))
     } else {
-        source.ability_score.strength
-    };
-    let ability_modifier = get_modifier(ability_score);
-    let ability = if ability_modifier > 0 {
-        format!(
-            " + {} {}",
-            ability_modifier,
-            if weapon.is_ranged { "dex" } else { "str" }
-        )
-    } else {
-        String::new()
+        Roll::flat("str", get_modifier(source.ability_score.strength))
     };
 
-    let (status_bonus, status_detail) = if source.has_status(StatusType::Bless) {
-        (1, " + 1 status")
+    let status_bonus = if source.has_status(StatusType::Bless) {
+        Roll::flat("bless", 1)
     } else {
-        (0, "")
+        Roll::new("", 0, 0, 0)
     };
     // roll
-    let roll = d20();
+    let roll = Roll::from("1d20");
     // total
-    let value = roll + ability_modifier + item_bonus + status_bonus;
+    let mut total = roll + ability_score + item_bonus + status_bonus;
     AttackRollResults {
-        value,
-        details: format!("1d20[{}]{}{}{}", roll, ability, item_detail, status_detail),
-        natural_20: roll == 20,
+        value: total.resolve(),
+        details: total.get_details(),
+        natural_20: total.resolve() == 20,
     }
 }
 
@@ -166,7 +147,7 @@ fn compute_damage_roll(
         ..
     } = weapon.damage;
 
-    let mut pre_crit = Roll::new(nb_dice, dice_faces, 0);
+    let mut pre_crit_roll = Roll::d("weapon", nb_dice, dice_faces);
 
     let mut all_rules = vec![Rule::StrengthModDamage];
     all_rules.extend(weapon.info.rules.clone());
@@ -174,26 +155,28 @@ fn compute_damage_roll(
     let defender_armor = get_armor(target, world);
     all_rules.extend(defender_armor.info.rules);
 
-    pre_crit = world
+    pre_crit_roll = world
         .rules
-        .dmg_pre_crit(&all_rules, pre_crit, source, world);
+        .dmg_pre_crit(&all_rules, pre_crit_roll, source, world);
 
-    let mut post_crit =
-        world
-            .rules
-            .dmg_post_crit(&weapon.info.rules, Roll::new(0, 0, 0), source, world);
+    let mut post_crit = world.rules.dmg_post_crit(
+        &weapon.info.rules,
+        Roll::d("placeholder", 0, 0),
+        source,
+        world,
+    );
 
-    let total = pre_crit.resolve() * if is_critical { 2 } else { 1 } + post_crit.resolve();
+    let total = pre_crit_roll.resolve() * if is_critical { 2 } else { 1 } + post_crit.resolve();
 
     DamageRollResults {
         value: total,
         damage_type: weapon.damage.damage_type, // because I turned it to a copy type... no prob bob
         is_critical,
         details: format!(
-            "{crit}{precrit}{postcrit} = {total} dmg",
+            "{crit}{precrit} {postcrit} = {total} dmg",
             crit = if is_critical { "critical 2x" } else { "" },
-            precrit = pre_crit.get_summary(),
-            postcrit = Roll::new(0, 0, 0).get_summary(),
+            precrit = pre_crit_roll.get_details(),
+            postcrit = post_crit.get_details(),
             total = total
         ),
     }

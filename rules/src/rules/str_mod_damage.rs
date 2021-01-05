@@ -1,5 +1,7 @@
+use dice::Roll;
+
 use crate::{
-    character::Character, roll::Roll, rules::RuleImplementation, timeline::get_modifier,
+    character::Character, rules::RuleImplementation, timeline::get_modifier,
     utils::get_active_weapon, world::World,
 };
 
@@ -11,6 +13,6 @@ impl RuleImplementation for StrengthModDamageRule {
             return r;
         }
         let str_mod = get_modifier(c.ability_score.strength);
-        r + str_mod
+        r + Roll::flat("str", str_mod)
     }
 }

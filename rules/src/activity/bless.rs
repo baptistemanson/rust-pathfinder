@@ -1,6 +1,7 @@
+use dice::Roll;
+
 use crate::{
     character::Character,
-    dice,
     status::{Duration, StatusEffect, StatusType},
     world::World,
 };
@@ -23,7 +24,7 @@ impl<'a> Activity for Action<'a> {
         true
     }
     fn ai_playing_value(&self, _character: &Character, _context: &World) -> i64 {
-        dice::dx(10)
+        Roll::from("1d20").roll()
     }
 
     fn resolve<'lworld>(&self, character: &Character, world: &mut World) {

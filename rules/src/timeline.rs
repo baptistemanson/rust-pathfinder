@@ -195,7 +195,7 @@ mod tests {
     }
 }
 
-use crate::dice;
+use dice::Roll;
 
 use super::character;
 
@@ -208,7 +208,7 @@ pub fn get_modifier(score: i64) -> i64 {
 impl character::Character {
     pub fn roll_perception_check(&self) -> i64 {
         // Perception check result = d20 roll + Wisdom modifier + proficiency bonus + other bonuses + penalties
-        dice::d20() + get_modifier(self.ability_score.wisdom)
+        Roll::from("1d20").roll() + get_modifier(self.ability_score.wisdom)
     }
 
     pub fn roll_initiative(&self) -> i64 {

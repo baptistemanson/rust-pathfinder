@@ -1,8 +1,6 @@
 mod activity;
 mod character;
-mod dice;
 mod item;
-pub mod roll; // needed when using doctest
 mod status;
 mod timeline;
 mod ui;

@@ -1,6 +1,7 @@
+use dice::Roll;
+
 use crate::{
-    character::Character, roll::Roll, rules::RuleImplementation, timeline::get_modifier,
-    world::World,
+    character::Character, rules::RuleImplementation, timeline::get_modifier, world::World,
 };
 
 pub struct PropulsiveRule {}
@@ -9,9 +10,9 @@ impl RuleImplementation for PropulsiveRule {
         let str_mod = get_modifier(c.ability_score.strength);
         if str_mod >= 0 {
             //i64 divide rounds down,as per rule p444 Chapter 9
-            r + (str_mod / 2)
+            r + Roll::flat("propulsive", str_mod / 2)
         } else {
-            r + str_mod
+            r + Roll::flat("propulsive", str_mod)
         }
     }
 }

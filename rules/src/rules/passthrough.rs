@@ -1,4 +1,6 @@
-use crate::{character::Character, roll::Roll, rules::RuleImplementation, world::World};
+use dice::Roll;
+
+use crate::{character::Character, rules::RuleImplementation, world::World};
 
 pub struct Passthrough {}
 impl RuleImplementation for Passthrough {

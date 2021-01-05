@@ -1,9 +1,11 @@
+use dice::Roll;
+
 use self::{
     deadly::DeadlyRule, finesse::FinessRule, passthrough::Passthrough, propulsive::PropulsiveRule,
     str_mod_damage::StrengthModDamageRule, striking::StrikingRule,
 };
+use crate::character::Character;
 use crate::world::World;
-use crate::{character::Character, roll::Roll};
 use std::collections::HashMap;
 
 mod deadly;
@@ -139,8 +141,8 @@ mod tests {
 
         let r = RuleBook::new();
         assert_eq!(
-            r.dmg_pre_crit(&vec![], Roll::new(1, 6, 2), &c, &w),
-            Roll::new(1, 6, 2)
+            r.dmg_pre_crit(&vec![], Roll::new("", 1, 6, 2), &c, &w),
+            Roll::new("", 1, 6, 2)
         );
     }
 
@@ -154,17 +156,17 @@ mod tests {
         let active_rules = vec![Rule::Finesse];
         c.ability_score.strength = 12;
         c.ability_score.dexterity = 18;
-        let roll = Roll::new(1, 6, 1); // bonus of str 1 already baked.
+        let roll = Roll::from("1d6") + Roll::flat("str", 1);
         assert_eq!(
             r.dmg_pre_crit(&active_rules, roll, &c, &w),
-            Roll::new(1, 6, 4)
+            (Roll::from("1d6") + Roll::flat("finesse", 4))
         );
 
         c.ability_score.dexterity = 8;
-        let roll = Roll::new(1, 6, 1);
+        let roll = Roll::from("1d6+1") + Roll::flat("str", 1);
         assert_eq!(
             r.dmg_pre_crit(&active_rules, roll, &c, &w),
-            Roll::new(1, 6, 1)
+            Roll::from("1d6+1") + Roll::flat("str", 1)
         )
     }
 }

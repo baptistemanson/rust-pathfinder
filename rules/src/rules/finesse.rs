@@ -1,6 +1,7 @@
+use dice::Roll;
+
 use crate::{
-    character::Character, roll::Roll, rules::RuleImplementation, timeline::get_modifier,
-    world::World,
+    character::Character, rules::RuleImplementation, timeline::get_modifier, world::World,
 };
 
 pub struct FinessRule {}
@@ -9,7 +10,8 @@ impl RuleImplementation for FinessRule {
         let str_mod = get_modifier(c.ability_score.strength);
         let dex_mod = get_modifier(c.ability_score.dexterity);
         if str_mod < dex_mod {
-            r + (dex_mod - str_mod) // replace str by dex
+            let r = r.cancel_bonus("str");
+            r + Roll::flat("finesse", dex_mod) // replace str by dex
         } else {
             r
         }
