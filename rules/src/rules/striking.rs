@@ -1,4 +1,4 @@
-use crate::{character::Character, roll::Roll, rules::RuleImplementation, world::World};
+use crate::{character::Character, rules::RuleImplementation, world::World};
 
 pub struct StrikingRule {
     pub level: usize,
