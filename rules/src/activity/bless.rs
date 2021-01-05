@@ -22,7 +22,7 @@ impl Activity for Action {
         true
     }
     fn ai_playing_value(&self, _character: &Character, _context: &World) -> i64 {
-        Roll::from("1d20").roll() / 4
+        Roll::d("", 1,20).roll() / 4
     }
 
     fn resolve<'lworld>(&mut self, character: &Character, world: &mut World) {

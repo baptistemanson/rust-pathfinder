@@ -9,6 +9,8 @@ edition = "2018"
 name = "dice"
 path = "src/lib.rs"
 
+
 [dependencies]
 rand = "0.8.0"
 regex = "1"
+lazy_static = "1.4.0"

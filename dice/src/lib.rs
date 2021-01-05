@@ -1,5 +1,12 @@
 use regex::Regex;
 use std::ops;
+#[macro_use]
+extern crate lazy_static;
+
+lazy_static! {
+    static ref MY_REGEX: Regex = Regex::new(r"^(?:(?P<nb_dice>\d+)d(?P<faces>\d+))?(?:\+(?P<flat>\d+))?$").unwrap();
+}
+
 
 type Dice = i64;
 
@@ -12,22 +19,22 @@ pub fn dx(x: i64) -> i64 {
     }
 }
 
-#[cfg(not(test))]
-use rand::prelude::*;
-#[cfg(not(test))]
-pub fn dx(x: i64) -> i64 {
-    thread_rng().gen_range(1..=x)
-}
-
-//uncomment this to benchmark
+// #[cfg(not(test))]
+// use rand::prelude::*;
 // #[cfg(not(test))]
 // pub fn dx(x: i64) -> i64 {
-//     match x {
-//         0 => 0,
-//         1 => 1,
-//         x => x - 2,
-//     }
+//     thread_rng().gen_range(1..=x)
 // }
+
+//uncomment this to benchmark
+#[cfg(not(test))]
+pub fn dx(x: i64) -> i64 {
+    match x {
+        0 => 0,
+        1 => 1,
+        x => x - 2,
+    }
+}
 
 /// Used internally by [Roll](struct.Roll.html)
 ///
@@ -44,13 +51,13 @@ impl Bonus {
     }
 }
 
-impl ToString for Bonus {
-    fn to_string(&self) -> String {
+impl Bonus {
+    fn to_string(&self) -> Option<String> {
         match (self.dices.len(), self.flat_bonus) {
-            (0, 0) => String::from(""),
-            (0, x) => format!("{}", x),
-            (_, 0) => format!("{}d{}", self.dices.len(), self.dices[0]),
-            _ => format!("{}d{}+{}", self.dices.len(), self.dices[0], self.flat_bonus),
+            (0, 0) => None,
+            (0, x) => Some(format!("{}", x)),
+            (_, 0) => Some(format!("{}d{}", self.dices.len(), self.dices[0])),
+            _ => Some(format!("{}d{}+{}", self.dices.len(), self.dices[0], self.flat_bonus)),
         }
     }
 }
@@ -93,8 +100,8 @@ impl Roll {
     ///assert_eq!(Roll::from("+2").tag("my_tag"), Roll::new("my_tag", 0, 0, 2));
     ///```
     pub fn from(expr: &str) -> Self {
-        let re = Regex::new(r"^(?:(?P<nb_dice>\d+)d(?P<faces>\d+))?(?:\+(?P<flat>\d+))?$").unwrap();
-        let matches = re.captures(expr).unwrap();
+        
+        let matches = MY_REGEX.captures(expr).unwrap();
         let mut nb_dice = 0;
         let mut faces = 0;
         let mut flat_bonus = 0;
@@ -189,7 +196,7 @@ impl Roll {
     pub fn roll(&self) -> i64 {
         self.bonuses
             .iter()
-            .fold(0, |acc, (_, bonus)| acc + bonus.roll())
+            .map( | (_, bonus)| bonus.roll()).sum()
     }
 
     /// Get the detail about a bonus.
@@ -230,18 +237,17 @@ impl ToString for Roll {
     fn to_string(&self) -> String {
         self.bonuses
             .iter()
-            .map(|(k, b)| {
+            .filter_map(|(k, b)| {
                 if k == "" {
                     b.to_string()
                 } else {
-                    if b.to_string() == "" {
-                        String::from("")
+                    if b.to_string() == None {
+                        None
                     } else {
-                        format!("{} {}", k, b.to_string())
+                        Some(format!("{} {}", k, b.to_string().unwrap()))
                     }
                 }
             })
-            .filter(|s| s != "")
             .collect::<Vec<String>>()
             .join(" + ")
     }

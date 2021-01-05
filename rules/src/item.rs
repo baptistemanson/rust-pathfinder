@@ -1,7 +1,6 @@
 pub mod armor;
 pub mod weapon;
 
-use nanoid::nanoid;
 use weapon::WeaponItem;
 
 use crate::rules::Rule;
@@ -33,7 +32,7 @@ impl ItemInfo {
     pub fn new(name: &str, bulk: i64, rules: Vec<Rule>) -> Self {
         let name = String::from(name);
         ItemInfo {
-            id: format!("{}-{}", name, nanoid!(5)),
+            id: format!("{}-{}", name, snowflake::ProcessUniqueId::new()),
             name,
             bulk,
             rules,
