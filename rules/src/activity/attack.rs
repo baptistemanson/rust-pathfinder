@@ -16,22 +16,20 @@ use crate::{timeline::get_modifier, utils::get_active_weapon};
 use super::{find_target::find_first_conscious_enemy, Activity};
 
 #[derive(Clone, Debug)]
-pub struct Action<'a> {
-    name: &'a str,
-}
+pub struct Action;
 
-impl<'a> Action<'a> {
+impl Action {
     pub fn new() -> Self {
-        Action { name: "Attack" }
+        Self {}
     }
 }
 
-impl<'a> Activity for Action<'a> {
+impl Activity for Action {
     fn ai_playing_value(&self, _character: &Character, _context: &World) -> i64 {
         Roll::from("1d20").roll()
     }
 
-    fn resolve<'lworld>(&self, source: &Character, world: &mut World) {
+    fn resolve<'lworld>(&mut self, source: &Character, world: &mut World) {
         let target_id = find_first_conscious_enemy(&source.party, world);
         match target_id {
             None => {
@@ -87,7 +85,7 @@ impl<'a> Activity for Action<'a> {
     }
 
     fn get_name(&self) -> &str {
-        self.name
+        "Attack"
     }
 }
 
@@ -168,13 +166,21 @@ fn compute_damage_roll(
         value: total,
         damage_type: weapon.damage.damage_type, // because I turned it to a copy type... no prob bob
         is_critical,
-        details: format!(
-            "{crit}{precrit} {postcrit} = {total} dmg",
-            crit = if is_critical { "critical 2x" } else { "" },
-            precrit = pre_crit_roll.to_string(),
-            postcrit = post_crit_roll.to_string(),
-            total = total
-        ),
+        details: if is_critical {
+            format!(
+                "critical 2x({precrit}) + {postcrit} = {total} dmg",
+                precrit = pre_crit_roll.to_string(),
+                postcrit = post_crit_roll.to_string(),
+                total = total
+            )
+        } else {
+            format!(
+                "{precrit} + {postcrit} = {total} dmg",
+                precrit = pre_crit_roll.to_string(),
+                postcrit = post_crit_roll.to_string(),
+                total = total
+            )
+        },
     }
 }
 

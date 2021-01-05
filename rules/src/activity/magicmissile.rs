@@ -5,24 +5,19 @@ use crate::{character::Character, world::World};
 use super::{find_target::find_first_conscious_enemy, Activity};
 
 #[derive(Clone, Debug)]
-pub struct Action<'a> {
-    name: &'a str,
-}
-
-impl<'a> Action<'a> {
+pub struct Action;
+impl Action {
     pub fn new() -> Self {
-        Self {
-            name: "Magic Missile",
-        }
+        Self {}
     }
 }
 
-impl<'a> Activity for Action<'a> {
+impl Activity for Action {
     fn ai_playing_value(&self, _character: &Character, _context: &World) -> i64 {
         10
     }
 
-    fn resolve(&self, character: &Character, world: &mut World) {
+    fn resolve(&mut self, character: &Character, world: &mut World) {
         let dmg = Roll::from("1d20").roll();
         let target_id = find_first_conscious_enemy(&character.party, world);
         match target_id {
@@ -41,6 +36,10 @@ impl<'a> Activity for Action<'a> {
     }
 
     fn get_name(&self) -> &str {
-        self.name
+        "Magic Missile"
+    }
+
+    fn get_cost(&self) -> i64 {
+        3
     }
 }

@@ -10,11 +10,12 @@ Most interesting to code: benchmark, improve roll, 3 actions, position, visual
 ## UT
 
 - [x] add unit tests
+- [ ] test the weapon traits
 
 ### Rules engine
 
 - [x] add a rule engine
-- [ ] add multiple actions per turn
+- [x] add multiple actions per turn
 
 ### Conditions
 
@@ -30,10 +31,10 @@ Most interesting to code: benchmark, improve roll, 3 actions, position, visual
 
 ### Weapons p278 - p283
 
+- [ ] Attack Rolls: Multiple Attack Penalty
 - [x] Attack Rolls: melee
 - [x] Attack Rolls: ranged
 - [x] Attack Rolls: bonus malus
-- [ ] Attack Rolls: Multiple Attack Penalty
 - [x] Damage Rolls: melee
 - [x] Damage Rolls: ranged
 - [x] Damage Rolls: damage type PBS
@@ -46,7 +47,6 @@ Most interesting to code: benchmark, improve roll, 3 actions, position, visual
 - [x] Bulk (no rule per say)
 - [x] Hands: general
 - [x] Hands: general
-- [ ] Group: general and crit modifiers
 - [ ] Ammunitions
 - [ ] Port table of weapons
 

@@ -9,17 +9,15 @@ use crate::{
 use super::{find_target::find_all_friends, Activity};
 
 #[derive(Clone, Debug)]
-pub struct Action<'a> {
-    name: &'a str,
-}
+pub struct Action {}
 
-impl<'a> Action<'a> {
+impl Action {
     pub fn new() -> Self {
-        Self { name: "Bless" }
+        Self {}
     }
 }
 
-impl<'a> Activity for Action<'a> {
+impl Activity for Action {
     fn can_be_used(&self, _character: &Character, _context: &World) -> bool {
         true
     }
@@ -27,19 +25,21 @@ impl<'a> Activity for Action<'a> {
         Roll::from("1d20").roll()
     }
 
-    fn resolve<'lworld>(&self, character: &Character, world: &mut World) {
+    fn resolve<'lworld>(&mut self, character: &Character, world: &mut World) {
         let keys: Vec<String> = find_all_friends(&character.party, world);
+        let mut target_names: Vec<String> = vec![];
         for key in &keys {
             let target = world.get_mut_character(key);
             target.add_status(StatusEffect {
                 duration: Duration::Round(10),
                 status_type: StatusType::Bless,
             });
-            println!("\t{} blessed {}", character.name, target.name)
+            target_names.push(target.name.clone());
         }
+        println!("\t{} blessed {}", character.name, target_names.join(", "));
     }
 
     fn get_name(&self) -> &str {
-        self.name
+        "Bless"
     }
 }

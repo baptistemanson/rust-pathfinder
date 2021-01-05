@@ -59,15 +59,20 @@ fn resolve_encounter(mut world: &mut World) -> BoxResult<()> {
                     world.tick_down()
                 }
                 timeline::Tick::CharacterAction(c) => {
-                    let active_character = world.get_character(&c).clone();
-                    // had to clone because activity needs at the same time:
-                    // an immutable ref to the character to know how much damage the attacker can do,
-                    // a mutable ref to the world to resolve the action.
+                    let mut action_left = 3;
+                    while action_left > 0 {
+                        let active_character = world.get_character(&c).clone();
+                        // had to clone because activity needs at the same time:
+                        // an immutable ref to the character to know how much damage the attacker can do,
+                        // a mutable ref to the world to resolve the action.
 
-                    // @todo do not clone when I understand RefCell for performance reason.
-                    let best_action = select_best_action(&active_character, world);
-                    // collect effects of an activity as list of characters in the world
-                    best_action.resolve(&active_character, &mut world);
+                        // @todo do not clone when I understand RefCell for performance reason.
+                        let mut best_action =
+                            select_best_action(&active_character, action_left, world);
+                        action_left = action_left - best_action.get_cost();
+                        // collect effects of an activity as list of characters in the world
+                        best_action.resolve(&active_character, &mut world);
+                    }
                 }
             }
         }
