@@ -13,6 +13,6 @@ impl RuleImplementation for StrikingRule {
         } else {
             panic!("Striking cannot find the prev die")
         };
-        r + Roll::d("striking", self.level as i64, extra_die)
+        r + Roll::d("striking", self.level as i64, extra_die as i64)
     }
 }

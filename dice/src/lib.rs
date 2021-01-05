@@ -8,7 +8,7 @@ lazy_static! {
 }
 
 #[cfg(test)]
-pub fn dx(x: i64) -> i64 {
+pub fn dx(x: i8) -> i8 {
     match x {
         0 => 0,
         1 => 1,
@@ -19,13 +19,13 @@ pub fn dx(x: i64) -> i64 {
 // #[cfg(not(test))]
 // use rand::prelude::*;
 // #[cfg(not(test))]
-// pub fn dx(x: i64) -> i64 {
+// pub fn dx(x: i8) -> i8 {
 //     thread_rng().gen_range(1..=x)
 // }
 
 //uncomment this to benchmark
 #[cfg(not(test))]
-pub fn dx(x: i64) -> i64 {
+pub fn dx(x: i8) -> i8 {
     match x {
         0 => 0,
         1 => 1,
@@ -38,14 +38,14 @@ pub fn dx(x: i64) -> i64 {
 /// Represents "1d6+1".
 #[derive(Clone, Default, Debug, PartialEq, Eq)]
 pub struct Bonus {
-    pub nb_dice: i64,
-    pub face: i64,
+    pub nb_dice: i8,
+    pub face: i8,
     pub flat_bonus: i64,
 }
 
 impl Bonus {
     pub fn roll(&self) -> i64 {
-        (1..=self.nb_dice).map(|_| dx(self.face)).sum::<i64>() + self.flat_bonus
+        (1..=self.nb_dice).map(|_| dx(self.face) as i64).sum::<i64>() + self.flat_bonus
     }
 }
 
@@ -144,8 +144,8 @@ impl Roll {
         bonuses.push((
             tag.to_string(),
             Bonus {
-                nb_dice, 
-                face,
+                nb_dice: nb_dice as i8, 
+                face: face as i8,
                 flat_bonus,
             },
         ));
