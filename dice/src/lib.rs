@@ -47,7 +47,7 @@ impl Bonus {
 ///
 /// Can roll several batches of dice at once. It memoizes a particular total for a roll.
 ///
-#[derive(Clone, Default, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Roll {
     bonuses: Vec<(String, Bonus)>,
     pub value: i64,
@@ -164,6 +164,12 @@ impl Roll {
             }
         }
         out
+    }
+}
+
+impl Default for Roll {
+    fn default() -> Self {
+        Roll::flat("", 0)
     }
 }
 

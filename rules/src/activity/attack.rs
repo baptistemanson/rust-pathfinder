@@ -43,6 +43,7 @@ impl<'a> Activity for Action<'a> {
 
                 let attack_roll = compute_attack_roll(&weapon, source, target);
                 let ac_bonus = compute_ac(target, world);
+
                 if ac_bonus > attack_roll.value {
                     println!(
                         "\t{} missed {} with {} ({} = {} vs {} AC)",
@@ -67,21 +68,20 @@ impl<'a> Activity for Action<'a> {
                     attack_roll.value,
                     ac_bonus
                 );
-                let dmg_result = compute_damage_roll(&weapon, source, target, world, is_critical);
-                let verb = match dmg_result.damage_type {
+                let dmg = compute_damage_roll(&weapon, source, target, world, is_critical);
+                let verb = match dmg.damage_type {
                     DamageType::Bludgeoning => "was bludgeoned for",
                     DamageType::Piercing => "was pierced for",
                     DamageType::Slashing => "was slashed for",
                 };
                 println!(
                     "\t{} {} {} damage ({})",
-                    target.name, verb, dmg_result.value, dmg_result.details
+                    target.name, verb, dmg.value, dmg.details
                 );
 
                 // apply damage and statuses and loosing objects and...
-                // create struct for those changes and apply it to each object of the collection in the main
                 let target: &mut Character = world.get_mut_character(&id); // could this be avoided? maybe
-                (*target).sub_hp(dmg_result.value);
+                (*target).sub_hp(dmg.value);
             }
         }
     }
@@ -109,8 +109,7 @@ fn compute_attack_roll(
     source: &Character,
     _target: &Character,
 ) -> AttackRollResults {
-    let item_bonus = Roll::flat("item", 0);
-
+    let roll = Roll::from("1d20");
     // strength or dexterity modifier
     let ability_score = if weapon.is_ranged {
         Roll::flat("dex", get_modifier(source.ability_score.dexterity))
@@ -118,13 +117,14 @@ fn compute_attack_roll(
         Roll::flat("str", get_modifier(source.ability_score.strength))
     };
 
+    // @todo move this to a rule.
     let status_bonus = if source.has_status(StatusType::Bless) {
         Roll::flat("bless", 1)
     } else {
-        Roll::new("", 0, 0, 0)
+        Roll::default()
     };
-    // roll
-    let roll = Roll::from("1d20");
+    let item_bonus = Roll::default();
+
     // total
     let mut total = roll + ability_score + item_bonus + status_bonus;
     AttackRollResults {
@@ -147,26 +147,22 @@ fn compute_damage_roll(
         ..
     } = weapon.damage;
 
+    let mut rules = vec![Rule::StrengthModDamage];
+    rules.extend(weapon.info.rules.clone());
+    rules.extend(get_armor(target, world).info.rules.clone());
+
     let mut pre_crit_roll = Roll::d("weapon", nb_dice, dice_faces);
-
-    let mut all_rules = vec![Rule::StrengthModDamage];
-    all_rules.extend(weapon.info.rules.clone());
-    // i dont think it will do anything here?
-    let defender_armor = get_armor(target, world);
-    all_rules.extend(defender_armor.info.rules);
-
     pre_crit_roll = world
         .rules
-        .dmg_pre_crit(&all_rules, pre_crit_roll, source, world);
+        .dmg_pre_crit(&rules, pre_crit_roll, source, world);
 
-    let mut post_crit = world.rules.dmg_post_crit(
-        &weapon.info.rules,
-        Roll::d("placeholder", 0, 0),
-        source,
-        world,
-    );
+    let mut post_crit_roll =
+        world
+            .rules
+            .dmg_post_crit(&weapon.info.rules, Roll::default(), source, world);
 
-    let total = pre_crit_roll.resolve() * if is_critical { 2 } else { 1 } + post_crit.resolve();
+    let total =
+        pre_crit_roll.resolve() * if is_critical { 2 } else { 1 } + post_crit_roll.resolve();
 
     DamageRollResults {
         value: total,
@@ -176,7 +172,7 @@ fn compute_damage_roll(
             "{crit}{precrit} {postcrit} = {total} dmg",
             crit = if is_critical { "critical 2x" } else { "" },
             precrit = pre_crit_roll.get_details(),
-            postcrit = post_crit.get_details(),
+            postcrit = post_crit_roll.get_details(),
             total = total
         ),
     }
