@@ -11,12 +11,23 @@ pub fn dx(x: i64) -> i64 {
         x => x / 2,
     }
 }
+
 #[cfg(not(test))]
 use rand::prelude::*;
 #[cfg(not(test))]
 pub fn dx(x: i64) -> i64 {
     thread_rng().gen_range(1..=x)
 }
+
+//uncomment this to benchmark
+// #[cfg(not(test))]
+// pub fn dx(x: i64) -> i64 {
+//     match x {
+//         0 => 0,
+//         1 => 1,
+//         x => x - 2,
+//     }
+// }
 
 /// Used internally by [Roll](struct.Roll.html)
 ///

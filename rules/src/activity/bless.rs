@@ -9,7 +9,7 @@ use crate::{
 use super::{find_target::find_all_friends, Activity};
 
 #[derive(Clone, Debug)]
-pub struct Action {}
+pub struct Action;
 
 impl Action {
     pub fn new() -> Self {
@@ -22,7 +22,7 @@ impl Activity for Action {
         true
     }
     fn ai_playing_value(&self, _character: &Character, _context: &World) -> i64 {
-        Roll::from("1d20").roll()
+        Roll::from("1d20").roll() / 4
     }
 
     fn resolve<'lworld>(&mut self, character: &Character, world: &mut World) {

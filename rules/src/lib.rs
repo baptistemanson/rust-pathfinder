@@ -27,14 +27,14 @@ fn get_initiative<'b>(world: &'b World) -> Vec<Activation> {
         .collect()
 }
 
-pub fn main_loop() -> BoxResult<()> {
+pub fn main_loop(will_pause: bool) -> BoxResult<()> {
     let mut world = World::new();
     init(&mut world);
-    resolve_encounter(&mut world)
+    resolve_encounter(will_pause, &mut world)
 }
 
 // we split it out of the main function, as main here returns an int, and if we want to use ? we need to return Result.
-fn resolve_encounter(mut world: &mut World) -> BoxResult<()> {
+fn resolve_encounter(will_pause: bool, mut world: &mut World) -> BoxResult<()> {
     {
         let mut timeline = Timeline::new();
         let mut is_encounter_done = false;
@@ -42,7 +42,9 @@ fn resolve_encounter(mut world: &mut World) -> BoxResult<()> {
         // Step 1 - Initiative check p468
         let mut activations = get_initiative(&world);
         println!("Start of Round {}", timeline.turn_counter);
-        ui::pause();
+        if will_pause {
+            ui::pause();
+        }
         while !is_encounter_done {
             // Step 2 - Play a round p468
             activations = activations
@@ -54,7 +56,9 @@ fn resolve_encounter(mut world: &mut World) -> BoxResult<()> {
             match tick {
                 timeline::Tick::Over => is_encounter_done = true,
                 timeline::Tick::NewRound => {
-                    ui::pause();
+                    if will_pause {
+                        ui::pause();
+                    }
                     println!("Start of Round {}", timeline.turn_counter);
                     world.tick_down()
                 }

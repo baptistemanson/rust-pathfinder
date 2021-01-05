@@ -6,7 +6,7 @@ use pathfinder::main_loop;
 // so I would have 1 state pointer?
 
 fn main() {
-    match main_loop() {
+    match main_loop(false) {
         Ok(()) => println!("Thank you for playing my game"),
         Err(e) => println!("Error: {}", e),
     }

@@ -26,7 +26,7 @@ impl Action {
 
 impl Activity for Action {
     fn ai_playing_value(&self, _character: &Character, _context: &World) -> i64 {
-        Roll::from("1d20").roll()
+        Roll::d("", 1, 20).roll()
     }
 
     fn resolve<'lworld>(&mut self, source: &Character, world: &mut World) {
@@ -107,7 +107,7 @@ fn compute_attack_roll(
     source: &Character,
     _target: &Character,
 ) -> AttackRollResults {
-    let roll = Roll::from("1d20");
+    let roll = Roll::d("", 1, 20);
     // strength or dexterity modifier
     let ability_score = if weapon.is_ranged {
         Roll::flat("dex", get_modifier(source.ability_score.dexterity))

@@ -208,7 +208,7 @@ pub fn get_modifier(score: i64) -> i64 {
 impl character::Character {
     pub fn roll_perception_check(&self) -> i64 {
         // Perception check result = d20 roll + Wisdom modifier + proficiency bonus + other bonuses + penalties
-        Roll::from("1d20").roll() + get_modifier(self.ability_score.wisdom)
+        Roll::d("", 1, 20).roll() + get_modifier(self.ability_score.wisdom)
     }
 
     pub fn roll_initiative(&self) -> i64 {
