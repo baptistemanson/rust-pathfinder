@@ -24,7 +24,6 @@ impl<'a> Activity for Action<'a> {
 
     fn resolve(&self, character: &Character, world: &mut World) {
         let dmg = Roll::from("1d20").roll();
-        println!("roll {} {:?}", dmg, Roll::from("1d20"));
         let target_id = find_first_conscious_enemy(&character.party, world);
         match target_id {
             None => {
