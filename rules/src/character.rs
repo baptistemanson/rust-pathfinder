@@ -1,4 +1,4 @@
-use nanoid::generate;
+use nanoid::nanoid;
 
 use crate::{item::Loadout, status::StatusEffect};
 
@@ -20,7 +20,7 @@ pub struct Character {
 impl Character {
     pub fn new(name: String, party: String, max_hp: i64) -> Character {
         Character {
-            id: format!("{}-{}", name, generate(5)),
+            id: format!("{}-{}", name, nanoid!(5)),
             name,
             party,
             max_hp,

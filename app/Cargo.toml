@@ -1,21 +1,9 @@
 [package]
-name = "rules"
+name = "app"
 version = "0.1.0"
 authors = ["Baptiste Manson <baptiste.manson@gmail.com>"]
 edition = "2018"
 
-[lib]
-name = "pathfinder"
-path = "src/lib.rs"
-
-[[bin]]
-name = "rules-cli"
-path = "src/main.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rand = "0.8.0"
-flagset = "0.3.0"
-regex = "1"
-nanoid = "0.3.0"
-dice = { path = "../dice" }

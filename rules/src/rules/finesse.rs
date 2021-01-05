@@ -10,7 +10,7 @@ impl RuleImplementation for FinessRule {
         let str_mod = get_modifier(c.ability_score.strength);
         let dex_mod = get_modifier(c.ability_score.dexterity);
         if str_mod < dex_mod {
-            let r = r.cancel_bonus("str");
+            let r = r.remove_bonus("str");
             r + Roll::flat("finesse", dex_mod) // replace str by dex
         } else {
             r

@@ -18,9 +18,9 @@ pub fn dx(x: i64) -> i64 {
     thread_rng().gen_range(1..=x)
 }
 
-/// Represents "1d6+1"
-/// The dice are currently organized as a vector of dice, for the case where a bonus is a combination of different dices.
+/// Used internally by [Roll](struct.Roll.html)
 ///
+/// Represents "1d6+1".
 #[derive(Clone, Default, Debug, PartialEq, Eq)]
 pub struct Bonus {
     pub dices: Vec<Dice>,
@@ -28,7 +28,13 @@ pub struct Bonus {
 }
 
 impl Bonus {
-    pub fn get_details(&self) -> String {
+    pub fn roll(&self) -> i64 {
+        self.dices.iter().fold(0, |a, d| a + dx(*d)) + self.flat_bonus
+    }
+}
+
+impl ToString for Bonus {
+    fn to_string(&self) -> String {
         match (self.dices.len(), self.flat_bonus) {
             (0, 0) => String::from(""),
             (0, x) => format!("{}", x),
@@ -36,18 +42,31 @@ impl Bonus {
             _ => format!("{}d{}+{}", self.dices.len(), self.dices[0], self.flat_bonus),
         }
     }
-
-    pub fn roll(&self) -> i64 {
-        self.dices.iter().fold(0, |a, d| a + dx(*d)) + self.flat_bonus
-    }
 }
-
 /// Represents a collection of dice and a flat bonuses.
-/// Typically keeping track of: "sword 1d6 + str 2 + deadly 2d4".
 ///
-/// Can roll several batches of dice at once. It memoizes a particular total for a roll.
+/// When you play a RPG, you may end up having to keep track of a variety of modifiers and bonuses to perform a dice roll.
+/// In Pathfinder for instance,  "sword 1d6 + str 2 + deadly 2d4" is a legit dice roll.
 ///
-#[derive(Clone, Debug, PartialEq, Eq)]
+/// While one could simply add integers to get the final results, being able to access the details of the computation is now an expected user experience.
+/// This struct allows to keep track of a collection of additive [Bonus](struct.Bonus.html) like: "sword 1d6 + str 2 + deadly 2d4".
+/// Each [Bonus](struct.Bonus.html) corresponds to either a flat bonus (+1), a dice bonus (2d6), or a combination of both (10d6+6).
+///```
+/// use dice::Roll;
+/// assert_eq!(
+///   (Roll::from("1d6+1").tag("weapon") + Roll::from("2d4").tag("dex bonus") + Roll::from("+4")).to_string(),
+///    "weapon 1d6+1 + dex bonus 2d4 + 4"
+///);
+///Roll::from("1d6+1").roll();
+///```
+/// It also allows for using monad-like/chaining roll resolution, where each rule takes a roll and adds its modifiers in function of what has been already resolved.
+///
+/// In order to get this nice description, you can call to_string():
+
+/// A roll can also be rolled. The value can be memoized, to allow carrying the result of one roll around the system.
+/// Rolls always yield half the dice face rounded down in tests (a d3 will yield 1 for instance). It allows for cleaner unit tests with no need for a seed.
+///
+#[derive(Clone, Default, Debug, PartialEq, Eq)]
 pub struct Roll {
     bonuses: Vec<(String, Bonus)>,
     pub value: i64,
@@ -55,41 +74,15 @@ pub struct Roll {
 }
 
 impl Roll {
-    /// Creates a new roll.
-    ///
-    pub fn new(tag: &str, nb_dice: usize, face: i64, flat_bonus: i64) -> Self {
-        let mut bonuses = vec![];
-        bonuses.push((
-            tag.to_string(),
-            Bonus {
-                dices: vec![face; nb_dice],
-                flat_bonus,
-            },
-        ));
-        Roll {
-            bonuses,
-            ..Default::default()
-        }
-    }
-
-    /// Creates a new roll that is only a flat bonus.
-    /// In isolation, it has no value, but it can be used in combination with others.
-    pub fn flat(tag: &str, flat_bonus: i64) -> Self {
-        Self::new(tag, 0, 0, flat_bonus)
-    }
-
-    /// Creates a new roll with only dices.
-    pub fn d(tag: &str, nb_dice: usize, face: i64) -> Self {
-        Self::new(tag, nb_dice, face, 0)
-    }
-
-    pub fn d20() -> Self {
-        Roll::d("", 1, 20)
-    }
-
     /// Parses a string slice and returns a roll.
+    ///```
+    ///use dice::Roll;
+    ///assert_eq!(Roll::from("1d6+2"), Roll::new("", 1, 6, 2));
+    ///assert_eq!(Roll::from("1d6"), Roll::new("", 1, 6, 0));
+    ///assert_eq!(Roll::from("+2").tag("my_tag"), Roll::new("my_tag", 0, 0, 2));
+    ///```
     pub fn from(expr: &str) -> Self {
-        let re = Regex::new(r"^(?P<nb_dice>\d+)d(?P<faces>\d+)\+?(?P<flat>\d+)?$").unwrap();
+        let re = Regex::new(r"^(?:(?P<nb_dice>\d+)d(?P<faces>\d+))?(?:\+(?P<flat>\d+))?$").unwrap();
         let matches = re.captures(expr).unwrap();
         let mut nb_dice = 0;
         let mut faces = 0;
@@ -108,7 +101,70 @@ impl Roll {
         Roll::new("", nb_dice, faces, flat_bonus)
     }
 
-    /// Rolls the dice, and memoizes the total for later use.
+    /// Tags the latest bonus of a roll.
+    ///```
+    ///use dice::Roll;
+    ///assert_eq!(Roll::from("+1").tag("flat"), Roll::new("flat", 0, 0, 1));
+    ///assert_eq!( (Roll::from("+1")       + Roll::from("+2")).tag("another tag"),
+    ///             Roll::new("", 0, 0, 1) + Roll::new("another tag", 0, 0, 2)
+    ///);
+    ///```
+    pub fn tag(&mut self, tag: &str) -> Self {
+        let last = self.bonuses.len() - 1;
+        self.bonuses[last].0 = String::from(tag);
+        self.clone()
+    }
+
+    /// Creates a new roll.
+    ///Usually the method `Roll::from()`, `Roll::d()` or `Roll::flat` are more convenient.
+    /// The tag is used to remember the origin of a bonus or extra roll.
+    ///```
+    ///use dice::Roll;
+    ///let roll = Roll::new("", 1, 6, 2);
+    ///assert_eq!(roll, dice::Roll::from("1d6+2"));
+    ///```
+    pub fn new(tag: &str, nb_dice: usize, face: i64, flat_bonus: i64) -> Self {
+        let mut bonuses = vec![];
+        bonuses.push((
+            tag.to_string(),
+            Bonus {
+                dices: vec![face; nb_dice],
+                flat_bonus,
+            },
+        ));
+        Roll {
+            bonuses,
+            ..Default::default()
+        }
+    }
+
+    /// Alias for "[tag] +X"
+    ///```
+    ///use dice::Roll;
+    ///assert_eq!( Roll::flat("my_tag", 1), Roll::from("+1").tag("my_tag"));
+    ///```
+    pub fn flat(tag: &str, flat_bonus: i64) -> Self {
+        Self::new(tag, 0, 0, flat_bonus)
+    }
+
+    /// Alias for "[tag] XdY"
+    ///```
+    ///use dice::Roll;
+    ///assert_eq!(Roll::d("my_tag", 1, 6), Roll::from("1d6").tag("my_tag"));
+    ///```
+    pub fn d(tag: &str, nb_dice: usize, face: i64) -> Self {
+        Self::new(tag, nb_dice, face, 0)
+    }
+
+    /// Rolls the dice.
+    ///
+    /// Value is memoized, so rolling several times get the same result.
+    /// It allows for propagating a result through the system with its details.
+    ///```
+    ///use dice::Roll;
+    ///let mut roll = Roll::d("my_tag", 1, 6);
+    ///assert_eq!(roll.resolve(), roll.resolve()); //
+    ///```
     pub fn resolve(&mut self) -> i64 {
         if self.has_been_rolled {
             return self.value;
@@ -125,27 +181,10 @@ impl Roll {
             .fold(0, |acc, (_, bonus)| acc + bonus.roll())
     }
 
-    /// Generates a human readable string detailing the formula in place.
-    /// The goal is to provide nice tooltips to explain a roll to the user.
-    pub fn get_details(&self) -> String {
-        self.bonuses
-            .iter()
-            .map(|(k, b)| {
-                if k == "" {
-                    b.get_details()
-                } else {
-                    if b.get_details() == "" {
-                        String::from("")
-                    } else {
-                        format!("{} {}", k, b.get_details())
-                    }
-                }
-            })
-            .filter(|s| s != "")
-            .collect::<Vec<String>>()
-            .join(" + ")
-    }
-
+    /// Get the detail about a bonus.
+    ///
+    /// Useful when some rules interact with another.
+    /// For instance, "Finesse" in Pathfinder allows to use the DEX modifier in lieu of the STR modifier.
     pub fn get_bonus(&self, key: &str) -> Bonus {
         self.bonuses
             .iter()
@@ -155,7 +194,16 @@ impl Roll {
             .clone()
     }
 
-    pub fn cancel_bonus(&self, key: &str) -> Self {
+    /// Get the detail about a bonus.
+    ///
+    /// Useful when some rules interact with another.
+    /// For instance, "Finesse" in Pathfinder allows to use the DEX modifier in lieu of the STR modifier.
+    ///```
+    /// let roll = dice::Roll::from("1d4").tag("weapon") + dice::Roll::from("+4").tag("str");
+    /// assert_eq!(roll.remove_bonus("str"), dice::Roll::from("1d4").tag("weapon"));
+    ///
+    ///```
+    pub fn remove_bonus(&self, key: &str) -> Self {
         let mut out = self.clone();
         out.bonuses = vec![];
         for (k, bonus) in &self.bonuses {
@@ -167,16 +215,33 @@ impl Roll {
     }
 }
 
-impl Default for Roll {
-    fn default() -> Self {
-        Roll::flat("", 0)
+impl ToString for Roll {
+    fn to_string(&self) -> String {
+        self.bonuses
+            .iter()
+            .map(|(k, b)| {
+                if k == "" {
+                    b.to_string()
+                } else {
+                    if b.to_string() == "" {
+                        String::from("")
+                    } else {
+                        format!("{} {}", k, b.to_string())
+                    }
+                }
+            })
+            .filter(|s| s != "")
+            .collect::<Vec<String>>()
+            .join(" + ")
     }
 }
-
 impl ops::Add<Roll> for Roll {
     type Output = Roll;
 
     fn add(self, rhs: Roll) -> Roll {
+        if rhs.has_been_rolled || self.has_been_rolled {
+            panic!("You cannot modify dice rolls after having resolved them");
+        }
         // @todo if same label on bonuses, merge the vecs instead.
         let mut bonuses = vec![];
         bonuses.extend(self.bonuses);
@@ -208,9 +273,10 @@ mod test {
     #[test]
     fn resolve() {
         let mut roll1 = Roll::new("", 5, 1, 5);
+        let roll2 = roll1.clone();
         assert_eq!(roll1.resolve(), 10);
-        let roll2 = Roll::new("", 1, 6, 0);
-        assert_eq!((roll1 + roll2).resolve(), 13);
+        let roll3 = Roll::new("", 1, 6, 0);
+        assert_eq!((roll2 + roll3).resolve(), 13);
     }
 
     #[test]
@@ -223,7 +289,7 @@ mod test {
     #[test]
     fn get_details() {
         assert_eq!(
-            (Roll::d("str", 1, 6) + Roll::new("dex", 2, 4, 1) + Roll::flat("", 4)).get_details(),
+            (Roll::d("str", 1, 6) + Roll::new("dex", 2, 4, 1) + Roll::flat("", 4)).to_string(),
             "str 1d6 + dex 2d4+1 + 4"
         );
     }
@@ -235,7 +301,7 @@ mod test {
                 + Roll::d("str", 1, 6)
                 + Roll::new("dex", 2, 4, 1)
                 + Roll::flat("", 0))
-            .get_details(),
+            .to_string(),
             "str 1d6 + dex 2d4+1"
         );
     }
@@ -243,7 +309,7 @@ mod test {
     #[test]
     fn pathfinder() {
         let dmg_roll = Roll::d("sword", 1, 6) + Roll::flat("str", 2) + Roll::d("deadly", 1, 6);
-        assert_eq!(dmg_roll.get_details(), "sword 1d6 + str 2 + deadly 1d6");
+        assert_eq!(dmg_roll.to_string(), "sword 1d6 + str 2 + deadly 1d6");
     }
 
     #[test]
@@ -259,7 +325,7 @@ mod test {
             + Roll::new("to_be_deleted", 1, 6, 1)
             + Roll::new("to_be_kept", 1, 6, 1);
         assert_eq!(
-            roll.cancel_bonus("to_be_deleted"),
+            roll.remove_bonus("to_be_deleted"),
             Roll::from("1d6+1") + Roll::new("to_be_kept", 1, 6, 1)
         );
         // when testing the dice rolls for half their value.

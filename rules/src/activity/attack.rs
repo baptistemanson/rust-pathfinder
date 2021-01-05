@@ -129,7 +129,7 @@ fn compute_attack_roll(
     let mut total = roll + ability_score + item_bonus + status_bonus;
     AttackRollResults {
         value: total.resolve(),
-        details: total.get_details(),
+        details: total.to_string(),
         natural_20: total.resolve() == 20,
     }
 }
@@ -171,8 +171,8 @@ fn compute_damage_roll(
         details: format!(
             "{crit}{precrit} {postcrit} = {total} dmg",
             crit = if is_critical { "critical 2x" } else { "" },
-            precrit = pre_crit_roll.get_details(),
-            postcrit = post_crit_roll.get_details(),
+            precrit = pre_crit_roll.to_string(),
+            postcrit = post_crit_roll.to_string(),
             total = total
         ),
     }
