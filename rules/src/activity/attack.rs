@@ -8,6 +8,7 @@ use crate::{
     },
     rules::Rule,
     status::StatusType,
+    ui::log,
     utils::get_armor,
     world::World,
 };
@@ -43,7 +44,7 @@ impl Activity for Action {
                 let ac_bonus = compute_ac(target, world);
 
                 if ac_bonus > attack_roll.value {
-                    println!(
+                    log(&format!(
                         "\t{} missed {} with {} ({} = {} vs {} AC)",
                         source.name,
                         target.name,
@@ -51,12 +52,12 @@ impl Activity for Action {
                         attack_roll.details,
                         attack_roll.value,
                         ac_bonus
-                    );
+                    ));
                     return;
                 }
                 // p278 critical hits
                 let is_critical = attack_roll.natural_20 || (attack_roll.value - ac_bonus) >= 10;
-                println!(
+                log(&format!(
                     "\t{} {}hits {} with {} ({} = {} vs {} AC)",
                     source.name,
                     if is_critical { "critically " } else { "" },
@@ -65,17 +66,17 @@ impl Activity for Action {
                     attack_roll.details,
                     attack_roll.value,
                     ac_bonus
-                );
+                ));
                 let dmg = compute_damage_roll(&weapon, source, target, world, is_critical);
                 let verb = match dmg.damage_type {
                     DamageType::Bludgeoning => "was bludgeoned for",
                     DamageType::Piercing => "was pierced for",
                     DamageType::Slashing => "was slashed for",
                 };
-                println!(
+                log(&format!(
                     "\t{} {} {} damage ({})",
-                    target.name, verb, dmg.value, dmg.details
-                );
+                    target.name, verb, dmg.value, dmg.details,
+                ));
 
                 // apply damage and statuses and loosing objects and...
                 let target: &mut Character = world.get_mut_character(&id); // could this be avoided? maybe
@@ -179,7 +180,7 @@ fn compute_damage_roll(
             format!(
                 "{precrit}{sep}{postcrit} = {total} dmg",
                 precrit = pre_crit_roll.to_string(),
-                sep = if pc_str != "" {" + "} else {""},
+                sep = if pc_str != "" { " + " } else { "" },
                 postcrit = pc_str,
                 total = total
             )

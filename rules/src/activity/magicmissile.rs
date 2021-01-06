@@ -1,6 +1,6 @@
 use dice::Roll;
 
-use crate::{character::Character, world::World};
+use crate::{character::Character, ui::log, world::World};
 
 use super::{find_target::find_first_conscious_enemy, Activity};
 
@@ -26,10 +26,10 @@ impl Activity for Action {
             }
             Some(id) => {
                 let target: &mut Character = world.get_mut_character(&id);
-                println!(
+                log(&format!(
                     "\t{} casts a magic missile to {} for {} dmg",
                     character.name, target.name, dmg
-                );
+                ));
                 (*target).sub_hp(dmg);
             }
         }

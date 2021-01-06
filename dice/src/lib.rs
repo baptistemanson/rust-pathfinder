@@ -4,7 +4,8 @@ use std::ops;
 extern crate lazy_static;
 
 lazy_static! {
-    static ref MY_REGEX: Regex = Regex::new(r"^(?:(?P<nb_dice>\d+)d(?P<faces>\d+))?(?:\+(?P<flat>\d+))?$").unwrap();
+    static ref MY_REGEX: Regex =
+        Regex::new(r"^(?:(?P<nb_dice>\d+)d(?P<faces>\d+))?(?:\+(?P<flat>\d+))?$").unwrap();
 }
 
 #[cfg(test)]
@@ -45,7 +46,10 @@ pub struct Bonus {
 
 impl Bonus {
     pub fn roll(&self) -> i64 {
-        (1..=self.nb_dice).map(|_| dx(self.face) as i64).sum::<i64>() + self.flat_bonus
+        (1..=self.nb_dice)
+            .map(|_| dx(self.face) as i64)
+            .sum::<i64>()
+            + self.flat_bonus
     }
 }
 
@@ -55,7 +59,10 @@ impl Bonus {
             (0, 0) => None,
             (0, x) => Some(format!("{}", x)),
             (_, 0) => Some(format!("{}d{}", self.nb_dice, self.face)),
-            _ => Some(format!("{}d{}+{}", self.nb_dice, self.face, self.flat_bonus)),
+            _ => Some(format!(
+                "{}d{}+{}",
+                self.nb_dice, self.face, self.flat_bonus
+            )),
         }
     }
 }
@@ -98,7 +105,6 @@ impl Roll {
     ///assert_eq!(Roll::from("+2").tag("my_tag"), Roll::new("my_tag", 0, 0, 2));
     ///```
     pub fn from(expr: &str) -> Self {
-        
         let matches = MY_REGEX.captures(expr).unwrap();
         let mut nb_dice = 0;
         let mut faces = 0;
@@ -144,7 +150,7 @@ impl Roll {
         bonuses.push((
             tag.to_string(),
             Bonus {
-                nb_dice: nb_dice as i8, 
+                nb_dice: nb_dice as i8,
                 face: face as i8,
                 flat_bonus,
             },
@@ -193,9 +199,7 @@ impl Roll {
 
     /// Rolls the dice, but don't memoize the total.
     pub fn roll(&self) -> i64 {
-        self.bonuses
-            .iter()
-            .map( | (_, bonus)| bonus.roll()).sum()
+        self.bonuses.iter().map(|(_, bonus)| bonus.roll()).sum()
     }
 
     /// Get the detail about a bonus.
@@ -243,7 +247,7 @@ impl ToString for Roll {
                     if b.to_string() == None {
                         None
                     } else {
-                        Some(format!("{} {}", k, b.to_string().unwrap()))
+                        Some(k.to_owned() + " " + &b.to_string().unwrap())
                     }
                 }
             })

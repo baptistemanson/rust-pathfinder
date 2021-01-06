@@ -11,6 +11,7 @@ mod rules;
 
 use activity::select_best_action;
 use timeline::{Activation, Timeline};
+use ui::log;
 use world::{init, World};
 
 type BoxResult<T> = std::result::Result<T, Box<dyn std::error::Error>>;
@@ -41,7 +42,7 @@ fn resolve_encounter(will_pause: bool, mut world: &mut World) -> BoxResult<()> {
 
         // Step 1 - Initiative check p468
         let mut activations = get_initiative(&world);
-        println!("Start of Round {}", timeline.turn_counter);
+        log(&format!("Start of Round {}", timeline.turn_counter));
         if will_pause {
             ui::pause();
         }
@@ -59,7 +60,7 @@ fn resolve_encounter(will_pause: bool, mut world: &mut World) -> BoxResult<()> {
                     if will_pause {
                         ui::pause();
                     }
-                    println!("Start of Round {}", timeline.turn_counter);
+                    log(&format!("Start of Round {}", timeline.turn_counter));
                     world.tick_down()
                 }
                 timeline::Tick::CharacterAction(c) => {

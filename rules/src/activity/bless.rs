@@ -3,6 +3,7 @@ use dice::Roll;
 use crate::{
     character::Character,
     status::{Duration, StatusEffect, StatusType},
+    ui::log,
     world::World,
 };
 
@@ -22,7 +23,7 @@ impl Activity for Action {
         true
     }
     fn ai_playing_value(&self, _character: &Character, _context: &World) -> i64 {
-        Roll::d("", 1,20).roll() / 4
+        Roll::d("", 1, 20).roll() / 4
     }
 
     fn resolve<'lworld>(&mut self, character: &Character, world: &mut World) {
@@ -36,7 +37,11 @@ impl Activity for Action {
             });
             target_names.push(target.name.clone());
         }
-        println!("\t{} blessed {}", character.name, target_names.join(", "));
+        log(&format!(
+            "\t{} blessed {}",
+            character.name,
+            target_names.join(", ")
+        ));
     }
 
     fn get_name(&self) -> &str {

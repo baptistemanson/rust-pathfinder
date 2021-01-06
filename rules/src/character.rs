@@ -1,4 +1,4 @@
-use crate::{item::Loadout, status::StatusEffect};
+use crate::{item::Loadout, status::StatusEffect, ui::log};
 
 use self::abilities::AbilityScore;
 pub mod abilities;
@@ -35,7 +35,7 @@ impl Character {
             self.hp = self.max_hp;
         }
         if self.hp <= 0 {
-            println!("\t{} is unconscious!", self.name);
+            log(&format!("\t{} is unconscious!", self.name));
         }
     }
 }

@@ -4,8 +4,8 @@ use winit::{
     window::Window,
 };
 
+// initializes everything.
 async fn run(event_loop: EventLoop<()>, window: Window, swapchain_format: wgpu::TextureFormat) {
-    let size = window.inner_size();
     let instance = wgpu::Instance::new(wgpu::BackendBit::PRIMARY);
     let surface = unsafe { instance.create_surface(&window) };
     let adapter = instance
@@ -64,7 +64,7 @@ async fn run(event_loop: EventLoop<()>, window: Window, swapchain_format: wgpu::
         sample_mask: !0,
         alpha_to_coverage_enabled: false,
     });
-
+    let size = window.inner_size();
     let mut sc_desc = wgpu::SwapChainDescriptor {
         usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT,
         format: swapchain_format,

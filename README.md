@@ -7,9 +7,21 @@ MIT and everything. Author Baptiste Manson
 
 Most interesting to code: benchmark, improve roll, 3 actions, position, visual
 
-## UT
+key takeaways on performances:
+
+- references help
+- clone on character is nothing, at least I dont see it
+- println! is more costly on windows
+- the performance I can reach with Rust I cannot with JS, by a factor x10-100.
+-
+
+## General
 
 - [x] add unit tests
+- [x] learn benchmarking
+- [x] learn profiling
+- [x] setup webgpu
+- [x] optimize (went from 80ms to 0.064ms)
 - [ ] test the weapon traits
 
 ### Rules engine
