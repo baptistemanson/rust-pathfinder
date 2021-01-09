@@ -7,10 +7,20 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-shaderc = "0.7"
-winit = "0.24.0"
-pollster = "0.2"
-wgpu = { git = "https://github.com/gfx-rs/wgpu-rs.git" }
-futures = { version = "0.3", default-features = false, features = ["std"] }
+cgmath = "0.17"
+log = "0.4"
+png = "0.16"
+winit = { version = "0.23.0", features = ["web-sys"] }
+rand = { version = "0.7.2", features = ["wasm-bindgen"] }
 bytemuck = { version = "1.4", features = ["derive"] }
+noise = "0.6"
+ddsfile = "0.4"
+wgpu = { git = "https://github.com/gfx-rs/wgpu-rs.git" }
+pollster = "0.2"
+async-executor = "1.4.0"
 
+
+[dependencies.wgt]
+package = "wgpu-types"
+git = "https://github.com/gfx-rs/wgpu"
+rev = "4ebe1f50b057046e4d4f015eb006330d62f5fe91"
