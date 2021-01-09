@@ -13,7 +13,6 @@ key takeaways on performances:
 - clone on character is nothing, at least I dont see it
 - println! is more costly on windows
 - the performance I can reach with Rust I cannot with JS, by a factor x10-100.
--
 
 ## General
 
