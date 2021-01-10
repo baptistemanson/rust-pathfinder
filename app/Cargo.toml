@@ -18,6 +18,7 @@ ddsfile = "0.4"
 wgpu = { git = "https://github.com/gfx-rs/wgpu-rs.git" }
 pollster = "0.2"
 async-executor = "1.4.0"
+image = "0.23"
 
 
 [dependencies.wgt]

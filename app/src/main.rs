@@ -15,7 +15,23 @@ struct PathfinderApp {
 }
 
 impl PathfinderApp {}
-//lol
+
+#[allow(dead_code)]
+fn procedural_tex(size: u32) -> Vec<u8> {
+    (0..size * size)
+        .flat_map(|i| vec![(i % 256) as u8, 0, 0, 0])
+        .collect::<Vec<u8>>()
+}
+
+fn image_tex(_size: u32) -> Vec<u8> {
+    image::io::Reader::open("./assets/grass.jpg")
+        .unwrap()
+        .decode()
+        .unwrap()
+        .into_rgba8()
+        .into_raw()
+}
+
 impl framework::App for PathfinderApp {
     fn optional_features() -> wgt::Features {
         wgt::Features::NON_FILL_POLYGON_MODE
@@ -87,9 +103,7 @@ impl framework::App for PathfinderApp {
 
         // Create the texture
         let size = 256u32;
-        let texture_bytes = (0..size * size)
-            .flat_map(|i| vec![(i % 256) as u8, 0, 0, 0])
-            .collect::<Vec<u8>>();
+        let texture_bytes = image_tex(size);
         let texture_extent = wgpu::Extent3d {
             width: size,
             height: size,
