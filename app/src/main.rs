@@ -318,5 +318,5 @@ impl framework::App for PathfinderApp {
 }
 
 fn main() {
-    framework::run::<PathfinderApp>("cube");
+    framework::run::<PathfinderApp>("pathfinder");
 }
