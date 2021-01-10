@@ -9,6 +9,6 @@ layout(location = 0) out vec2 v_TexCoord;
 // };
 
 void main() {
-    v_TexCoord = a_TexCoord;
+    v_TexCoord = (a_Pos.xy + vec2(1.,1.)) / 2.;
     gl_Position = a_Pos;
 }
