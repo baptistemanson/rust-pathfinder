@@ -24,6 +24,7 @@ pub enum Tick {
     NewRound,
     Over,
 }
+// TAG - CharacterId
 
 pub type CharacterId = String;
 

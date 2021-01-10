@@ -29,7 +29,8 @@ pub enum ShaderStage {
     Compute,
 }
 
-pub trait Example: 'static + Sized {
+// An App.
+pub trait App: 'static + Sized {
     fn optional_features() -> wgpu::Features {
         wgpu::Features::empty()
     }
@@ -71,15 +72,7 @@ struct Setup {
     queue: wgpu::Queue,
 }
 
-async fn setup<E: Example>(title: &str) -> Setup {
-    // #[cfg(not(target_arch = "wasm32"))]
-    // {
-    //     let chrome_tracing_dir = std::env::var("WGPU_CHROME_TRACE");
-    //     // wgpu_subscriber::initialize_default_subscriber(
-    //     //     chrome_tracing_dir.as_ref().map(std::path::Path::new).ok(),
-    //     // );
-    // };
-
+async fn setup<E: App>(title: &str) -> Setup {
     let event_loop = EventLoop::new();
     let mut builder = winit::window::WindowBuilder::new();
     builder = builder.with_title(title);
@@ -186,7 +179,7 @@ async fn setup<E: Example>(title: &str) -> Setup {
     }
 }
 
-fn start<E: Example>(
+fn start<E: App>(
     Setup {
         window,
         event_loop,
@@ -333,7 +326,7 @@ impl Spawner {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-pub fn run<E: Example>(title: &str) {
+pub fn run<E: App>(title: &str) {
     let setup = pollster::block_on(setup::<E>(title));
     start::<E>(setup);
 }

@@ -1,10 +1,9 @@
 mod framework;
-mod utils;
 mod vertex;
 
 use wgpu::util::DeviceExt;
 
-struct PathfinderApp {
+struct Example {
     vertex_buf: wgpu::Buffer,
     index_buf: wgpu::Buffer,
     index_format: wgpu::IndexFormat,
@@ -12,11 +11,23 @@ struct PathfinderApp {
     bind_group: wgpu::BindGroup,
     uniform_buf: wgpu::Buffer,
     pipeline: wgpu::RenderPipeline,
+    pipeline_wire: Option<wgpu::RenderPipeline>,
 }
 
-impl PathfinderApp {}
-//lol
-impl framework::App for PathfinderApp {
+impl Example {
+    fn generate_matrix(aspect_ratio: f32) -> cgmath::Matrix4<f32> {
+        let mx_projection = cgmath::perspective(cgmath::Deg(45f32), aspect_ratio, 1.0, 10.0);
+        let mx_view = cgmath::Matrix4::look_at(
+            cgmath::Point3::new(1.5f32, -5.0, 3.0),
+            cgmath::Point3::new(0f32, 0.0, 0.0),
+            cgmath::Vector3::unit_z(),
+        );
+        let mx_correction = framework::OPENGL_TO_WGPU_MATRIX;
+        mx_correction * mx_projection * mx_view
+    }
+}
+
+impl framework::Example for Example {
     fn optional_features() -> wgt::Features {
         wgt::Features::NON_FILL_POLYGON_MODE
     }
@@ -30,7 +41,7 @@ impl framework::App for PathfinderApp {
 
         // Create the vertex and index buffers
         let vertex_size = mem::size_of::<vertex::Vertex>();
-        let (vertex_data, index_data) = vertex::quad();
+        let (vertex_data, index_data) = vertex::cube();
 
         let vertex_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Vertex Buffer"),
@@ -138,7 +149,7 @@ impl framework::App for PathfinderApp {
 
         // Buffer
         //convenient for everything but Samplers and Textures.
-        let mx_total = utils::generate_matrix(sc_desc.width as f32 / sc_desc.height as f32);
+        let mx_total = Self::generate_matrix(sc_desc.width as f32 / sc_desc.height as f32);
         let mx_ref: &[f32; 16] = mx_total.as_ref();
         let uniform_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Uniform Buffer transform"),
@@ -200,10 +211,8 @@ impl framework::App for PathfinderApp {
             }],
         };
 
-        let vs_module =
-            device.create_shader_module(&wgpu::include_spirv!("shaders/shader.vert.spv"));
-        let fs_module =
-            device.create_shader_module(&wgpu::include_spirv!("shaders/shader.frag.spv"));
+        let vs_module = device.create_shader_module(&wgpu::include_spirv!("shader.vert.spv"));
+        let fs_module = device.create_shader_module(&wgpu::include_spirv!("shader.frag.spv"));
 
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: None,
@@ -235,8 +244,53 @@ impl framework::App for PathfinderApp {
             alpha_to_coverage_enabled: false,
         });
 
+        let pipeline_wire = if device
+            .features()
+            .contains(wgt::Features::NON_FILL_POLYGON_MODE)
+        {
+            let fs_wire_module =
+                device.create_shader_module(&wgpu::include_spirv!("wire.frag.spv"));
+            let pipeline_wire = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+                label: None,
+                layout: Some(&pipeline_layout),
+                vertex_stage: wgpu::ProgrammableStageDescriptor {
+                    module: &vs_module,
+                    entry_point: "main",
+                },
+                fragment_stage: Some(wgpu::ProgrammableStageDescriptor {
+                    module: &fs_wire_module,
+                    entry_point: "main",
+                }),
+                rasterization_state: Some(wgpu::RasterizationStateDescriptor {
+                    front_face: wgpu::FrontFace::Ccw,
+                    cull_mode: wgpu::CullMode::Back,
+                    polygon_mode: wgpu::PolygonMode::Line,
+                    ..Default::default()
+                }),
+                primitive_topology: wgpu::PrimitiveTopology::TriangleList,
+                color_states: &[wgpu::ColorStateDescriptor {
+                    format: sc_desc.format,
+                    color_blend: wgpu::BlendDescriptor {
+                        operation: wgpu::BlendOperation::Add,
+                        src_factor: wgpu::BlendFactor::SrcAlpha,
+                        dst_factor: wgpu::BlendFactor::OneMinusSrcAlpha,
+                    },
+                    alpha_blend: wgpu::BlendDescriptor::REPLACE,
+                    write_mask: wgpu::ColorWrite::ALL,
+                }],
+                depth_stencil_state: None,
+                vertex_state,
+                sample_count: 1,
+                sample_mask: !0,
+                alpha_to_coverage_enabled: false,
+            });
+            Some(pipeline_wire)
+        } else {
+            None
+        };
+
         // Done
-        PathfinderApp {
+        Example {
             vertex_buf,
             index_buf,
             index_format,
@@ -244,6 +298,7 @@ impl framework::App for PathfinderApp {
             bind_group,
             uniform_buf,
             pipeline,
+            pipeline_wire,
         }
     }
 
@@ -257,7 +312,7 @@ impl framework::App for PathfinderApp {
         _device: &wgpu::Device,
         queue: &wgpu::Queue,
     ) {
-        let mx_total = utils::generate_matrix(sc_desc.width as f32 / sc_desc.height as f32);
+        let mx_total = Self::generate_matrix(sc_desc.width as f32 / sc_desc.height as f32);
         let mx_ref: &[f32; 16] = mx_total.as_ref();
         queue.write_buffer(&self.uniform_buf, 0, bytemuck::cast_slice(mx_ref));
     }
@@ -297,6 +352,10 @@ impl framework::App for PathfinderApp {
             rpass.pop_debug_group();
             rpass.insert_debug_marker("Draw!");
             rpass.draw_indexed(0..self.index_count as u32, 0, 0..1);
+            if let Some(ref pipe) = self.pipeline_wire {
+                rpass.set_pipeline(pipe);
+                rpass.draw_indexed(0..self.index_count as u32, 0, 0..1);
+            }
         }
 
         queue.submit(Some(encoder.finish()));
@@ -304,5 +363,5 @@ impl framework::App for PathfinderApp {
 }
 
 fn main() {
-    framework::run::<PathfinderApp>("cube");
+    framework::run::<Example>("cube");
 }

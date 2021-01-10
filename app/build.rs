@@ -1,0 +1,44 @@
+use std::{error::Error, process::Command};
+
+enum ShaderType {
+    Vertex,
+    Fragment,
+}
+fn main() -> Result<(), Box<dyn Error>> {
+    // Tell the build script to only run again if we change our source shaders
+    // println!("cargo:rerun-if-changed=src/shaders");
+    println!("cargo:rerun-if-changed=src/shaders");
+
+    for entry in std::fs::read_dir("src/shaders")? {
+        let entry = entry?;
+
+        if entry.file_type()?.is_file() {
+            let in_path = entry.path();
+
+            // Support only vertex and fragment shaders currently
+            let shader_type =
+                in_path
+                    .extension()
+                    .and_then(|ext| match ext.to_string_lossy().as_ref() {
+                        "vert" => Some(ShaderType::Vertex),
+                        "frag" => Some(ShaderType::Fragment),
+                        _ => None,
+                    });
+            if let Some(_shader_type) = shader_type {
+                let dest = format!("{}.spv", in_path.display());
+                let command = format!(
+                    ".\\glslangValidator.exe -V {}  -o {}",
+                    in_path.display(),
+                    dest
+                );
+                std::fs::remove_file(&dest)?;
+                println!("command {}", command);
+                Command::new("cmd")
+                    .args(&["/C", &command])
+                    .output()
+                    .expect("failed to execute process");
+            }
+        }
+    }
+    Ok(())
+}

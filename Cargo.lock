@@ -41,6 +41,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "app"
+version = "0.1.0"
+dependencies = [
+ "async-executor",
+ "bytemuck",
+ "cgmath",
+ "ddsfile",
+ "log",
+ "noise",
+ "png 0.16.8",
+ "pollster",
+ "rand 0.7.3",
+ "wgpu",
+ "wgpu-types",
+ "winit",
+]
+
+[[package]]
 name = "approx"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2421,24 +2439,6 @@ checksum = "222b1ef9334f92a21d3fb53dc3fd80f30836959a90f9274a626d7e06315ba3c3"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
-]
-
-[[package]]
-name = "wgpu"
-version = "0.1.0"
-dependencies = [
- "async-executor",
- "bytemuck",
- "cgmath",
- "ddsfile",
- "log",
- "noise",
- "png 0.16.8",
- "pollster",
- "rand 0.7.3",
- "wgpu 0.6.0",
- "wgpu-types",
- "winit",
 ]
 
 [[package]]

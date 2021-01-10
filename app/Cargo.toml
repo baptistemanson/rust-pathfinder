@@ -1,5 +1,5 @@
 [package]
-name = "wgpu"
+name = "app"
 version = "0.1.0"
 authors = ["baptistemanson <baptiste.manson@inovia.fr>"]
 edition = "2018"
