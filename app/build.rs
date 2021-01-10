@@ -25,13 +25,17 @@ fn main() -> Result<(), Box<dyn Error>> {
                         _ => None,
                     });
             if let Some(_shader_type) = shader_type {
-                let dest = format!("{}.spv", in_path.display());
+                let path_str = format!("{}.spv", in_path.display());
+                let dest = std::path::Path::new(&path_str);
+
                 let command = format!(
                     ".\\glslangValidator.exe -V {}  -o {}",
                     in_path.display(),
-                    dest
+                    dest.display()
                 );
-                std::fs::remove_file(&dest)?;
+                if dest.exists() {
+                    std::fs::remove_file(&dest)?;
+                }
                 println!("command {}", command);
                 Command::new("cmd")
                     .args(&["/C", &command])

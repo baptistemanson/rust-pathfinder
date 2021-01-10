@@ -88,7 +88,7 @@ impl framework::App for PathfinderApp {
         // Create the texture
         let size = 256u32;
         let texture_bytes = (0..size * size)
-            .flat_map(|_| vec![0, 255, 0, 0])
+            .flat_map(|_| vec![255, 0, 0, 0])
             .collect::<Vec<u8>>();
         let texture_extent = wgpu::Extent3d {
             width: size,
