@@ -1,7 +1,6 @@
-use bytemuck::{Pod, Zeroable};
 // VERTEX BUFFER RELATED
 #[repr(C)]
-#[derive(Clone, Copy, Pod, Zeroable)]
+#[derive(Clone, Copy)]
 pub struct VertexWithTex {
     _pos: [f32; 4],
     _tex_coord: [f32; 2],
@@ -61,7 +60,7 @@ pub fn cube() -> (Vec<VertexWithTex>, Vec<u16>) {
 }
 
 #[repr(C)]
-#[derive(Clone, Copy, Pod, Zeroable)]
+#[derive(Clone, Copy)]
 pub struct Vertex {
     _pos: [f32; 4],
 }

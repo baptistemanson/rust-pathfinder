@@ -2,6 +2,7 @@ mod framework;
 mod utils;
 mod vertex;
 
+use framework::cast_slice;
 use wgpu::util::DeviceExt;
 
 struct PathfinderApp {
@@ -175,13 +176,13 @@ impl framework::App for PathfinderApp {
 
         let vertex_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Vertex Buffer"),
-            contents: bytemuck::cast_slice(&vertex_data), // checks if a range of bytes can be turned into another and just do it. Works well to turn Struct into u8
+            contents: cast_slice(&vertex_data), // checks if a range of bytes can be turned into another and just do it. Works well to turn Struct into u8
             usage: wgpu::BufferUsage::VERTEX,
         });
 
         let index_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Index Buffer"),
-            contents: bytemuck::cast_slice(&index_data),
+            contents: cast_slice(&index_data),
             usage: wgpu::BufferUsage::INDEX,
         });
 
@@ -248,7 +249,7 @@ impl framework::App for PathfinderApp {
         let dim_tiles = [8. as f32, 6. as f32];
         let uniform_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Uniform Buffer transform"),
-            contents: bytemuck::cast_slice(&dim_tiles), // [f32] => [u8]
+            contents: cast_slice(&dim_tiles), // [f32] => [u8]
             usage: wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST,
         });
         // Bind groups!
