@@ -6,29 +6,6 @@ use winit::{
     event_loop::{ControlFlow, EventLoop},
 };
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
-#[allow(unused)]
-pub const OPENGL_TO_WGPU_MATRIX: cgmath::Matrix4<f32> = cgmath::Matrix4::new(
-    1.0, 0.0, 0.0, 0.0,
-    0.0, 1.0, 0.0, 0.0,
-    0.0, 0.0, 0.5, 0.0,
-    0.0, 0.0, 0.5, 1.0,
-);
-
-#[allow(dead_code)]
-pub fn cast_slice<T>(data: &[T]) -> &[u8] {
-    use std::{mem::size_of, slice::from_raw_parts};
-
-    unsafe { from_raw_parts(data.as_ptr() as *const u8, data.len() * size_of::<T>()) }
-}
-
-#[allow(dead_code)]
-pub enum ShaderStage {
-    Vertex,
-    Fragment,
-    Compute,
-}
-
 // An App.
 pub trait App: 'static + Sized {
     fn optional_features() -> wgpu::Features {
@@ -101,28 +78,8 @@ async fn setup<E: App>(title: &str) -> Setup {
 
     log::info!("Initializing the surface...");
 
-    let backend = if let Ok(backend) = std::env::var("WGPU_BACKEND") {
-        match backend.to_lowercase().as_str() {
-            "vulkan" => wgpu::BackendBit::VULKAN,
-            "metal" => wgpu::BackendBit::METAL,
-            "dx12" => wgpu::BackendBit::DX12,
-            "dx11" => wgpu::BackendBit::DX11,
-            "gl" => wgpu::BackendBit::GL,
-            "webgpu" => wgpu::BackendBit::BROWSER_WEBGPU,
-            other => panic!("Unknown backend: {}", other),
-        }
-    } else {
-        wgpu::BackendBit::PRIMARY
-    };
-    let power_preference = if let Ok(power_preference) = std::env::var("WGPU_POWER_PREF") {
-        match power_preference.to_lowercase().as_str() {
-            "low" => wgpu::PowerPreference::LowPower,
-            "high" => wgpu::PowerPreference::HighPerformance,
-            other => panic!("Unknown power preference: {}", other),
-        }
-    } else {
-        wgpu::PowerPreference::default()
-    };
+    let backend = wgpu::BackendBit::PRIMARY;
+    let power_preference = wgpu::PowerPreference::default();
     let instance = wgpu::Instance::new(backend);
     let (size, surface) = unsafe {
         let size = window.inner_size();
@@ -339,8 +296,3 @@ pub fn run<E: Example>(title: &str) {
         start::<E>(setup);
     });
 }
-
-// This allows treating the framework as a standalone example,
-// thus avoiding listing the example names in `Cargo.toml`.
-#[allow(dead_code)]
-fn main() {}

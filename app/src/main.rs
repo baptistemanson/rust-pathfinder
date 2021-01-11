@@ -2,7 +2,7 @@ mod framework;
 mod utils;
 mod vertex;
 
-use framework::cast_slice;
+use utils::cast_slice;
 use wgpu::util::DeviceExt;
 
 struct PathfinderApp {
