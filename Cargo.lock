@@ -53,7 +53,6 @@ dependencies = [
  "async-executor",
  "bytemuck",
  "cgmath",
- "ddsfile",
  "image 0.23.12",
  "log",
  "noise",
@@ -583,17 +582,6 @@ dependencies = [
  "darling_core",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "ddsfile"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "34f357e96445b4238418b6f4f2b5a956ac1306f89f01d68b85a2d81de3a7cab9"
-dependencies = [
- "bitflags",
- "byteorder",
- "enum_primitive",
 ]
 
 [[package]]

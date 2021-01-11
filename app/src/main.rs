@@ -16,20 +16,136 @@ struct PathfinderApp {
 
 impl PathfinderApp {}
 
-#[allow(dead_code)]
-fn procedural_tex(size: u32) -> Vec<u8> {
-    (0..size * size)
-        .flat_map(|i| vec![(i % 256) as u8, 0, 0, 0])
-        .collect::<Vec<u8>>()
+// a sampler allows to sample the texture
+// it takes a bit of time to instantiate, because it generates the mip maps...
+fn sampler(device: &wgpu::Device) -> wgpu::Sampler {
+    device.create_sampler(&wgpu::SamplerDescriptor {
+        address_mode_u: wgpu::AddressMode::ClampToEdge,
+        address_mode_v: wgpu::AddressMode::ClampToEdge,
+        address_mode_w: wgpu::AddressMode::ClampToEdge,
+        mag_filter: wgpu::FilterMode::Nearest,
+        min_filter: wgpu::FilterMode::Linear,
+        mipmap_filter: wgpu::FilterMode::Nearest,
+        ..Default::default()
+    })
+}
+#[derive(Debug)]
+struct BatTexDimensions {
+    pub width: u32,
+    pub height: u32,
 }
 
-fn image_tex(_size: u32) -> Vec<u8> {
-    image::io::Reader::open("./assets/grass.jpg")
+// simple rgba texture.
+#[derive(Debug)]
+struct BatTex {
+    pub bytes: Vec<u8>,
+    pub dim: BatTexDimensions,
+    format: wgpu::TextureFormat,
+}
+#[allow(dead_code)]
+fn procedural_tex(size: u32) -> BatTex {
+    BatTex {
+        format: wgpu::TextureFormat::Rgba8UnormSrgb,
+        dim: BatTexDimensions {
+            width: size,
+            height: size,
+        },
+        bytes: (0..size * size)
+            .flat_map(|i| vec![(i % 256) as u8, 0, 0, 0])
+            .collect::<Vec<u8>>(),
+    }
+}
+
+fn pix(i: u8) -> Vec<u8> {
+    vec![i, 0, 0, 0]
+}
+fn mask_bit_tex() -> BatTex {
+    let bytes = vec![
+        vec![1, 2, 3, 4, 5, 6, 7, 8],
+        vec![9, 10, 11, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 0, 0, 0],
+    ];
+    let width = bytes[0].len();
+    let height = bytes.len();
+    BatTex {
+        dim: BatTexDimensions {
+            width: width as u32,
+            height: height as u32,
+        },
+        format: wgpu::TextureFormat::Rgba8Unorm,
+        bytes: bytes
+            .into_iter()
+            .flatten()
+            .flat_map(|i| pix(i))
+            .collect::<Vec<u8>>(),
+    }
+}
+
+fn image_tex(path: &str) -> BatTex {
+    let image = image::io::Reader::open(path)
         .unwrap()
         .decode()
         .unwrap()
-        .into_rgba8()
-        .into_raw()
+        .into_rgba8();
+    BatTex {
+        format: wgpu::TextureFormat::Rgba8UnormSrgb,
+        dim: BatTexDimensions {
+            width: image.width(),
+            height: image.height(),
+        },
+        bytes: image.into_raw(),
+    }
+}
+
+// Grab a texture, send it to the queue, and returns the texture view.
+fn texture(device: &wgpu::Device, queue: &wgpu::Queue, texture_bat: BatTex) -> wgpu::TextureView {
+    let texture_extent = wgpu::Extent3d {
+        width: texture_bat.dim.width,
+        height: texture_bat.dim.height,
+        depth: 1,
+    };
+    // the texture description.
+    let texture = device.create_texture(&wgpu::TextureDescriptor {
+        label: None,
+        size: texture_extent,
+        mip_level_count: 1,
+        sample_count: 1,
+        dimension: wgpu::TextureDimension::D2,
+        format: texture_bat.format,
+        usage: wgpu::TextureUsage::SAMPLED | wgpu::TextureUsage::COPY_DST,
+    });
+
+    let bytes_per_pixel = match texture_bat.format {
+        wgpu::TextureFormat::R8Uint => 1,
+        wgpu::TextureFormat::Rgba8UnormSrgb => 4,
+        wgpu::TextureFormat::Rgba8Unorm => 4,
+        _ => panic!("unknown format"),
+    };
+    // schedules the transfer of the texture data.
+    queue.write_texture(
+        wgpu::TextureCopyView {
+            texture: &texture,
+            mip_level: 0,
+            origin: wgpu::Origin3d::ZERO,
+        },
+        &texture_bat.bytes,
+        wgpu::TextureDataLayout {
+            // weird to have to give the data layout again.
+            // this defines a square subtexture
+            offset: 0,
+            bytes_per_row: bytes_per_pixel * texture_bat.dim.width,
+            rows_per_image: 0,
+        },
+        texture_extent,
+    );
+    // texture view is used for the bind groups.
+    // Texture views are used to specify which range of the texture is used by the shaders and how the data is interpreted.
+    // allow for one texture to be shared between different shaders without having to change the shader.
+    // the engine expects texture views in the binding group
+    texture.create_view(&wgpu::TextureViewDescriptor::default())
 }
 
 impl framework::App for PathfinderApp {
@@ -93,6 +209,16 @@ impl framework::App for PathfinderApp {
                     },
                     count: None,
                 },
+                wgpu::BindGroupLayoutEntry {
+                    binding: 3,
+                    visibility: wgpu::ShaderStage::FRAGMENT,
+                    ty: wgpu::BindingType::Texture {
+                        multisampled: false,
+                        sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                        view_dimension: wgpu::TextureViewDimension::D2,
+                    },
+                    count: None,
+                },
             ],
         });
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
@@ -102,53 +228,11 @@ impl framework::App for PathfinderApp {
         });
 
         // Create the texture
-        let size = 256u32;
-        let texture_bytes = image_tex(size);
-        let texture_extent = wgpu::Extent3d {
-            width: size,
-            height: size,
-            depth: 1,
-        };
-        // the texture description.
-        let texture = device.create_texture(&wgpu::TextureDescriptor {
-            label: None,
-            size: texture_extent,
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: wgpu::TextureFormat::Rgba8UnormSrgb,
-            usage: wgpu::TextureUsage::SAMPLED | wgpu::TextureUsage::COPY_DST,
-        });
 
-        // schedules the transfer of the texture data.
-        queue.write_texture(
-            wgpu::TextureCopyView {
-                texture: &texture,
-                mip_level: 0,
-                origin: wgpu::Origin3d::ZERO,
-            },
-            &texture_bytes,
-            wgpu::TextureDataLayout {
-                // weird to have to give the data layout again.
-                // this defines a square subtexture
-                offset: 0,
-                bytes_per_row: 4 * size,
-                rows_per_image: 0,
-            },
-            texture_extent,
-        );
+        let texture_tiles = texture(&device, &queue, image_tex("./assets/tiles.png"));
+        let texture_mask = texture(&device, &queue, mask_bit_tex());
 
-        // a sampler allows to sample the texture
-        // it takes a bit of time to instantiate, because it generates the mip maps...
-        let sampler = device.create_sampler(&wgpu::SamplerDescriptor {
-            address_mode_u: wgpu::AddressMode::ClampToEdge,
-            address_mode_v: wgpu::AddressMode::ClampToEdge,
-            address_mode_w: wgpu::AddressMode::ClampToEdge,
-            mag_filter: wgpu::FilterMode::Nearest,
-            min_filter: wgpu::FilterMode::Linear,
-            mipmap_filter: wgpu::FilterMode::Nearest,
-            ..Default::default()
-        });
+        let sampler = sampler(&device);
 
         // Buffer
         //convenient for everything but Samplers and Textures.
@@ -162,11 +246,6 @@ impl framework::App for PathfinderApp {
 
         // Bind groups!
 
-        // texture view is used for the bind groups.
-        // Texture views are used to specify which range of the texture is used by the shaders and how the data is interpreted.
-        // allow for one texture to be shared between different shaders without having to change the shader.
-        // the engine expects texture views in the binding group
-        let texture_view = texture.create_view(&wgpu::TextureViewDescriptor::default());
         // Create bind group
         let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
             layout: &bind_group_layout,
@@ -181,11 +260,15 @@ impl framework::App for PathfinderApp {
                 },
                 wgpu::BindGroupEntry {
                     binding: 1,
-                    resource: wgpu::BindingResource::TextureView(&texture_view),
+                    resource: wgpu::BindingResource::TextureView(&texture_tiles),
                 },
                 wgpu::BindGroupEntry {
                     binding: 2,
                     resource: wgpu::BindingResource::Sampler(&sampler),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 3,
+                    resource: wgpu::BindingResource::TextureView(&texture_mask),
                 },
             ],
             label: None,

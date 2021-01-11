@@ -14,7 +14,6 @@ winit = { version = "0.23.0", features = ["web-sys"] }
 rand = { version = "0.7.2", features = ["wasm-bindgen"] }
 bytemuck = { version = "1.4", features = ["derive"] }
 noise = "0.6"
-ddsfile = "0.4"
 wgpu = { git = "https://github.com/gfx-rs/wgpu-rs.git" }
 pollster = "0.2"
 async-executor = "1.4.0"
