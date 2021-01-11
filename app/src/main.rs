@@ -182,11 +182,11 @@ impl framework::App for PathfinderApp {
             entries: &[
                 wgpu::BindGroupLayoutEntry {
                     binding: 0, //
-                    visibility: wgpu::ShaderStage::VERTEX,
+                    visibility: wgpu::ShaderStage::FRAGMENT,
                     ty: wgpu::BindingType::Buffer {
                         ty: wgpu::BufferBindingType::Uniform,
                         has_dynamic_offset: false,
-                        min_binding_size: wgpu::BufferSize::new(64),
+                        min_binding_size: None, // 2 floats?
                     },
                     count: None,
                 },
@@ -236,14 +236,12 @@ impl framework::App for PathfinderApp {
 
         // Buffer
         //convenient for everything but Samplers and Textures.
-        let mx_total = utils::generate_matrix(sc_desc.width as f32 / sc_desc.height as f32);
-        let mx_ref: &[f32; 16] = mx_total.as_ref();
+        let dim_tiles = [8. as f32, 6. as f32];
         let uniform_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Uniform Buffer transform"),
-            contents: bytemuck::cast_slice(mx_ref), // [f32] => [u8]
+            contents: bytemuck::cast_slice(&dim_tiles), // [f32] => [u8]
             usage: wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST,
         });
-
         // Bind groups!
 
         // Create bind group
@@ -350,13 +348,10 @@ impl framework::App for PathfinderApp {
 
     fn resize(
         &mut self,
-        sc_desc: &wgpu::SwapChainDescriptor,
+        _sc_desc: &wgpu::SwapChainDescriptor,
         _device: &wgpu::Device,
-        queue: &wgpu::Queue,
+        _queue: &wgpu::Queue,
     ) {
-        let mx_total = utils::generate_matrix(sc_desc.width as f32 / sc_desc.height as f32);
-        let mx_ref: &[f32; 16] = mx_total.as_ref();
-        queue.write_buffer(&self.uniform_buf, 0, bytemuck::cast_slice(mx_ref));
     }
 
     fn render(
