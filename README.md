@@ -5,7 +5,7 @@ My goal is to learn Rust.
 
 MIT and everything. Author Baptiste Manson
 
-Most interesting to code: benchmark, improve roll, 3 actions, position, visual
+Most interesting to code next: continue on visual!
 
 key takeaways on performances:
 
@@ -13,6 +13,17 @@ key takeaways on performances:
 - clone on character is nothing, at least I dont see it
 - println! is more costly on windows
 - the performance I can reach with Rust I cannot with JS, by a factor x10-100.
+
+## Graphics
+
+- [ ] allow render dimension to be different from tile atlas
+- [ ] add notion of scroll and scroll back and forth in the render loop
+- [ ] add notion of layers of type and add a scrolling texture of clouds on top
+- [ ] get better tiles (buy them?)
+- [ ] add characters
+- [ ] text render
+- [ ] do a pipeline for rendering boxes with text inside or texture
+- [ ] click handler (with a target of render with colors from the rendering box render pass?)
 
 ## General
 
