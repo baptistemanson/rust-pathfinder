@@ -1,410 +1,307 @@
-mod framework;
+use std::future::Future;
+#[cfg(not(target_arch = "wasm32"))]
+use std::time::{Duration, Instant};
+use tiles::TilesRenderer;
+use winit::{
+    event::{self, WindowEvent},
+    event_loop::{ControlFlow, EventLoop},
+};
+mod boxes;
+mod tiles;
 mod utils;
 mod vertex;
 
-use utils::cast_slice;
-use wgpu::util::DeviceExt;
-
-struct PathfinderApp {
-    vertex_buf: wgpu::Buffer,
-    index_buf: wgpu::Buffer,
-    index_format: wgpu::IndexFormat,
-    index_count: usize,
-    bind_group: wgpu::BindGroup,
-    uniform_buf: wgpu::Buffer,
-    pipeline: wgpu::RenderPipeline,
+fn main() {
+    run::<TilesRenderer>("pathfinder");
 }
 
-impl PathfinderApp {}
-
-// a sampler allows to sample the texture
-// it takes a bit of time to instantiate, because it generates the mip maps...
-fn sampler(device: &wgpu::Device) -> wgpu::Sampler {
-    device.create_sampler(&wgpu::SamplerDescriptor {
-        address_mode_u: wgpu::AddressMode::ClampToEdge,
-        address_mode_v: wgpu::AddressMode::ClampToEdge,
-        address_mode_w: wgpu::AddressMode::ClampToEdge,
-        mag_filter: wgpu::FilterMode::Nearest,
-        min_filter: wgpu::FilterMode::Linear,
-        mipmap_filter: wgpu::FilterMode::Nearest,
-        ..Default::default()
-    })
-}
-#[derive(Debug)]
-struct BatTexDimensions {
-    pub width: u32,
-    pub height: u32,
-}
-
-// simple rgba texture.
-#[derive(Debug)]
-struct BatTex {
-    pub bytes: Vec<u8>,
-    pub dim: BatTexDimensions,
-    format: wgpu::TextureFormat,
-}
-#[allow(dead_code)]
-fn procedural_tex(size: u32) -> BatTex {
-    BatTex {
-        format: wgpu::TextureFormat::Rgba8UnormSrgb,
-        dim: BatTexDimensions {
-            width: size,
-            height: size,
-        },
-        bytes: (0..size * size)
-            .flat_map(|i| vec![(i % 256) as u8, 0, 0, 0])
-            .collect::<Vec<u8>>(),
+// An App.
+pub trait Renderer: 'static + Sized {
+    fn optional_features() -> wgpu::Features {
+        wgpu::Features::empty()
     }
-}
-
-fn pix(i: u8) -> Vec<u8> {
-    vec![i, 0, 0, 0]
-}
-fn mask_bit_tex() -> BatTex {
-    let bytes = vec![
-        vec![34, 34, 34, 34, 34, 34, 34, 34],
-        vec![34, 34, 34, 34, 34, 34, 34, 34],
-        vec![17, 17, 17, 26, 17, 17, 17, 17],
-        vec![17, 17, 17, 26, 17, 17, 17, 17],
-        vec![17, 17, 17, 26, 17, 17, 17, 17],
-        vec![17, 17, 17, 26, 17, 17, 17, 17],
-        vec![17, 17, 17, 26, 17, 17, 17, 17],
-        vec![1, 1, 1, 1, 1, 1, 1, 1],
-        vec![1, 1, 1, 1, 1, 1, 1, 1],
-        vec![1, 1, 1, 1, 1, 1, 1, 1],
-        vec![1, 1, 1, 1, 1, 1, 1, 1],
-        vec![1, 1, 1, 1, 1, 1, 1, 1],
-        vec![1, 1, 1, 1, 1, 1, 1, 1],
-        vec![1, 1, 1, 1, 1, 1, 1, 1],
-        vec![1, 1, 1, 1, 1, 1, 1, 1],
-    ];
-    let width = bytes[0].len();
-    let height = bytes.len();
-    BatTex {
-        dim: BatTexDimensions {
-            width: width as u32,
-            height: height as u32,
-        },
-        format: wgpu::TextureFormat::Rgba8Unorm,
-        bytes: bytes
-            .into_iter()
-            .flatten()
-            .flat_map(|i| pix(i))
-            .collect::<Vec<u8>>(),
+    fn required_features() -> wgpu::Features {
+        wgpu::Features::empty()
     }
-}
-
-fn image_tex(path: &str) -> BatTex {
-    let image = image::io::Reader::open(path)
-        .unwrap()
-        .decode()
-        .unwrap()
-        .into_rgba8();
-    BatTex {
-        format: wgpu::TextureFormat::Rgba8UnormSrgb,
-        dim: BatTexDimensions {
-            width: image.width(),
-            height: image.height(),
-        },
-        bytes: image.into_raw(),
+    fn required_limits() -> wgpu::Limits {
+        wgpu::Limits::default()
     }
-}
-
-// Grab a texture, send it to the queue, and returns the texture view.
-fn texture(device: &wgpu::Device, queue: &wgpu::Queue, texture_bat: BatTex) -> wgpu::TextureView {
-    let texture_extent = wgpu::Extent3d {
-        width: texture_bat.dim.width,
-        height: texture_bat.dim.height,
-        depth: 1,
-    };
-    // the texture description.
-    let texture = device.create_texture(&wgpu::TextureDescriptor {
-        label: None,
-        size: texture_extent,
-        mip_level_count: 1,
-        sample_count: 1,
-        dimension: wgpu::TextureDimension::D2,
-        format: texture_bat.format,
-        usage: wgpu::TextureUsage::SAMPLED | wgpu::TextureUsage::COPY_DST,
-    });
-
-    let bytes_per_pixel = match texture_bat.format {
-        wgpu::TextureFormat::R8Uint => 1,
-        wgpu::TextureFormat::Rgba8UnormSrgb => 4,
-        wgpu::TextureFormat::Rgba8Unorm => 4,
-        _ => panic!("unknown format"),
-    };
-    // schedules the transfer of the texture data.
-    queue.write_texture(
-        wgpu::TextureCopyView {
-            texture: &texture,
-            mip_level: 0,
-            origin: wgpu::Origin3d::ZERO,
-        },
-        &texture_bat.bytes,
-        wgpu::TextureDataLayout {
-            // weird to have to give the data layout again.
-            // this defines a square subtexture
-            offset: 0,
-            bytes_per_row: bytes_per_pixel * texture_bat.dim.width,
-            rows_per_image: 0,
-        },
-        texture_extent,
-    );
-    // texture view is used for the bind groups.
-    // Texture views are used to specify which range of the texture is used by the shaders and how the data is interpreted.
-    // allow for one texture to be shared between different shaders without having to change the shader.
-    // the engine expects texture views in the binding group
-    texture.create_view(&wgpu::TextureViewDescriptor::default())
-}
-
-impl framework::App for PathfinderApp {
-    fn optional_features() -> wgt::Features {
-        wgt::Features::NON_FILL_POLYGON_MODE
-    }
-
     fn init(
         sc_desc: &wgpu::SwapChainDescriptor,
         device: &wgpu::Device,
         queue: &wgpu::Queue,
-    ) -> Self {
-        use std::mem;
-
-        // Create the vertex and index buffers
-        let vertex_size = mem::size_of::<vertex::Vertex>();
-        let (vertex_data, index_data) = vertex::quad();
-
-        let vertex_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Vertex Buffer"),
-            contents: cast_slice(&vertex_data), // checks if a range of bytes can be turned into another and just do it. Works well to turn Struct into u8
-            usage: wgpu::BufferUsage::VERTEX,
-        });
-
-        let index_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Index Buffer"),
-            contents: cast_slice(&index_data),
-            usage: wgpu::BufferUsage::INDEX,
-        });
-
-        // Create pipeline layout, starting with the bind group layout
-        let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-            label: None,
-            entries: &[
-                wgpu::BindGroupLayoutEntry {
-                    binding: 0, //
-                    visibility: wgpu::ShaderStage::FRAGMENT,
-                    ty: wgpu::BindingType::Buffer {
-                        ty: wgpu::BufferBindingType::Uniform,
-                        has_dynamic_offset: false,
-                        min_binding_size: None, // 2 floats?
-                    },
-                    count: None,
-                },
-                wgpu::BindGroupLayoutEntry {
-                    binding: 1,
-                    visibility: wgpu::ShaderStage::FRAGMENT,
-                    ty: wgpu::BindingType::Texture {
-                        multisampled: false,
-                        sample_type: wgpu::TextureSampleType::Float { filterable: true },
-                        view_dimension: wgpu::TextureViewDimension::D2,
-                    },
-                    count: None,
-                },
-                wgpu::BindGroupLayoutEntry {
-                    binding: 2,
-                    visibility: wgpu::ShaderStage::FRAGMENT,
-                    ty: wgpu::BindingType::Sampler {
-                        comparison: false,
-                        filtering: true,
-                    },
-                    count: None,
-                },
-                wgpu::BindGroupLayoutEntry {
-                    binding: 3,
-                    visibility: wgpu::ShaderStage::FRAGMENT,
-                    ty: wgpu::BindingType::Texture {
-                        multisampled: false,
-                        sample_type: wgpu::TextureSampleType::Float { filterable: true },
-                        view_dimension: wgpu::TextureViewDimension::D2,
-                    },
-                    count: None,
-                },
-            ],
-        });
-        let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: None,
-            bind_group_layouts: &[&bind_group_layout],
-            push_constant_ranges: &[],
-        });
-
-        // Create the texture
-
-        let texture_tiles = texture(&device, &queue, image_tex("./assets/tiles.png"));
-        let texture_mask = texture(&device, &queue, mask_bit_tex());
-
-        let sampler = sampler(&device);
-
-        // Buffer
-        //convenient for everything but Samplers and Textures.
-        let dim_tiles = [8. as f32, 6. as f32];
-        let uniform_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Uniform Buffer transform"),
-            contents: cast_slice(&dim_tiles), // [f32] => [u8]
-            usage: wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST,
-        });
-        // Bind groups!
-
-        // Create bind group
-        let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
-            layout: &bind_group_layout,
-            entries: &[
-                wgpu::BindGroupEntry {
-                    binding: 0,
-                    resource: wgpu::BindingResource::Buffer {
-                        buffer: &uniform_buf,
-                        offset: 0,
-                        size: None,
-                    },
-                },
-                wgpu::BindGroupEntry {
-                    binding: 1,
-                    resource: wgpu::BindingResource::TextureView(&texture_tiles),
-                },
-                wgpu::BindGroupEntry {
-                    binding: 2,
-                    resource: wgpu::BindingResource::Sampler(&sampler),
-                },
-                wgpu::BindGroupEntry {
-                    binding: 3,
-                    resource: wgpu::BindingResource::TextureView(&texture_mask),
-                },
-            ],
-            label: None,
-        });
-
-        let index_format = wgpu::IndexFormat::Uint16;
-
-        // Vertices description
-        let vertex_state = wgpu::VertexStateDescriptor {
-            index_format: Some(index_format),
-            vertex_buffers: &[wgpu::VertexBufferDescriptor {
-                stride: vertex_size as wgpu::BufferAddress,
-                step_mode: wgpu::InputStepMode::Vertex,
-                attributes: &[
-                    wgpu::VertexAttributeDescriptor {
-                        format: wgpu::VertexFormat::Float4,
-                        offset: 0,
-                        shader_location: 0,
-                    },
-                    wgpu::VertexAttributeDescriptor {
-                        format: wgpu::VertexFormat::Float2,
-                        offset: 4 * 4, // 4 float 32
-                        shader_location: 1,
-                    },
-                ],
-            }],
-        };
-
-        let vs_module =
-            device.create_shader_module(&wgpu::include_spirv!("shaders/shader.vert.spv"));
-        let fs_module =
-            device.create_shader_module(&wgpu::include_spirv!("shaders/shader.frag.spv"));
-
-        let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            label: None,
-            layout: Some(&pipeline_layout),
-            vertex_stage: wgpu::ProgrammableStageDescriptor {
-                module: &vs_module,
-                entry_point: "main",
-            },
-            fragment_stage: Some(wgpu::ProgrammableStageDescriptor {
-                module: &fs_module,
-                entry_point: "main",
-            }),
-            rasterization_state: Some(wgpu::RasterizationStateDescriptor {
-                front_face: wgpu::FrontFace::Ccw,
-                cull_mode: wgpu::CullMode::Back,
-                ..Default::default()
-            }),
-            primitive_topology: wgpu::PrimitiveTopology::TriangleList,
-            color_states: &[wgpu::ColorStateDescriptor {
-                format: sc_desc.format,
-                color_blend: wgpu::BlendDescriptor::REPLACE,
-                alpha_blend: wgpu::BlendDescriptor::REPLACE,
-                write_mask: wgpu::ColorWrite::ALL,
-            }],
-            depth_stencil_state: None,
-            vertex_state: vertex_state.clone(),
-            sample_count: 1,
-            sample_mask: !0,
-            alpha_to_coverage_enabled: false,
-        });
-
-        // Done
-        PathfinderApp {
-            vertex_buf,
-            index_buf,
-            index_format,
-            index_count: index_data.len(),
-            bind_group,
-            uniform_buf,
-            pipeline,
-        }
-    }
-
-    fn update(&mut self, _event: winit::event::WindowEvent) {
-        //empty
-    }
-
+    ) -> Self;
     fn resize(
         &mut self,
-        _sc_desc: &wgpu::SwapChainDescriptor,
-        _device: &wgpu::Device,
-        _queue: &wgpu::Queue,
-    ) {
-    }
-
+        sc_desc: &wgpu::SwapChainDescriptor,
+        device: &wgpu::Device,
+        queue: &wgpu::Queue,
+    );
+    fn update(&mut self, event: WindowEvent);
     fn render(
         &mut self,
         frame: &wgpu::SwapChainTexture,
         device: &wgpu::Device,
         queue: &wgpu::Queue,
-        _spawner: &framework::Spawner,
-    ) {
-        let mut encoder =
-            device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
-        {
-            let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                label: None,
-                color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
-                    attachment: &frame.view,
-                    resolve_target: None,
-                    ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(wgpu::Color {
-                            r: 0.1,
-                            g: 0.2,
-                            b: 0.3,
-                            a: 1.0,
-                        }),
-                        store: true,
-                    },
-                }],
-                depth_stencil_attachment: None,
-            });
-            rpass.push_debug_group("Prepare data for draw.");
-            rpass.set_pipeline(&self.pipeline);
-            rpass.set_bind_group(0, &self.bind_group, &[]);
-            rpass.set_index_buffer(self.index_buf.slice(..), self.index_format);
-            rpass.set_vertex_buffer(0, self.vertex_buf.slice(..));
-            rpass.pop_debug_group();
-            rpass.insert_debug_marker("Draw!");
-            rpass.draw_indexed(0..self.index_count as u32, 0, 0..1);
-        }
+        spawner: &Spawner,
+    );
+}
 
-        queue.submit(Some(encoder.finish()));
+struct Setup {
+    window: winit::window::Window,
+    event_loop: EventLoop<()>,
+    instance: wgpu::Instance,
+    size: winit::dpi::PhysicalSize<u32>,
+    surface: wgpu::Surface,
+    adapter: wgpu::Adapter,
+    device: wgpu::Device,
+    queue: wgpu::Queue,
+}
+
+async fn setup<Re: Renderer>(title: &str) -> Setup {
+    let event_loop = EventLoop::new();
+    let mut builder = winit::window::WindowBuilder::new();
+    builder = builder.with_title(title);
+    #[cfg(windows_OFF)] // TODO
+    {
+        use winit::platform::windows::WindowBuilderExtWindows;
+        builder = builder.with_no_redirection_bitmap(true);
+    }
+    let window = builder.build(&event_loop).unwrap();
+
+    #[cfg(target_arch = "wasm32")]
+    {
+        use winit::platform::web::WindowExtWebSys;
+        console_log::init().expect("could not initialize logger");
+        std::panic::set_hook(Box::new(console_error_panic_hook::hook));
+        // On wasm, append the canvas to the document body
+        web_sys::window()
+            .and_then(|win| win.document())
+            .and_then(|doc| doc.body())
+            .and_then(|body| {
+                body.append_child(&web_sys::Element::from(window.canvas()))
+                    .ok()
+            })
+            .expect("couldn't append canvas to document body");
+    }
+
+    log::info!("Initializing the surface...");
+
+    let backend = wgpu::BackendBit::PRIMARY;
+    let power_preference = wgpu::PowerPreference::default();
+    let instance = wgpu::Instance::new(backend);
+    let (size, surface) = unsafe {
+        let size = window.inner_size();
+        let surface = instance.create_surface(&window);
+        (size, surface)
+    };
+    let adapter = instance
+        .request_adapter(&wgpu::RequestAdapterOptions {
+            power_preference,
+            compatible_surface: Some(&surface),
+        })
+        .await
+        .expect("No suitable GPU adapters found on the system!");
+
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        let adapter_info = adapter.get_info();
+        println!("Using {} ({:?})", adapter_info.name, adapter_info.backend);
+    }
+
+    let optional_features = Re::optional_features();
+    let required_features = Re::required_features();
+    let adapter_features = adapter.features();
+    assert!(
+        adapter_features.contains(required_features),
+        "Adapter does not support required features for this example: {:?}",
+        required_features - adapter_features
+    );
+
+    let needed_limits = Re::required_limits();
+
+    let trace_dir = std::env::var("WGPU_TRACE");
+    let (device, queue) = adapter
+        .request_device(
+            &wgpu::DeviceDescriptor {
+                label: None,
+                features: (optional_features & adapter_features) | required_features,
+                limits: needed_limits,
+            },
+            trace_dir.ok().as_ref().map(std::path::Path::new),
+        )
+        .await
+        .expect("Unable to find a suitable GPU adapter!");
+
+    Setup {
+        window,
+        event_loop,
+        instance,
+        size,
+        surface,
+        adapter,
+        device,
+        queue,
     }
 }
 
-fn main() {
-    framework::run::<PathfinderApp>("pathfinder");
+fn start<E: Renderer>(
+    Setup {
+        window,
+        event_loop,
+        instance,
+        size,
+        surface,
+        adapter,
+        device,
+        queue,
+    }: Setup,
+) {
+    let spawner = Spawner::new();
+    let mut sc_desc = wgpu::SwapChainDescriptor {
+        usage: wgpu::TextureUsage::RENDER_ATTACHMENT,
+        format: device.get_swap_chain_preferred_format(),
+        width: size.width,
+        height: size.height,
+        present_mode: wgpu::PresentMode::Mailbox,
+    };
+    let mut swap_chain = device.create_swap_chain(&surface, &sc_desc);
+
+    log::info!("Initializing the renderer...");
+    let mut renderer = E::init(&sc_desc, &device, &queue);
+
+    #[cfg(not(target_arch = "wasm32"))]
+    let mut last_update_inst = Instant::now();
+
+    log::info!("Entering render loop...");
+    event_loop.run(move |event, _, control_flow| {
+        let _ = (&instance, &adapter); // force ownership by the closure
+        *control_flow = if cfg!(feature = "metal-auto-capture") {
+            ControlFlow::Exit
+        } else {
+            ControlFlow::Poll
+        };
+        match event {
+            event::Event::MainEventsCleared => {
+                #[cfg(not(target_arch = "wasm32"))]
+                {
+                    // Clamp to some max framerate to avoid busy-looping too much
+                    // (we might be in wgpu::PresentMode::Mailbox, thus discarding superfluous frames)
+                    //
+                    // winit has window.current_monitor().video_modes() but that is a list of all full screen video modes.
+                    // So without extra dependencies it's a bit tricky to get the max refresh rate we can run the window on.
+                    // Therefore we just go with 60fps - sorry 120hz+ folks!
+                    let target_frametime = Duration::from_secs_f64(1.0 / 60.0);
+                    let time_since_last_frame = last_update_inst.elapsed();
+                    if time_since_last_frame >= target_frametime {
+                        window.request_redraw();
+                        last_update_inst = Instant::now();
+                    } else {
+                        *control_flow = ControlFlow::WaitUntil(
+                            Instant::now() + target_frametime - time_since_last_frame,
+                        );
+                    }
+
+                    spawner.run_until_stalled();
+                }
+
+                #[cfg(target_arch = "wasm32")]
+                window.request_redraw();
+            }
+            event::Event::WindowEvent {
+                event: WindowEvent::Resized(size),
+                ..
+            } => {
+                log::info!("Resizing to {:?}", size);
+                sc_desc.width = if size.width == 0 { 1 } else { size.width };
+                sc_desc.height = if size.height == 0 { 1 } else { size.height };
+                renderer.resize(&sc_desc, &device, &queue);
+                swap_chain = device.create_swap_chain(&surface, &sc_desc);
+            }
+            event::Event::WindowEvent { event, .. } => match event {
+                WindowEvent::KeyboardInput {
+                    input:
+                        event::KeyboardInput {
+                            virtual_keycode: Some(event::VirtualKeyCode::Escape),
+                            state: event::ElementState::Pressed,
+                            ..
+                        },
+                    ..
+                }
+                | WindowEvent::CloseRequested => {
+                    *control_flow = ControlFlow::Exit;
+                }
+                _ => {
+                    renderer.update(event);
+                }
+            },
+            event::Event::RedrawRequested(_) => {
+                let frame = match swap_chain.get_current_frame() {
+                    Ok(frame) => frame,
+                    Err(_) => {
+                        swap_chain = device.create_swap_chain(&surface, &sc_desc);
+                        swap_chain
+                            .get_current_frame()
+                            .expect("Failed to acquire next swap chain texture!")
+                    }
+                };
+
+                renderer.render(&frame.output, &device, &queue, &spawner);
+            }
+            _ => {}
+        }
+    });
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+pub struct Spawner<'a> {
+    executor: async_executor::LocalExecutor<'a>,
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+impl<'a> Spawner<'a> {
+    fn new() -> Self {
+        Self {
+            executor: async_executor::LocalExecutor::new(),
+        }
+    }
+
+    #[allow(dead_code)]
+    pub fn spawn_local(&self, future: impl Future<Output = ()> + 'a) {
+        self.executor.spawn(future).detach();
+    }
+
+    fn run_until_stalled(&self) {
+        while self.executor.try_tick() {}
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+pub struct Spawner {}
+
+#[cfg(target_arch = "wasm32")]
+impl Spawner {
+    fn new() -> Self {
+        Self {}
+    }
+
+    #[allow(dead_code)]
+    pub fn spawn_local(&self, future: impl Future<Output = ()> + 'static) {
+        wasm_bindgen_futures::spawn_local(future);
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+pub fn run<E: Renderer>(title: &str) {
+    let setup = pollster::block_on(setup::<E>(title));
+    start::<E>(setup);
+}
+
+#[cfg(target_arch = "wasm32")]
+pub fn run<E: Example>(title: &str) {
+    let title = title.to_owned();
+    wasm_bindgen_futures::spawn_local(async move {
+        let setup = setup::<E>(&title).await;
+        start::<E>(setup);
+    });
 }
