@@ -33,8 +33,8 @@ pub fn sampler(device: &wgpu::Device) -> wgpu::Sampler {
         address_mode_v: wgpu::AddressMode::ClampToEdge,
         address_mode_w: wgpu::AddressMode::ClampToEdge,
         mag_filter: wgpu::FilterMode::Nearest,
-        min_filter: wgpu::FilterMode::Linear,
-        mipmap_filter: wgpu::FilterMode::Nearest,
+        min_filter: wgpu::FilterMode::Nearest,
+        mipmap_filter: wgpu::FilterMode::Linear,
         ..Default::default()
     })
 }
@@ -71,13 +71,16 @@ pub fn pix(i: u8) -> Vec<u8> {
 
 pub fn mask_bit_tex() -> BatTex {
     let bytes = vec![
-        vec![1, 2, 3, 8, 8, 3, 2, 1],
-        vec![1, 2, 3, 8, 8, 3, 2, 1],
-        vec![1, 2, 3, 8, 8, 3, 2, 1],
-        vec![1, 2, 3, 3, 3, 3, 2, 1],
-        vec![1, 2, 2, 2, 2, 2, 2, 1],
-        vec![1, 1, 1, 1, 1, 1, 1, 1],
-        vec![1, 1, 1, 1, 1, 1, 1, 1],
+        vec![1, 2, 3, 8, 8, 3, 2, 1, 8, 9],
+        vec![1, 2, 3, 8, 8, 3, 2, 1, 8, 9],
+        vec![1, 2, 3, 8, 8, 3, 2, 1, 8, 9],
+        vec![1, 2, 3, 3, 3, 3, 2, 1, 8, 9],
+        vec![1, 2, 2, 2, 2, 2, 2, 1, 8, 9],
+        vec![1, 1, 1, 1, 1, 1, 1, 1, 8, 9],
+        vec![1, 1, 1, 1, 1, 1, 1, 1, 8, 9],
+        vec![1, 1, 1, 1, 1, 1, 1, 1, 8, 9],
+        vec![1, 1, 1, 1, 1, 1, 1, 1, 8, 9],
+        vec![1, 1, 1, 1, 1, 1, 1, 1, 8, 9],
     ];
     let width = bytes[0].len();
     let height = bytes.len();

@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use utils::cast_slice;
 use wgpu::util::DeviceExt;
 
@@ -12,6 +14,9 @@ pub struct TilesRenderer {
     index_count: usize,
     bind_group: wgpu::BindGroup,
     pipeline: wgpu::RenderPipeline,
+    scroll: wgpu::Buffer,
+    curr_scroll: (f32, f32),
+    last_update: Instant,
 }
 
 impl TilesRenderer {}
@@ -195,19 +200,19 @@ impl crate::Renderer for TilesRenderer {
 
         let blueprints_dim = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Blueprint Dimensions in number of tiles"),
-            contents: cast_slice(&[8. as f32, 7. as f32]), // [f32] => [u8]
+            contents: cast_slice(&[10. as f32, 10. as f32]), // [f32] => [u8]
             usage: wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST,
         });
 
         let output_dim = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Output Dimensions in number of tiles"),
-            contents: cast_slice(&[4. as f32, 5. as f32]), // [f32] => [u8]
+            contents: cast_slice(&[8. as f32, 6. as f32]), // [f32] => [u8]
             usage: wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST,
         });
 
         let scroll = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Output Dimensions in number of tiles"),
-            contents: cast_slice(&[1. as f32, 0.5 as f32]), // [f32] => [u8]
+            label: Some("Scroll"),
+            contents: cast_slice(&[0. as f32, 0. as f32]), // [f32] => [u8]
             usage: wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST,
         });
 
@@ -283,6 +288,9 @@ impl crate::Renderer for TilesRenderer {
             index_buf,
             index_count: index_data.len(),
             bind_group,
+            scroll,
+            curr_scroll: (0., 0.),
+            last_update: Instant::now(),
         }
     }
 
@@ -310,6 +318,10 @@ impl crate::Renderer for TilesRenderer {
         queue: &wgpu::Queue,
         _spawner: &crate::Spawner,
     ) {
+        let delta = self.last_update.elapsed().as_secs_f32() / 3.;
+        self.curr_scroll = (self.curr_scroll.0 + delta, self.curr_scroll.1 + delta);
+        self.last_update = Instant::now();
+
         let mut encoder =
             device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         {
@@ -339,7 +351,11 @@ impl crate::Renderer for TilesRenderer {
             rpass.insert_debug_marker("Draw!");
             rpass.draw_indexed(0..self.index_count as u32, 0, 0..1);
         }
-
+        queue.write_buffer(
+            &self.scroll,
+            0,
+            cast_slice(&[self.curr_scroll.0, self.curr_scroll.1]),
+        );
         queue.submit(Some(encoder.finish()));
     }
 }
