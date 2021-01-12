@@ -3,5 +3,5 @@
 members = [
     "rules", "dice", "app"
 ]
-default-members = ["rules"]
+default-members = ["app"]
 

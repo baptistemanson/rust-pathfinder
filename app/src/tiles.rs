@@ -113,9 +113,9 @@ impl crate::Renderer for TilesRenderer {
 
         // Load shaders
         let vs_module =
-            device.create_shader_module(&wgpu::include_spirv!("shaders/shader.vert.spv"));
+            device.create_shader_module(&wgpu::include_spirv!("./shaders/shader.vert.spv"));
         let fs_module =
-            device.create_shader_module(&wgpu::include_spirv!("shaders/shader.frag.spv"));
+            device.create_shader_module(&wgpu::include_spirv!("./shaders/shader.frag.spv"));
 
         // Create the pipeline, with all the bind_groups layout + vertex layout + shaders
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
@@ -149,7 +149,11 @@ impl crate::Renderer for TilesRenderer {
         });
 
         // Create resources
-        let texture_tiles = texture(&device, &queue, image_tex("./assets/tiles.png"));
+        let texture_tiles = texture(
+            &device,
+            &queue,
+            image_tex(include_bytes!("../assets/tiles.png")),
+        );
         let texture_mask = texture(&device, &queue, mask_bit_tex());
         let sampler = sampler(&device);
 

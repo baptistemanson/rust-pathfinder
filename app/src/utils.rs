@@ -103,12 +103,8 @@ pub fn mask_bit_tex() -> BatTex {
     }
 }
 
-pub fn image_tex(path: &str) -> BatTex {
-    let image = image::io::Reader::open(path)
-        .unwrap()
-        .decode()
-        .unwrap()
-        .into_rgba8();
+pub fn image_tex(data: &[u8]) -> BatTex {
+    let image = image::load_from_memory(data).unwrap().into_rgba8();
     BatTex {
         format: wgpu::TextureFormat::Rgba8UnormSrgb,
         dim: BatTexDimensions {
