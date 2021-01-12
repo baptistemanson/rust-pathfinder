@@ -16,8 +16,9 @@ key takeaways on performances:
 
 ## Graphics
 
-- [ ] allow render dimension to be different from tile atlas
-- [ ] add notion of scroll and scroll back and forth in the render loop
+- [x] allow render dimension to be different from tile atlas
+- [x] add notion of scroll
+- [ ] scroll back and forth in the render loop
 - [ ] add notion of layers of different renderers and add a scrolling texture of clouds on top
 - [ ] get better tiles (buy them?)
 - [ ] add characters

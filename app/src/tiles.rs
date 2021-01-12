@@ -43,12 +43,12 @@ impl crate::Renderer for TilesRenderer {
             label: None,
             entries: &[
                 wgpu::BindGroupLayoutEntry {
-                    binding: 0, //
+                    binding: 0,
                     visibility: wgpu::ShaderStage::FRAGMENT,
                     ty: wgpu::BindingType::Buffer {
                         ty: wgpu::BufferBindingType::Uniform,
                         has_dynamic_offset: false,
-                        min_binding_size: None, // 2 floats?
+                        min_binding_size: None,
                     },
                     count: None,
                 },
@@ -78,6 +78,36 @@ impl crate::Renderer for TilesRenderer {
                         multisampled: false,
                         sample_type: wgpu::TextureSampleType::Float { filterable: true },
                         view_dimension: wgpu::TextureViewDimension::D2,
+                    },
+                    count: None,
+                },
+                wgpu::BindGroupLayoutEntry {
+                    binding: 4, //
+                    visibility: wgpu::ShaderStage::FRAGMENT,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
+                },
+                wgpu::BindGroupLayoutEntry {
+                    binding: 5, //
+                    visibility: wgpu::ShaderStage::FRAGMENT,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
+                },
+                wgpu::BindGroupLayoutEntry {
+                    binding: 6, //
+                    visibility: wgpu::ShaderStage::FRAGMENT,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
                     },
                     count: None,
                 },
@@ -157,9 +187,27 @@ impl crate::Renderer for TilesRenderer {
         let texture_mask = texture(&device, &queue, mask_bit_tex());
         let sampler = sampler(&device);
 
-        let uniform_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Dimension of tiles"),
+        let atlas_dim = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Atlas Dimensions in number of tiles"),
             contents: cast_slice(&[8. as f32, 6. as f32]), // [f32] => [u8]
+            usage: wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST,
+        });
+
+        let blueprints_dim = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Blueprint Dimensions in number of tiles"),
+            contents: cast_slice(&[8. as f32, 7. as f32]), // [f32] => [u8]
+            usage: wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST,
+        });
+
+        let output_dim = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Output Dimensions in number of tiles"),
+            contents: cast_slice(&[4. as f32, 5. as f32]), // [f32] => [u8]
+            usage: wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST,
+        });
+
+        let scroll = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Output Dimensions in number of tiles"),
+            contents: cast_slice(&[1. as f32, 0.5 as f32]), // [f32] => [u8]
             usage: wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST,
         });
 
@@ -170,7 +218,7 @@ impl crate::Renderer for TilesRenderer {
                 wgpu::BindGroupEntry {
                     binding: 0,
                     resource: wgpu::BindingResource::Buffer {
-                        buffer: &uniform_buf,
+                        buffer: &atlas_dim,
                         offset: 0,
                         size: None,
                     },
@@ -186,6 +234,30 @@ impl crate::Renderer for TilesRenderer {
                 wgpu::BindGroupEntry {
                     binding: 3,
                     resource: wgpu::BindingResource::TextureView(&texture_mask),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 4,
+                    resource: wgpu::BindingResource::Buffer {
+                        buffer: &blueprints_dim,
+                        offset: 0,
+                        size: None,
+                    },
+                },
+                wgpu::BindGroupEntry {
+                    binding: 5,
+                    resource: wgpu::BindingResource::Buffer {
+                        buffer: &output_dim,
+                        offset: 0,
+                        size: None,
+                    },
+                },
+                wgpu::BindGroupEntry {
+                    binding: 6,
+                    resource: wgpu::BindingResource::Buffer {
+                        buffer: &scroll,
+                        offset: 0,
+                        size: None,
+                    },
                 },
             ],
             label: None,

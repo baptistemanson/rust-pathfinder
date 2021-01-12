@@ -71,10 +71,13 @@ pub fn pix(i: u8) -> Vec<u8> {
 
 pub fn mask_bit_tex() -> BatTex {
     let bytes = vec![
-        vec![34, 17, 34, 34],
-        vec![1, 1, 1, 1],
-        vec![1, 1, 1, 1],
-        vec![1, 1, 1, 1],
+        vec![1, 2, 3, 8, 8, 3, 2, 1],
+        vec![1, 2, 3, 8, 8, 3, 2, 1],
+        vec![1, 2, 3, 8, 8, 3, 2, 1],
+        vec![1, 2, 3, 3, 3, 3, 2, 1],
+        vec![1, 2, 2, 2, 2, 2, 2, 1],
+        vec![1, 1, 1, 1, 1, 1, 1, 1],
+        vec![1, 1, 1, 1, 1, 1, 1, 1],
     ];
     let width = bytes[0].len();
     let height = bytes.len();
