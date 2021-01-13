@@ -332,7 +332,7 @@ impl crate::Renderer for TilesRenderer {
     }
 
     fn update_state(&mut self) {
-        let delta = self.last_update.elapsed().as_secs_f32() * 4.;
+        let delta = self.last_update.elapsed().as_secs_f32() * 5.;
         let mut delta_down = 0.;
         let mut delta_right = 0.;
         self.key_state.iter().for_each(|key| match key {
@@ -350,9 +350,14 @@ impl crate::Renderer for TilesRenderer {
             }
             _ => {}
         });
+        let epsilon = 0.08;
         self.curr_scroll = (
-            self.curr_scroll.0 + delta_right,
-            self.curr_scroll.1 + delta_down,
+            (self.curr_scroll.0 + delta_right)
+                .max(0.)
+                .min(20. - 12. - epsilon),
+            (self.curr_scroll.1 + delta_down)
+                .max(0.)
+                .min(20. - 10. - epsilon),
         );
         self.last_update = Instant::now();
     }

@@ -20,13 +20,15 @@ key takeaways on performances:
 - [x] add notion of scroll
 - [x] scroll back and forth in the render loop
 - [x] scroll based on keyboard input
-- [ ] block max scroll to border of the blueprints
+- [x] block max scroll to border of the blueprints
+- [x] get better tiles (buy them?)
+- [x] keyboard simple support
+- [x] import a map from tiled
 - [ ] add notion of layers of different renderers and add a scrolling texture of clouds on top
-- [ ] get better tiles (buy them?)
+- [ ] do a pipeline for rendering sprites
 - [ ] add characters
-- [ ] text render
-- [ ] do a pipeline for rendering boxes with text inside or texture
-- [ ] click handler (with a target of render with colors from the rendering box render pass?)
+- [ ] do a pipeline for rendering boxes (text)
+- [ ] Bonus! click handler (with a target of render with colors from the rendering box render pass?)
 
 ## General
 
