@@ -1,12 +1,15 @@
-use std::time::Instant;
+use std::{collections::HashSet, time::Instant};
 
 use utils::cast_slice;
 use wgpu::util::DeviceExt;
+use winit::event::{self, WindowEvent};
 
 use crate::{
     utils::{self, image_tex, mask_bit_tex, sampler, texture},
     vertex,
 };
+
+type KeyState = HashSet<event::VirtualKeyCode>;
 
 pub struct TilesRenderer {
     vertex_buf: wgpu::Buffer,
@@ -17,6 +20,7 @@ pub struct TilesRenderer {
     scroll: wgpu::Buffer,
     curr_scroll: (f32, f32),
     last_update: Instant,
+    key_state: KeyState,
 }
 
 impl TilesRenderer {}
@@ -291,10 +295,33 @@ impl crate::Renderer for TilesRenderer {
             scroll,
             curr_scroll: (0., 0.),
             last_update: Instant::now(),
+            key_state: KeyState::default(),
         }
     }
 
-    fn update(&mut self, _event: winit::event::WindowEvent) {}
+    fn update(&mut self, event: winit::event::WindowEvent) {
+        match event {
+            WindowEvent::KeyboardInput {
+                input:
+                    event::KeyboardInput {
+                        virtual_keycode: Some(key),
+                        state,
+                        ..
+                    },
+                ..
+            } => match state {
+                event::ElementState::Pressed => {
+                    self.key_state.insert(key);
+                }
+                event::ElementState::Released => {
+                    if self.key_state.contains(&key) {
+                        self.key_state.remove(&key);
+                    }
+                }
+            },
+            _ => {}
+        }
+    }
 
     fn resize(
         &mut self,
@@ -302,6 +329,32 @@ impl crate::Renderer for TilesRenderer {
         _device: &wgpu::Device,
         _queue: &wgpu::Queue,
     ) {
+    }
+
+    fn update_state(&mut self) {
+        let delta = self.last_update.elapsed().as_secs_f32() * 4.;
+        let mut delta_down = 0.;
+        let mut delta_right = 0.;
+        self.key_state.iter().for_each(|key| match key {
+            event::VirtualKeyCode::Up => {
+                delta_down -= delta;
+            }
+            event::VirtualKeyCode::Down => {
+                delta_down += delta;
+            }
+            event::VirtualKeyCode::Left => {
+                delta_right -= delta;
+            }
+            event::VirtualKeyCode::Right => {
+                delta_right += delta;
+            }
+            _ => {}
+        });
+        self.curr_scroll = (
+            self.curr_scroll.0 + delta_right,
+            self.curr_scroll.1 + delta_down,
+        );
+        self.last_update = Instant::now();
     }
 
     // Create command encoder
@@ -318,10 +371,6 @@ impl crate::Renderer for TilesRenderer {
         queue: &wgpu::Queue,
         _spawner: &crate::Spawner,
     ) {
-        let delta = self.last_update.elapsed().as_secs_f32() / 3.;
-        self.curr_scroll = (self.curr_scroll.0 + delta, self.curr_scroll.1 + delta);
-        self.last_update = Instant::now();
-
         let mut encoder =
             device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         {

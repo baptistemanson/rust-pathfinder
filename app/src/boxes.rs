@@ -27,6 +27,8 @@ impl crate::Renderer for BoxesRenderer {
     ) {
     }
 
+    fn update_state(&mut self) {}
+
     fn render(
         &mut self,
         _frame: &wgpu::SwapChainTexture,

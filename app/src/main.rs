@@ -38,6 +38,7 @@ pub trait Renderer: 'static + Sized {
         queue: &wgpu::Queue,
     );
     fn update(&mut self, event: WindowEvent);
+    fn update_state(&mut self);
     fn render(
         &mut self,
         frame: &wgpu::SwapChainTexture,
@@ -245,7 +246,7 @@ fn start<E: Renderer>(
                             .expect("Failed to acquire next swap chain texture!")
                     }
                 };
-
+                renderer.update_state();
                 renderer.render(&frame.output, &device, &queue, &spawner);
             }
             _ => {}

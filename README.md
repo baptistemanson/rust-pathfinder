@@ -18,7 +18,9 @@ key takeaways on performances:
 
 - [x] allow render dimension to be different from tile atlas
 - [x] add notion of scroll
-- [ ] scroll back and forth in the render loop
+- [x] scroll back and forth in the render loop
+- [x] scroll based on keyboard input
+- [ ] block max scroll to border of the blueprints
 - [ ] add notion of layers of different renderers and add a scrolling texture of clouds on top
 - [ ] get better tiles (buy them?)
 - [ ] add characters
