@@ -191,26 +191,26 @@ impl crate::Renderer for TilesRenderer {
         let texture_tiles = texture(
             &device,
             &queue,
-            image_tex(include_bytes!("../assets/tiles.png")),
+            image_tex(include_bytes!("../assets/Tileset_32x32_1.png")),
         );
         let texture_mask = texture(&device, &queue, mask_bit_tex());
         let sampler = sampler(&device);
 
         let atlas_dim = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Atlas Dimensions in number of tiles"),
-            contents: cast_slice(&[8. as f32, 6. as f32]), // [f32] => [u8]
+            contents: cast_slice(&[10. as f32, 10. as f32]), // [f32] => [u8]
             usage: wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST,
         });
 
         let blueprints_dim = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Blueprint Dimensions in number of tiles"),
-            contents: cast_slice(&[10. as f32, 10. as f32]), // [f32] => [u8]
+            contents: cast_slice(&[20. as f32, 20. as f32]), // [f32] => [u8]
             usage: wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST,
         });
 
         let output_dim = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Output Dimensions in number of tiles"),
-            contents: cast_slice(&[8. as f32, 6. as f32]), // [f32] => [u8]
+            contents: cast_slice(&[12. as f32, 10. as f32]), // [f32] => [u8]
             usage: wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST,
         });
 
