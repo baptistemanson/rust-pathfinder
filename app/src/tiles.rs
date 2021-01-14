@@ -5,7 +5,7 @@ use wgpu::util::DeviceExt;
 use winit::event::{self, WindowEvent};
 
 use crate::{
-    utils::{self, create_sampler, create_texture},
+    utils::{self, create_sampler, create_texture, get_color_state, get_pipeline_descriptor},
     vertex, vertex_layout,
     world::{image_tex, mask_bit_tex},
 };
@@ -134,35 +134,13 @@ impl crate::Renderer for TilesRenderer {
             device.create_shader_module(&wgpu::include_spirv!("./shaders/shader.frag.spv"));
 
         // Create the pipeline, with all the bind_groups layout + vertex layout + shaders
-        let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            label: None,
-            layout: Some(&pipeline_layout),
-            vertex_stage: wgpu::ProgrammableStageDescriptor {
-                module: &vs_module,
-                entry_point: "main",
-            },
-            fragment_stage: Some(wgpu::ProgrammableStageDescriptor {
-                module: &fs_module,
-                entry_point: "main",
-            }),
-            rasterization_state: Some(wgpu::RasterizationStateDescriptor {
-                front_face: wgpu::FrontFace::Ccw,
-                cull_mode: wgpu::CullMode::Back,
-                ..Default::default()
-            }),
-            primitive_topology: wgpu::PrimitiveTopology::TriangleList,
-            color_states: &[wgpu::ColorStateDescriptor {
-                format: sc_desc.format,
-                color_blend: wgpu::BlendDescriptor::REPLACE,
-                alpha_blend: wgpu::BlendDescriptor::REPLACE,
-                write_mask: wgpu::ColorWrite::ALL,
-            }],
-            depth_stencil_state: None,
+        let pipeline = device.create_render_pipeline(&get_pipeline_descriptor(
+            Some(&pipeline_layout),
             vertex_state,
-            sample_count: 1,
-            sample_mask: !0,
-            alpha_to_coverage_enabled: false,
-        });
+            &vs_module,
+            &fs_module,
+            &[get_color_state(sc_desc.format)],
+        ));
 
         // Create resources
         let texture_tiles = create_texture(

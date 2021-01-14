@@ -1,6 +1,9 @@
 use wgpu::util::DeviceExt;
 
-use crate::{utils::cast_slice, vertex, vertex_layout};
+use crate::{
+    utils::{cast_slice, get_color_state, get_pipeline_descriptor},
+    vertex, vertex_layout,
+};
 
 pub struct BoxesRenderer {
     vertex_buf: wgpu::Buffer,
@@ -36,39 +39,13 @@ impl crate::Renderer for BoxesRenderer {
             device.create_shader_module(&wgpu::include_spirv!("./shaders/shadertest.frag.spv"));
 
         // Create the pipeline, with all the bind_groups layout + vertex layout + shaders
-        let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            label: None,
-            layout: Some(&pipeline_layout),
-            vertex_stage: wgpu::ProgrammableStageDescriptor {
-                module: &vs_module,
-                entry_point: "main",
-            },
-            fragment_stage: Some(wgpu::ProgrammableStageDescriptor {
-                module: &fs_module,
-                entry_point: "main",
-            }),
-            rasterization_state: Some(wgpu::RasterizationStateDescriptor {
-                front_face: wgpu::FrontFace::Ccw,
-                cull_mode: wgpu::CullMode::Back,
-                ..Default::default()
-            }),
-            primitive_topology: wgpu::PrimitiveTopology::TriangleList,
-            color_states: &[wgpu::ColorStateDescriptor {
-                format: sc_desc.format,
-                color_blend: wgpu::BlendDescriptor {
-                    operation: wgpu::BlendOperation::Add,
-                    src_factor: wgpu::BlendFactor::SrcAlpha,
-                    dst_factor: wgpu::BlendFactor::OneMinusSrcAlpha,
-                },
-                alpha_blend: wgpu::BlendDescriptor::REPLACE,
-                write_mask: wgpu::ColorWrite::ALL,
-            }],
-            depth_stencil_state: None,
+        let pipeline = device.create_render_pipeline(&get_pipeline_descriptor(
+            Some(&pipeline_layout),
             vertex_state,
-            sample_count: 1,
-            sample_mask: !0,
-            alpha_to_coverage_enabled: false,
-        });
+            &vs_module,
+            &fs_module,
+            &[get_color_state(sc_desc.format)],
+        ));
 
         let (vertex_data, index_data) = vertex::quad();
 
