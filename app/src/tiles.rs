@@ -26,10 +26,6 @@ pub struct TilesRenderer {
 impl TilesRenderer {}
 
 impl crate::Renderer for TilesRenderer {
-    fn optional_features() -> wgt::Features {
-        wgt::Features::NON_FILL_POLYGON_MODE
-    }
-
     // Describe each bind group layout
     // Assemble bind group layouts into a pipeline layout (aka bind groups[])
     // Describe the vertex layout
@@ -285,12 +281,13 @@ impl crate::Renderer for TilesRenderer {
             contents: cast_slice(&index_data),
             usage: wgpu::BufferUsage::INDEX,
         });
+        let index_count = index_data.len();
 
         TilesRenderer {
             pipeline,
             vertex_buf,
             index_buf,
-            index_count: index_data.len(),
+            index_count,
             bind_group,
             scroll,
             curr_scroll: (0., 0.),
@@ -299,7 +296,7 @@ impl crate::Renderer for TilesRenderer {
         }
     }
 
-    fn update(&mut self, event: winit::event::WindowEvent) {
+    fn update(&mut self, event: &winit::event::WindowEvent) {
         match event {
             WindowEvent::KeyboardInput {
                 input:
@@ -311,7 +308,7 @@ impl crate::Renderer for TilesRenderer {
                 ..
             } => match state {
                 event::ElementState::Pressed => {
-                    self.key_state.insert(key);
+                    self.key_state.insert(key.clone());
                 }
                 event::ElementState::Released => {
                     if self.key_state.contains(&key) {

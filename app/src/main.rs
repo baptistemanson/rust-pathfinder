@@ -1,7 +1,9 @@
+use boxes::BoxesRenderer;
 use std::future::Future;
 #[cfg(not(target_arch = "wasm32"))]
 use std::time::{Duration, Instant};
 use tiles::TilesRenderer;
+use wgpu::{Features, Limits};
 use winit::{
     event::{self, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
@@ -12,20 +14,11 @@ mod utils;
 mod vertex;
 
 fn main() {
-    run::<TilesRenderer>("pathfinder");
+    run("pathfinder");
 }
 
 // An App.
 pub trait Renderer: 'static + Sized {
-    fn optional_features() -> wgpu::Features {
-        wgpu::Features::empty()
-    }
-    fn required_features() -> wgpu::Features {
-        wgpu::Features::empty()
-    }
-    fn required_limits() -> wgpu::Limits {
-        wgpu::Limits::default()
-    }
     fn init(
         sc_desc: &wgpu::SwapChainDescriptor,
         device: &wgpu::Device,
@@ -37,7 +30,7 @@ pub trait Renderer: 'static + Sized {
         device: &wgpu::Device,
         queue: &wgpu::Queue,
     );
-    fn update(&mut self, event: WindowEvent);
+    fn update(&mut self, event: &WindowEvent);
     fn update_state(&mut self);
     fn render(
         &mut self,
@@ -59,7 +52,7 @@ struct Setup {
     queue: wgpu::Queue,
 }
 
-async fn setup<Re: Renderer>(title: &str) -> Setup {
+async fn setup(title: &str) -> Setup {
     let event_loop = EventLoop::new();
     let mut builder = winit::window::WindowBuilder::new();
     builder = builder.with_title(title);
@@ -110,24 +103,13 @@ async fn setup<Re: Renderer>(title: &str) -> Setup {
         println!("Using {} ({:?})", adapter_info.name, adapter_info.backend);
     }
 
-    let optional_features = Re::optional_features();
-    let required_features = Re::required_features();
-    let adapter_features = adapter.features();
-    assert!(
-        adapter_features.contains(required_features),
-        "Adapter does not support required features for this example: {:?}",
-        required_features - adapter_features
-    );
-
-    let needed_limits = Re::required_limits();
-
     let trace_dir = std::env::var("WGPU_TRACE");
     let (device, queue) = adapter
         .request_device(
             &wgpu::DeviceDescriptor {
                 label: None,
-                features: (optional_features & adapter_features) | required_features,
-                limits: needed_limits,
+                features: Features::default(),
+                limits: Limits::default(),
             },
             trace_dir.ok().as_ref().map(std::path::Path::new),
         )
@@ -146,7 +128,7 @@ async fn setup<Re: Renderer>(title: &str) -> Setup {
     }
 }
 
-fn start<E: Renderer>(
+fn start(
     Setup {
         window,
         event_loop,
@@ -169,7 +151,8 @@ fn start<E: Renderer>(
     let mut swap_chain = device.create_swap_chain(&surface, &sc_desc);
 
     log::info!("Initializing the renderer...");
-    let mut renderer = E::init(&sc_desc, &device, &queue);
+    let mut renderer1 = TilesRenderer::init(&sc_desc, &device, &queue);
+    let mut renderer2 = BoxesRenderer::init(&sc_desc, &device, &queue);
 
     #[cfg(not(target_arch = "wasm32"))]
     let mut last_update_inst = Instant::now();
@@ -216,7 +199,8 @@ fn start<E: Renderer>(
                 log::info!("Resizing to {:?}", size);
                 sc_desc.width = if size.width == 0 { 1 } else { size.width };
                 sc_desc.height = if size.height == 0 { 1 } else { size.height };
-                renderer.resize(&sc_desc, &device, &queue);
+                renderer1.resize(&sc_desc, &device, &queue);
+                renderer2.resize(&sc_desc, &device, &queue);
                 swap_chain = device.create_swap_chain(&surface, &sc_desc);
             }
             event::Event::WindowEvent { event, .. } => match event {
@@ -233,7 +217,8 @@ fn start<E: Renderer>(
                     *control_flow = ControlFlow::Exit;
                 }
                 _ => {
-                    renderer.update(event);
+                    renderer1.update(&event);
+                    renderer2.update(&event);
                 }
             },
             event::Event::RedrawRequested(_) => {
@@ -246,8 +231,10 @@ fn start<E: Renderer>(
                             .expect("Failed to acquire next swap chain texture!")
                     }
                 };
-                renderer.update_state();
-                renderer.render(&frame.output, &device, &queue, &spawner);
+                renderer1.update_state();
+                renderer2.update_state();
+                renderer1.render(&frame.output, &device, &queue, &spawner);
+                renderer2.render(&frame.output, &device, &queue, &spawner);
             }
             _ => {}
         }
@@ -293,13 +280,13 @@ impl Spawner {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-pub fn run<E: Renderer>(title: &str) {
-    let setup = pollster::block_on(setup::<E>(title));
-    start::<E>(setup);
+pub fn run(title: &str) {
+    let setup = pollster::block_on(setup(title));
+    start(setup);
 }
 
 #[cfg(target_arch = "wasm32")]
-pub fn run<E: Example>(title: &str) {
+pub fn run(title: &str) {
     let title = title.to_owned();
     wasm_bindgen_futures::spawn_local(async move {
         let setup = setup::<E>(&title).await;

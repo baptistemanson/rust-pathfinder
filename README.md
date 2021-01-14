@@ -24,7 +24,8 @@ key takeaways on performances:
 - [x] get better tiles (buy them?)
 - [x] keyboard simple support
 - [x] import a map from tiled
-- [ ] add notion of layers of different renderers and add a scrolling texture of clouds on top
+- [x] add notion of layers of different renderers
+- [ ] cleanup renderers, develop helpers etc
 - [ ] do a pipeline for rendering sprites
 - [ ] add characters
 - [ ] do a pipeline for rendering boxes (text)
