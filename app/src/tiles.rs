@@ -5,8 +5,9 @@ use wgpu::util::DeviceExt;
 use winit::event::{self, WindowEvent};
 
 use crate::{
-    utils::{self, image_tex, mask_bit_tex, sampler, texture},
-    vertex,
+    utils::{self, create_sampler, create_texture},
+    vertex, vertex_layout,
+    world::{image_tex, mask_bit_tex},
 };
 
 type KeyState = HashSet<event::VirtualKeyCode>;
@@ -41,8 +42,6 @@ impl crate::Renderer for TilesRenderer {
         device: &wgpu::Device,
         queue: &wgpu::Queue,
     ) -> Self {
-        use std::mem;
-
         // Describe bind group layout
         let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             label: None,
@@ -126,25 +125,7 @@ impl crate::Renderer for TilesRenderer {
         });
 
         // Describe the vertex layout
-        let vertex_layout = wgpu::VertexStateDescriptor {
-            index_format: Some(wgpu::IndexFormat::Uint16),
-            vertex_buffers: &[wgpu::VertexBufferDescriptor {
-                stride: mem::size_of::<vertex::Vertex>() as wgpu::BufferAddress,
-                step_mode: wgpu::InputStepMode::Vertex,
-                attributes: &[
-                    wgpu::VertexAttributeDescriptor {
-                        format: wgpu::VertexFormat::Float4,
-                        offset: 0,
-                        shader_location: 0,
-                    },
-                    // wgpu::VertexAttributeDescriptor {
-                    //     format: wgpu::VertexFormat::Float2,
-                    //     offset: 4 * 4, // 4 float 32
-                    //     shader_location: 1,
-                    // },
-                ],
-            }],
-        };
+        let vertex_state = vertex_layout![vertex::Vertex : 0 => Float4];
 
         // Load shaders
         let vs_module =
@@ -177,20 +158,20 @@ impl crate::Renderer for TilesRenderer {
                 write_mask: wgpu::ColorWrite::ALL,
             }],
             depth_stencil_state: None,
-            vertex_state: vertex_layout.clone(),
+            vertex_state,
             sample_count: 1,
             sample_mask: !0,
             alpha_to_coverage_enabled: false,
         });
 
         // Create resources
-        let texture_tiles = texture(
+        let texture_tiles = create_texture(
             &device,
             &queue,
             image_tex(include_bytes!("../assets/Tileset_32x32_1.png")),
         );
-        let texture_mask = texture(&device, &queue, mask_bit_tex());
-        let sampler = sampler(&device);
+        let texture_mask = create_texture(&device, &queue, mask_bit_tex());
+        let sampler = create_sampler(&device);
 
         let atlas_dim = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Atlas Dimensions in number of tiles"),

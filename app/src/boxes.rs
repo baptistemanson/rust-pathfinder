@@ -1,9 +1,6 @@
-use std::mem;
-
 use wgpu::util::DeviceExt;
-use wgpu::vertex_attr_array;
 
-use crate::{utils::cast_slice, vertex};
+use crate::{utils::cast_slice, vertex, vertex_layout};
 
 pub struct BoxesRenderer {
     vertex_buf: wgpu::Buffer,
@@ -22,7 +19,7 @@ impl crate::Renderer for BoxesRenderer {
     fn init(
         sc_desc: &wgpu::SwapChainDescriptor,
         device: &wgpu::Device,
-        queue: &wgpu::Queue,
+        _queue: &wgpu::Queue,
     ) -> Self {
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: None,
@@ -30,16 +27,8 @@ impl crate::Renderer for BoxesRenderer {
             push_constant_ranges: &[],
         });
 
-        // Describe the vertex layout
-        let vertex_layout = wgpu::VertexStateDescriptor {
-            index_format: Some(wgpu::IndexFormat::Uint16),
-            vertex_buffers: &[wgpu::VertexBufferDescriptor {
-                stride: mem::size_of::<vertex::Vertex>() as wgpu::BufferAddress,
-                step_mode: wgpu::InputStepMode::Vertex,
-                attributes: &vertex_attr_array![0 => Float4],
-            }],
-        };
-
+        // when Im a grown up, Ill try to write a macro that only needs the type...
+        let vertex_state = vertex_layout![vertex::Vertex : 0 => Float4];
         // Load shaders
         let vs_module =
             device.create_shader_module(&wgpu::include_spirv!("./shaders/shader.vert.spv"));
@@ -75,7 +64,7 @@ impl crate::Renderer for BoxesRenderer {
                 write_mask: wgpu::ColorWrite::ALL,
             }],
             depth_stencil_state: None,
-            vertex_state: vertex_layout.clone(),
+            vertex_state,
             sample_count: 1,
             sample_mask: !0,
             alpha_to_coverage_enabled: false,

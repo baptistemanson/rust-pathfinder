@@ -12,6 +12,7 @@ mod boxes;
 mod tiles;
 mod utils;
 mod vertex;
+mod world;
 
 fn main() {
     run("pathfinder");

@@ -1,33 +1,29 @@
-#[allow(dead_code)]
-pub fn generate_matrix(aspect_ratio: f32) -> cgmath::Matrix4<f32> {
-    let mx_projection = cgmath::perspective(cgmath::Deg(45f32), aspect_ratio, 1.0, 10.0);
-    let mx_view = cgmath::Matrix4::look_at(
-        cgmath::Point3::new(1.5f32, -5.0, 3.0),
-        cgmath::Point3::new(0f32, 0.0, 0.0),
-        cgmath::Vector3::unit_z(),
-    );
-    let mx_correction = OPENGL_TO_WGPU_MATRIX;
-    mx_correction * mx_projection * mx_view
-}
-
-#[cfg_attr(rustfmt, rustfmt_skip)]
-#[allow(unused)]
-pub const OPENGL_TO_WGPU_MATRIX: cgmath::Matrix4<f32> = cgmath::Matrix4::new(
-    1.0, 0.0, 0.0, 0.0,
-    0.0, 1.0, 0.0, 0.0,
-    0.0, 0.0, 0.5, 0.0,
-    0.0, 0.0, 0.5, 1.0,
-);
-
 pub fn cast_slice<T>(data: &[T]) -> &[u8] {
     use std::{mem::size_of, slice::from_raw_parts};
 
     unsafe { from_raw_parts(data.as_ptr() as *const u8, data.len() * size_of::<T>()) }
 }
 
+// I wished I could have writtent a function instead of this...
+#[macro_export]
+macro_rules! vertex_layout {
+    ($T:ty : $($loc:expr => $fmt:ident),* $(,)?) => {
+        wgpu::VertexStateDescriptor {
+            index_format: Some(wgpu::IndexFormat::Uint16),
+            vertex_buffers: &[wgpu::VertexBufferDescriptor {
+                stride: std::mem::size_of::<$T>() as wgpu::BufferAddress,
+                step_mode: wgpu::InputStepMode::Vertex,
+                attributes: &wgpu::vertex_attr_array![$($loc => $fmt ,)*],
+            }],
+        };
+    };
+}
+
+// TEXTURES
+//
 // a sampler allows to sample the texture
 // it takes a bit of time to instantiate, because it generates the mip maps...
-pub fn sampler(device: &wgpu::Device) -> wgpu::Sampler {
+pub fn create_sampler(device: &wgpu::Device) -> wgpu::Sampler {
     device.create_sampler(&wgpu::SamplerDescriptor {
         address_mode_u: wgpu::AddressMode::ClampToEdge,
         address_mode_v: wgpu::AddressMode::ClampToEdge,
@@ -38,6 +34,7 @@ pub fn sampler(device: &wgpu::Device) -> wgpu::Sampler {
         ..Default::default()
     })
 }
+
 #[derive(Debug)]
 pub struct BatTexDimensions {
     pub width: u32,
@@ -49,119 +46,11 @@ pub struct BatTexDimensions {
 pub struct BatTex {
     pub bytes: Vec<u8>,
     pub dim: BatTexDimensions,
-    format: wgpu::TextureFormat,
-}
-#[allow(dead_code)]
-pub fn procedural_tex(size: u32) -> BatTex {
-    BatTex {
-        format: wgpu::TextureFormat::Rgba8UnormSrgb,
-        dim: BatTexDimensions {
-            width: size,
-            height: size,
-        },
-        bytes: (0..size * size)
-            .flat_map(|i| vec![(i % 256) as u8, 0, 0, 0])
-            .collect::<Vec<u8>>(),
-    }
-}
-
-pub fn pix(i: u8) -> Vec<u8> {
-    vec![i, 0, 0, 0]
-}
-
-pub fn mask_bit_tex() -> BatTex {
-    let bytes = vec![
-        vec![
-            10, 11, 11, 11, 11, 14, 11, 11, 15, 16, 16, 17, 11, 11, 14, 11, 11, 11, 11, 13,
-        ],
-        vec![
-            20, 21, 21, 21, 21, 24, 21, 21, 25, 26, 26, 27, 21, 21, 24, 21, 21, 21, 21, 23,
-        ],
-        vec![
-            20, 31, 32, 32, 32, 34, 32, 32, 35, 36, 36, 37, 32, 32, 34, 32, 32, 32, 32, 33,
-        ],
-        vec![
-            20, 41, 42, 42, 42, 42, 42, 42, 32, 63, 64, 32, 42, 42, 42, 42, 42, 42, 42, 33,
-        ],
-        vec![
-            20, 41, 42, 42, 42, 42, 42, 42, 42, 93, 74, 42, 42, 42, 42, 42, 42, 42, 42, 33,
-        ],
-        vec![
-            20, 82, 85, 85, 85, 85, 85, 85, 85, 83, 84, 85, 85, 85, 85, 85, 85, 85, 85, 33,
-        ],
-        vec![
-            20, 41, 42, 42, 42, 42, 42, 42, 42, 93, 74, 42, 42, 42, 42, 42, 42, 42, 42, 33,
-        ],
-        vec![
-            60, 41, 42, 42, 42, 42, 42, 42, 42, 93, 74, 42, 42, 42, 42, 42, 42, 42, 42, 61,
-        ],
-        vec![
-            16, 69, 69, 69, 69, 69, 69, 69, 69, 73, 74, 69, 69, 69, 69, 69, 69, 69, 69, 16,
-        ],
-        vec![
-            17, 26, 26, 26, 26, 26, 26, 26, 26, 73, 74, 26, 26, 26, 26, 26, 26, 26, 26, 15,
-        ],
-        vec![
-            70, 36, 36, 36, 36, 36, 36, 36, 36, 73, 74, 36, 36, 36, 36, 36, 36, 36, 36, 71,
-        ],
-        vec![
-            20, 31, 32, 32, 32, 32, 32, 32, 32, 93, 74, 32, 32, 32, 32, 32, 32, 32, 32, 33,
-        ],
-        vec![
-            20, 41, 42, 42, 42, 42, 42, 42, 42, 93, 74, 42, 42, 42, 42, 42, 42, 42, 42, 33,
-        ],
-        vec![
-            20, 41, 42, 42, 42, 42, 42, 42, 42, 93, 74, 42, 42, 42, 42, 42, 42, 42, 42, 33,
-        ],
-        vec![
-            20, 41, 42, 42, 42, 42, 42, 42, 42, 93, 74, 42, 42, 42, 42, 42, 42, 42, 42, 33,
-        ],
-        vec![
-            20, 41, 42, 42, 42, 42, 42, 42, 42, 93, 74, 42, 42, 42, 42, 42, 42, 42, 42, 33,
-        ],
-        vec![
-            20, 41, 42, 42, 42, 42, 42, 42, 42, 93, 74, 42, 42, 42, 42, 42, 42, 42, 42, 33,
-        ],
-        vec![
-            20, 41, 42, 42, 42, 42, 42, 42, 42, 93, 74, 42, 42, 42, 42, 42, 42, 42, 42, 33,
-        ],
-        vec![
-            20, 41, 42, 42, 42, 42, 42, 42, 42, 93, 74, 42, 42, 42, 42, 42, 42, 42, 42, 33,
-        ],
-        vec![
-            50, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 53,
-        ],
-    ];
-    let width = bytes[0].len();
-    let height = bytes.len();
-    BatTex {
-        dim: BatTexDimensions {
-            width: width as u32,
-            height: height as u32,
-        },
-        format: wgpu::TextureFormat::Rgba8Unorm,
-        bytes: bytes
-            .into_iter()
-            .flatten()
-            .flat_map(|i| pix(i))
-            .collect::<Vec<u8>>(),
-    }
-}
-
-pub fn image_tex(data: &[u8]) -> BatTex {
-    let image = image::load_from_memory(data).unwrap().into_rgba8();
-    BatTex {
-        format: wgpu::TextureFormat::Rgba8UnormSrgb,
-        dim: BatTexDimensions {
-            width: image.width(),
-            height: image.height(),
-        },
-        bytes: image.into_raw(),
-    }
+    pub format: wgpu::TextureFormat,
 }
 
 // Grab a texture, send it to the queue, and returns the texture view.
-pub fn texture(
+pub fn create_texture(
     device: &wgpu::Device,
     queue: &wgpu::Queue,
     texture_bat: BatTex,
