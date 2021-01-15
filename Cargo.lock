@@ -2181,6 +2181,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "test-wgpu-utils"
+version = "0.1.0"
+dependencies = [
+ "wgpu",
+ "wgputils",
+]
+
+[[package]]
 name = "textwrap"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2541,6 +2549,13 @@ version = "0.6.0"
 source = "git+https://github.com/gfx-rs/wgpu?rev=4ebe1f50b057046e4d4f015eb006330d62f5fe91#4ebe1f50b057046e4d4f015eb006330d62f5fe91"
 dependencies = [
  "bitflags",
+]
+
+[[package]]
+name = "wgputils"
+version = "0.1.0"
+dependencies = [
+ "wgpu",
 ]
 
 [[package]]

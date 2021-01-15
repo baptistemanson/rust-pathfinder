@@ -6,7 +6,7 @@ pub fn cast_slice<T>(data: &[T]) -> &[u8] {
     unsafe { from_raw_parts(data.as_ptr() as *const u8, data.len() * size_of::<T>()) }
 }
 
-// I wished I could have writtent a function instead of this...
+// @todo: try to derive the fields from the struct
 #[macro_export]
 macro_rules! vertex_layout {
     ($T:ty : $($loc:expr => $fmt:ident),* $(,)?) => {
@@ -21,6 +21,7 @@ macro_rules! vertex_layout {
     };
 }
 
+// Get default color state, ready to blend stuff
 pub fn get_color_state(format: TextureFormat) -> wgpu::ColorStateDescriptor {
     wgpu::ColorStateDescriptor {
         format: format,
@@ -34,6 +35,7 @@ pub fn get_color_state(format: TextureFormat) -> wgpu::ColorStateDescriptor {
     }
 }
 
+// Get default pipeline descriptor
 pub fn get_pipeline_descriptor<'a>(
     pipeline_layout: Option<&'a wgpu::PipelineLayout>,
     vertex_state: VertexStateDescriptor<'a>,

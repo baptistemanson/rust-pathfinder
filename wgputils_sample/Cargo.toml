@@ -1,0 +1,11 @@
+[package]
+name = "test-wgpu-utils"
+version = "0.1.0"
+authors = ["Baptiste Manson <baptiste.manson@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+wgputils = { path = "../wgputils" }
+wgpu = { git = "https://github.com/gfx-rs/wgpu-rs.git" }

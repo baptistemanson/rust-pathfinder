@@ -2,3 +2,4 @@
 /docs*
 */target/criterion/*
 */target/instruments/*
+*.cargo-ok
