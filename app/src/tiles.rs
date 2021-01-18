@@ -26,6 +26,20 @@ pub struct TilesRenderer {
 
 impl TilesRenderer {}
 
+struct BindPoint {}
+
+struct Shader {}
+
+type BindGroup = Vec<BindPoint>;
+
+#[allow(dead_code)]
+struct PipelineDescription<Vertex> {
+    bind_group: BindGroup,
+    vertex: Vertex,
+    vertex_shader: Shader,
+    fragment_shader: Shader,
+}
+
 impl crate::Renderer for TilesRenderer {
     // Describe each bind group layout
     // Assemble bind group layouts into a pipeline layout (aka bind groups[])

@@ -19,3 +19,6 @@ pub fn get_vertex_layout(_item: TokenStream) -> TokenStream {
     .parse()
     .unwrap()
 }
+
+// derive trait Vertex type
+// take the struct, create a method getStride, and another one to getAttributes.
