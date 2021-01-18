@@ -1,7 +1,7 @@
 [workspace]
 
 members = [
-    "rules", "dice", "app", "wgputils", "wgputils_sample"
+    "rules", "dice", "app", "wgputils", "wgputils_sample", "builder"
 ]
 default-members = ["app"]
 
