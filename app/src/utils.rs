@@ -1,4 +1,4 @@
-use wgpu::{ShaderModule, TextureFormat, VertexStateDescriptor};
+use wgpu::TextureFormat;
 
 pub fn cast_slice<T>(data: &[T]) -> &[u8] {
     use std::{mem::size_of, slice::from_raw_parts};
@@ -33,54 +33,4 @@ pub fn get_color_state(format: TextureFormat) -> wgpu::ColorStateDescriptor {
         alpha_blend: wgpu::BlendDescriptor::REPLACE,
         write_mask: wgpu::ColorWrite::ALL,
     }
-}
-
-// Get default pipeline descriptor
-pub fn get_pipeline_descriptor<'a>(
-    pipeline_layout: Option<&'a wgpu::PipelineLayout>,
-    vertex_state: VertexStateDescriptor<'a>,
-    vs_module: &'a ShaderModule,
-    fs_module: &'a ShaderModule,
-    color_states: &'a [wgpu::ColorStateDescriptor],
-) -> wgpu::RenderPipelineDescriptor<'a> {
-    wgpu::RenderPipelineDescriptor {
-        label: None,
-        layout: pipeline_layout,
-        vertex_stage: wgpu::ProgrammableStageDescriptor {
-            module: vs_module,
-            entry_point: "main",
-        },
-        fragment_stage: Some(wgpu::ProgrammableStageDescriptor {
-            module: fs_module,
-            entry_point: "main",
-        }),
-        rasterization_state: Some(wgpu::RasterizationStateDescriptor {
-            front_face: wgpu::FrontFace::Ccw,
-            cull_mode: wgpu::CullMode::Back,
-            ..Default::default()
-        }),
-        primitive_topology: wgpu::PrimitiveTopology::TriangleList,
-        color_states,
-        depth_stencil_state: None,
-        vertex_state,
-        sample_count: 1,
-        sample_mask: !0,
-        alpha_to_coverage_enabled: false,
-    }
-}
-
-// TEXTURES
-//
-// a sampler allows to sample the texture
-// it takes a bit of time to instantiate, because it generates the mip maps...
-pub fn create_sampler(device: &wgpu::Device) -> wgpu::Sampler {
-    device.create_sampler(&wgpu::SamplerDescriptor {
-        address_mode_u: wgpu::AddressMode::ClampToEdge,
-        address_mode_v: wgpu::AddressMode::ClampToEdge,
-        address_mode_w: wgpu::AddressMode::ClampToEdge,
-        mag_filter: wgpu::FilterMode::Nearest,
-        min_filter: wgpu::FilterMode::Nearest,
-        mipmap_filter: wgpu::FilterMode::Linear,
-        ..Default::default()
-    })
 }

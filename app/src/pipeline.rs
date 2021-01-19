@@ -1,6 +1,8 @@
-use crate::utils::get_pipeline_descriptor;
 use crate::{utils::get_color_state, vertex_layout};
-use wgpu::{BindGroupLayout, BindGroupLayoutEntry, Device, RenderPipeline, ShaderModule};
+use wgpu::{
+    BindGroupLayout, BindGroupLayoutEntry, Device, RenderPipeline, ShaderModule,
+    VertexStateDescriptor,
+};
 
 pub struct PipelineBuilder<'a, Vertex> {
     device: &'a Device,
@@ -77,5 +79,39 @@ impl<'a, Vertex> PipelineBuilder<'a, Vertex> {
             )),
             bind_group_layout,
         )
+    }
+}
+
+// Get default pipeline descriptor
+pub fn get_pipeline_descriptor<'a>(
+    pipeline_layout: Option<&'a wgpu::PipelineLayout>,
+    vertex_state: VertexStateDescriptor<'a>,
+    vs_module: &'a ShaderModule,
+    fs_module: &'a ShaderModule,
+    color_states: &'a [wgpu::ColorStateDescriptor],
+) -> wgpu::RenderPipelineDescriptor<'a> {
+    wgpu::RenderPipelineDescriptor {
+        label: None,
+        layout: pipeline_layout,
+        vertex_stage: wgpu::ProgrammableStageDescriptor {
+            module: vs_module,
+            entry_point: "main",
+        },
+        fragment_stage: Some(wgpu::ProgrammableStageDescriptor {
+            module: fs_module,
+            entry_point: "main",
+        }),
+        rasterization_state: Some(wgpu::RasterizationStateDescriptor {
+            front_face: wgpu::FrontFace::Ccw,
+            cull_mode: wgpu::CullMode::Back,
+            ..Default::default()
+        }),
+        primitive_topology: wgpu::PrimitiveTopology::TriangleList,
+        color_states,
+        depth_stencil_state: None,
+        vertex_state,
+        sample_count: 1,
+        sample_mask: !0,
+        alpha_to_coverage_enabled: false,
     }
 }

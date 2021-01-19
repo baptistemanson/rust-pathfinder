@@ -5,7 +5,7 @@ use crate::{
     pipeline::PipelineBuilder,
     sampler::Sampler,
     texture::BatTex,
-    utils::{self, create_sampler},
+    utils::{self},
     vertex,
     world::mask_bit_tex,
 };
@@ -44,26 +44,34 @@ impl crate::Renderer for TilesRenderer {
         device: &wgpu::Device,
         queue: &wgpu::Queue,
     ) -> Self {
-        let mut pipeline_builder = PipelineBuilder::<Vertex>::new(&device);
-
         let mut atlas = BatTex::image_tex(
             device,
             queue,
             include_bytes!("../assets/Tileset_32x32_1.png"),
             wgpu::ShaderStage::FRAGMENT,
         );
-        let mut blueprint = mask_bit_tex(device, queue);
-        let sampler = Sampler {};
-        let mut atlas_dim = Buffer::new(&device);
-        let mut output_dim = Buffer::new(&device);
+        let mut blueprint = mask_bit_tex(&device, &queue);
+        let mut sampler = Sampler::new(&device);
+
         let mut blueprints_dim = Buffer::new(&device);
+        blueprints_dim.init_data(cast_slice(&[20. as f32, 20. as f32]));
+
+        let mut atlas_dim = Buffer::new(&device);
+        atlas_dim.init_data(cast_slice(&[10. as f32, 10. as f32]));
+
+        let mut output_dim = Buffer::new(&device);
+        output_dim.init_data(cast_slice(&[12. as f32, 10. as f32]));
+
         let mut scroll = Buffer::new(&device);
+        scroll.init_data(cast_slice(&[0. as f32, 0. as f32]));
+
         // Load shaders
         let vs_module =
             device.create_shader_module(&wgpu::include_spirv!("./shaders/shader.vert.spv"));
         let fs_module =
             device.create_shader_module(&wgpu::include_spirv!("./shaders/shader.frag.spv"));
 
+        let mut pipeline_builder = PipelineBuilder::<Vertex>::new(&device);
         pipeline_builder.add_to_bind_group(atlas_dim.get_layout());
         pipeline_builder.add_to_bind_group(atlas.get_layout());
         pipeline_builder.add_to_bind_group(sampler.get_layout());
@@ -77,25 +85,13 @@ impl crate::Renderer for TilesRenderer {
 
         let (pipeline, bind_group_layout) = pipeline_builder.build();
 
-        // Create resources
-
-        let sampler = create_sampler(&device);
-
-        atlas_dim.init_data(cast_slice(&[10. as f32, 10. as f32]));
-        blueprints_dim.init_data(cast_slice(&[20. as f32, 20. as f32]));
-        output_dim.init_data(cast_slice(&[12. as f32, 10. as f32]));
-        scroll.init_data(cast_slice(&[0. as f32, 0. as f32]));
-
         // Create a bind group, which is a collection of resources
         let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
             layout: &bind_group_layout,
             entries: &[
                 atlas_dim.get_entry(0),
                 atlas.get_entry(1),
-                wgpu::BindGroupEntry {
-                    binding: 2,
-                    resource: wgpu::BindingResource::Sampler(&sampler),
-                },
+                sampler.get_entry(2),
                 blueprint.get_entry(3),
                 blueprints_dim.get_entry(4),
                 output_dim.get_entry(5),
