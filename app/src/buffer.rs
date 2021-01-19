@@ -1,3 +1,4 @@
+use crate::bindable::Bindable;
 use wgpu::util::DeviceExt;
 use wgpu::Device;
 
@@ -6,6 +7,31 @@ pub struct Buffer<'a> {
     pub buffer: Option<wgpu::Buffer>,
 }
 
+impl<'a> Bindable<'a> for Buffer<'a> {
+    fn get_layout(&self) -> wgpu::BindGroupLayoutEntry {
+        wgpu::BindGroupLayoutEntry {
+            binding: 0, // will be remapped
+            visibility: wgpu::ShaderStage::FRAGMENT,
+            ty: wgpu::BindingType::Buffer {
+                ty: wgpu::BufferBindingType::Uniform,
+                has_dynamic_offset: false,
+                min_binding_size: None,
+            },
+            count: None,
+        }
+    }
+
+    fn get_entry(&'a self, binding: u32) -> wgpu::BindGroupEntry<'a> {
+        wgpu::BindGroupEntry {
+            binding, // should be implicit via a collection
+            resource: wgpu::BindingResource::Buffer {
+                buffer: &self.buffer.as_ref().expect("buffer not set"),
+                offset: 0,
+                size: None,
+            },
+        }
+    }
+}
 impl<'a> Buffer<'a> {
     pub fn new(device: &'a Device) -> Self {
         Buffer {
@@ -36,16 +62,5 @@ impl<'a> Buffer<'a> {
                     usage: wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST,
                 }),
         )
-    }
-
-    pub fn get_entry(&self, binding: u32) -> wgpu::BindGroupEntry {
-        wgpu::BindGroupEntry {
-            binding, // should be implicit via a collection
-            resource: wgpu::BindingResource::Buffer {
-                buffer: &self.buffer.as_ref().expect("buffer not set"),
-                offset: 0,
-                size: None,
-            },
-        }
     }
 }

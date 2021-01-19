@@ -1,6 +1,7 @@
 use std::{collections::HashSet, time::Instant};
 
 use crate::{
+    bindable::Bindable,
     buffer::Buffer,
     pipeline::PipelineBuilder,
     sampler::Sampler,

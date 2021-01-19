@@ -8,6 +8,8 @@ use winit::{
     event_loop::{ControlFlow, EventLoop},
 };
 
+mod bind_group;
+mod bindable;
 mod buffer;
 mod pipeline;
 mod sampler;
