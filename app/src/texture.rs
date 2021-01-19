@@ -26,7 +26,7 @@ impl<'a> Texture<'a> {
         dim: BatTexDimensions,
         visibility: wgpu::ShaderStage,
     ) -> Self {
-        Texture {
+        let t = Texture {
             queue,
             device,
             visibility,
@@ -34,7 +34,8 @@ impl<'a> Texture<'a> {
             format: wgpu::TextureFormat::Rgba8Unorm, // weird... should check
             dim,
             bytes,
-        }
+        };
+        t.transfer()
     }
     #[allow(dead_code)]
     pub fn procedural_tex(
@@ -43,7 +44,7 @@ impl<'a> Texture<'a> {
         size: u32,
         visibility: wgpu::ShaderStage,
     ) -> Texture<'a> {
-        Texture {
+        let t = Texture {
             queue,
             device,
             visibility,
@@ -56,7 +57,8 @@ impl<'a> Texture<'a> {
             bytes: (0..size * size)
                 .flat_map(|i| vec![(i % 256) as u8, 0, 0, 0])
                 .collect::<Vec<u8>>(),
-        }
+        };
+        t.transfer()
     }
 
     pub fn image_tex(
@@ -66,7 +68,7 @@ impl<'a> Texture<'a> {
         visibility: wgpu::ShaderStage,
     ) -> Texture<'a> {
         let image = image::load_from_memory(data).unwrap().into_rgba8();
-        Texture {
+        let t = Texture {
             device,
             queue,
             visibility,
@@ -77,7 +79,8 @@ impl<'a> Texture<'a> {
                 height: image.height(),
             },
             bytes: image.into_raw(),
-        }
+        };
+        t.transfer()
     }
 
     pub fn get_layout(&self) -> BindGroupLayoutEntry {
@@ -92,15 +95,14 @@ impl<'a> Texture<'a> {
             count: None,
         }
     }
-    pub fn get_entry(&mut self, binding: u32) -> wgpu::BindGroupEntry {
-        self.transfer();
+    pub fn get_entry(&self, binding: u32) -> wgpu::BindGroupEntry {
         wgpu::BindGroupEntry {
             binding,
             resource: wgpu::BindingResource::TextureView(self.view.as_ref().unwrap()),
         }
     }
 
-    fn transfer(&mut self) {
+    fn transfer(mut self) -> Self {
         let texture_extent = wgpu::Extent3d {
             width: self.dim.width,
             height: self.dim.height,
@@ -144,6 +146,7 @@ impl<'a> Texture<'a> {
         // Texture views are used to specify which range of the texture is used by the shaders and how the data is interpreted.
         // allow for one texture to be shared between different shaders without having to change the shader.
         // the engine expects texture views in the binding group
-        self.view = Some(texture.create_view(&wgpu::TextureViewDescriptor::default()))
+        self.view = Some(texture.create_view(&wgpu::TextureViewDescriptor::default()));
+        self
     }
 }

@@ -29,16 +29,6 @@ pub struct TilesRenderer {
 }
 
 impl crate::Renderer for TilesRenderer {
-    // Describe each bind group layout
-    // Assemble bind group layouts into a pipeline layout (aka bind groups[])
-    // Describe the vertex layout
-    // Load the shaders
-    // Create the pipeline (aka the shaders + bind groups[] + vertex layout)
-    //
-    // Create the resources
-    // Assemble resources in a bind group
-    // Create vertex buffers
-    // And... done!
     fn init(
         _sc_desc: &wgpu::SwapChainDescriptor,
         device: &wgpu::Device,
@@ -99,6 +89,7 @@ impl crate::Renderer for TilesRenderer {
             ],
             label: None,
         });
+
         // Create the vertex and index buffers
         let (vertex_data, index_data) = vertex::quad();
 
