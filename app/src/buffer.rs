@@ -27,7 +27,7 @@ impl<'a> Buffer<'a> {
         }
     }
 
-    pub fn set_data(&mut self, contents: &[u8]) {
+    pub fn init_data(&mut self, contents: &[u8]) {
         self.buffer = Some(
             self.device
                 .create_buffer_init(&wgpu::util::BufferInitDescriptor {

@@ -1,4 +1,4 @@
-use wgpu::{BindGroupLayoutEntry, TextureView};
+use wgpu::{BindGroupLayoutEntry, Device, Queue, TextureView};
 
 #[derive(Debug)]
 pub struct BatTexDimensions {
@@ -8,18 +8,46 @@ pub struct BatTexDimensions {
 
 // simple rgba texture.
 #[derive(Debug)]
-pub struct BatTex {
+pub struct BatTex<'a> {
+    device: &'a wgpu::Device,
+    queue: &'a wgpu::Queue,
+    view: Option<TextureView>,
     pub bytes: Vec<u8>,
     pub dim: BatTexDimensions,
     pub format: wgpu::TextureFormat,
     pub visibility: wgpu::ShaderStage,
 }
 
-impl BatTex {
-    #[allow(dead_code)]
-    pub fn procedural_tex(size: u32, visibility: wgpu::ShaderStage) -> BatTex {
+impl<'a> BatTex<'a> {
+    pub fn from_code(
+        device: &'a Device,
+        queue: &'a Queue,
+        bytes: Vec<u8>,
+        dim: BatTexDimensions,
+        visibility: wgpu::ShaderStage,
+    ) -> Self {
         BatTex {
+            queue,
+            device,
             visibility,
+            view: None,
+            format: wgpu::TextureFormat::Rgba8Unorm, // weird... should check
+            dim,
+            bytes,
+        }
+    }
+    #[allow(dead_code)]
+    pub fn procedural_tex(
+        device: &'a mut Device,
+        queue: &'a mut Queue,
+        size: u32,
+        visibility: wgpu::ShaderStage,
+    ) -> BatTex<'a> {
+        BatTex {
+            queue,
+            device,
+            visibility,
+            view: None,
             format: wgpu::TextureFormat::Rgba8UnormSrgb,
             dim: BatTexDimensions {
                 width: size,
@@ -31,10 +59,18 @@ impl BatTex {
         }
     }
 
-    pub fn image_tex(data: &[u8], visibility: wgpu::ShaderStage) -> BatTex {
+    pub fn image_tex(
+        device: &'a Device,
+        queue: &'a Queue,
+        data: &'a [u8],
+        visibility: wgpu::ShaderStage,
+    ) -> BatTex<'a> {
         let image = image::load_from_memory(data).unwrap().into_rgba8();
         BatTex {
+            device,
+            queue,
             visibility,
+            view: None,
             format: wgpu::TextureFormat::Rgba8UnormSrgb,
             dim: BatTexDimensions {
                 width: image.width(),
@@ -56,15 +92,22 @@ impl BatTex {
             count: None,
         }
     }
+    pub fn get_entry(&mut self, binding: u32) -> wgpu::BindGroupEntry {
+        self.transfer();
+        wgpu::BindGroupEntry {
+            binding,
+            resource: wgpu::BindingResource::TextureView(self.view.as_ref().unwrap()),
+        }
+    }
 
-    pub fn get_texture_view(&self, device: &wgpu::Device, queue: &wgpu::Queue) -> TextureView {
+    fn transfer(&mut self) {
         let texture_extent = wgpu::Extent3d {
             width: self.dim.width,
             height: self.dim.height,
             depth: 1,
         };
         // the texture description.
-        let texture = device.create_texture(&wgpu::TextureDescriptor {
+        let texture = self.device.create_texture(&wgpu::TextureDescriptor {
             label: None,
             size: texture_extent,
             mip_level_count: 1,
@@ -81,7 +124,7 @@ impl BatTex {
             _ => panic!("unknown format"),
         };
         // schedules the transfer of the texture data.
-        queue.write_texture(
+        self.queue.write_texture(
             wgpu::TextureCopyView {
                 texture: &texture,
                 mip_level: 0,
@@ -101,6 +144,6 @@ impl BatTex {
         // Texture views are used to specify which range of the texture is used by the shaders and how the data is interpreted.
         // allow for one texture to be shared between different shaders without having to change the shader.
         // the engine expects texture views in the binding group
-        texture.create_view(&wgpu::TextureViewDescriptor::default())
+        self.view = Some(texture.create_view(&wgpu::TextureViewDescriptor::default()))
     }
 }

@@ -14,6 +14,13 @@ key takeaways on performances:
 - println! is more costly on windows
 - the performance I can reach with Rust I cannot with JS, by a factor x10-100.
 
+## Helpers subproject
+
+- [ ] create Bindable trait, BindGroup for binding position, and refactor the whole thing.
+      --> will have to raise exception if the binding group doesnt follow the pipeline layout somehow later. or consume pipeline when building?
+- [ ] do a pipeline for rendering sprites to test API
+- [ ] autogenerate vertex layout from struct via a macro
+
 ## Graphics
 
 - [x] allow render dimension to be different from tile atlas
@@ -26,7 +33,6 @@ key takeaways on performances:
 - [x] import a map from tiled
 - [x] add notion of layers of different renderers
 - [ ] cleanup renderers, develop helpers etc
-- [ ] do a pipeline for rendering sprites
 - [ ] add characters
 - [ ] do a pipeline for rendering boxes (text)
 - [ ] Bonus! click handler (with a target of render with colors from the rendering box render pass?)

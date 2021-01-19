@@ -46,11 +46,13 @@ impl crate::Renderer for TilesRenderer {
     ) -> Self {
         let mut pipeline_builder = PipelineBuilder::<Vertex>::new(&device);
 
-        let atlas = BatTex::image_tex(
+        let mut atlas = BatTex::image_tex(
+            device,
+            queue,
             include_bytes!("../assets/Tileset_32x32_1.png"),
             wgpu::ShaderStage::FRAGMENT,
         );
-        let blueprint = mask_bit_tex();
+        let mut blueprint = mask_bit_tex(device, queue);
         let sampler = Sampler {};
         let mut atlas_dim = Buffer::new(&device);
         let mut output_dim = Buffer::new(&device);
@@ -76,33 +78,25 @@ impl crate::Renderer for TilesRenderer {
         let (pipeline, bind_group_layout) = pipeline_builder.build();
 
         // Create resources
-        let atlas_view = atlas.get_texture_view(&device, &queue);
 
-        let texture_mask = blueprint.get_texture_view(&device, &queue);
         let sampler = create_sampler(&device);
 
-        atlas_dim.set_data(cast_slice(&[10. as f32, 10. as f32]));
-        blueprints_dim.set_data(cast_slice(&[20. as f32, 20. as f32]));
-        output_dim.set_data(cast_slice(&[12. as f32, 10. as f32]));
-        scroll.set_data(cast_slice(&[0. as f32, 0. as f32]));
+        atlas_dim.init_data(cast_slice(&[10. as f32, 10. as f32]));
+        blueprints_dim.init_data(cast_slice(&[20. as f32, 20. as f32]));
+        output_dim.init_data(cast_slice(&[12. as f32, 10. as f32]));
+        scroll.init_data(cast_slice(&[0. as f32, 0. as f32]));
 
         // Create a bind group, which is a collection of resources
         let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
             layout: &bind_group_layout,
             entries: &[
                 atlas_dim.get_entry(0),
-                wgpu::BindGroupEntry {
-                    binding: 1,
-                    resource: wgpu::BindingResource::TextureView(&atlas_view),
-                },
+                atlas.get_entry(1),
                 wgpu::BindGroupEntry {
                     binding: 2,
                     resource: wgpu::BindingResource::Sampler(&sampler),
                 },
-                wgpu::BindGroupEntry {
-                    binding: 3,
-                    resource: wgpu::BindingResource::TextureView(&texture_mask),
-                },
+                blueprint.get_entry(3),
                 blueprints_dim.get_entry(4),
                 output_dim.get_entry(5),
                 scroll.get_entry(6),
