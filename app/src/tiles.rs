@@ -1,12 +1,14 @@
 use std::{collections::HashSet, time::Instant};
 
 use utils::cast_slice;
+use vertex::Vertex;
 use wgpu::util::DeviceExt;
 use winit::event::{self, WindowEvent};
 
 use crate::{
-    utils::{self, create_sampler, create_texture, get_color_state, get_pipeline_descriptor},
-    vertex, vertex_layout,
+    pipeline::PipelineBuilder,
+    utils::{self, create_sampler, create_texture},
+    vertex,
     world::{image_tex, mask_bit_tex},
 };
 
@@ -24,22 +26,6 @@ pub struct TilesRenderer {
     key_state: KeyState,
 }
 
-impl TilesRenderer {}
-
-struct BindPoint {}
-
-struct Shader {}
-
-type BindGroup = Vec<BindPoint>;
-
-#[allow(dead_code)]
-struct PipelineDescription<Vertex> {
-    bind_group: BindGroup,
-    vertex: Vertex,
-    vertex_shader: Shader,
-    fragment_shader: Shader,
-}
-
 impl crate::Renderer for TilesRenderer {
     // Describe each bind group layout
     // Assemble bind group layouts into a pipeline layout (aka bind groups[])
@@ -52,7 +38,7 @@ impl crate::Renderer for TilesRenderer {
     // Create vertex buffers
     // And... done!
     fn init(
-        sc_desc: &wgpu::SwapChainDescriptor,
+        _sc_desc: &wgpu::SwapChainDescriptor,
         device: &wgpu::Device,
         queue: &wgpu::Queue,
     ) -> Self {
@@ -131,15 +117,6 @@ impl crate::Renderer for TilesRenderer {
                 },
             ],
         });
-        // Describe the pipeline layout, which is simply a collection of bind groups
-        let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: None,
-            bind_group_layouts: &[&bind_group_layout],
-            push_constant_ranges: &[],
-        });
-
-        // Describe the vertex layout
-        let vertex_state = vertex_layout![vertex::Vertex : 0 => Float4];
 
         // Load shaders
         let vs_module =
@@ -147,14 +124,12 @@ impl crate::Renderer for TilesRenderer {
         let fs_module =
             device.create_shader_module(&wgpu::include_spirv!("./shaders/shader.frag.spv"));
 
-        // Create the pipeline, with all the bind_groups layout + vertex layout + shaders
-        let pipeline = device.create_render_pipeline(&get_pipeline_descriptor(
-            Some(&pipeline_layout),
-            vertex_state,
-            &vs_module,
-            &fs_module,
-            &[get_color_state(sc_desc.format)],
-        ));
+        let mut pipeline_builder = PipelineBuilder::<Vertex>::new(&device);
+        let pipeline = pipeline_builder
+            .set_bind_group_layout(&bind_group_layout)
+            .set_fragment_shader(fs_module)
+            .set_vertex_shader(vs_module)
+            .build();
 
         // Create resources
         let texture_tiles = create_texture(

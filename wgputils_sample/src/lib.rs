@@ -2,6 +2,7 @@ use wgputils::*;
 
 make_answer!();
 
+#[allow(dead_code)]
 fn main() {
     println!("{}", answer());
 }
