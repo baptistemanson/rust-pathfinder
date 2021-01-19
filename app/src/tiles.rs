@@ -35,14 +35,14 @@ impl crate::Renderer for TilesRenderer {
         device: &wgpu::Device,
         queue: &wgpu::Queue,
     ) -> Self {
-        let mut atlas = Texture::image_tex(
+        let atlas = Texture::image_tex(
             device,
             queue,
             include_bytes!("../assets/Tileset_32x32_1.png"),
             wgpu::ShaderStage::FRAGMENT,
         );
-        let mut blueprint = mask_bit_tex(&device, &queue);
-        let mut sampler = Sampler::new(&device);
+        let blueprint = mask_bit_tex(&device, &queue);
+        let sampler = Sampler::new(&device);
 
         let mut blueprints_dim = Buffer::new(&device);
         blueprints_dim.init_data(cast_slice(&[20. as f32, 20. as f32]));

@@ -1,6 +1,29 @@
+use crate::bindable::Bindable;
+
 pub struct Sampler<'a> {
     _device: &'a wgpu::Device,
     sampler: wgpu::Sampler,
+}
+
+impl<'a> Bindable<'a> for Sampler<'a> {
+    fn get_layout(&self) -> wgpu::BindGroupLayoutEntry {
+        wgpu::BindGroupLayoutEntry {
+            binding: 0, // will be remapped
+            visibility: wgpu::ShaderStage::FRAGMENT,
+            ty: wgpu::BindingType::Sampler {
+                comparison: false,
+                filtering: true,
+            },
+            count: None,
+        }
+    }
+
+    fn get_entry(&self, binding: u32) -> wgpu::BindGroupEntry {
+        wgpu::BindGroupEntry {
+            binding,
+            resource: wgpu::BindingResource::Sampler(&self.sampler),
+        }
+    }
 }
 
 impl<'a> Sampler<'a> {
@@ -18,24 +41,6 @@ impl<'a> Sampler<'a> {
         Sampler {
             _device: device,
             sampler,
-        }
-    }
-    pub fn get_layout(&self) -> wgpu::BindGroupLayoutEntry {
-        wgpu::BindGroupLayoutEntry {
-            binding: 0, // will be remapped
-            visibility: wgpu::ShaderStage::FRAGMENT,
-            ty: wgpu::BindingType::Sampler {
-                comparison: false,
-                filtering: true,
-            },
-            count: None,
-        }
-    }
-
-    pub fn get_entry(&self, binding: u32) -> wgpu::BindGroupEntry {
-        wgpu::BindGroupEntry {
-            binding,
-            resource: wgpu::BindingResource::Sampler(&self.sampler),
         }
     }
 }

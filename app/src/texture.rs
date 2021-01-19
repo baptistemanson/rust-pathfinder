@@ -1,5 +1,7 @@
 use wgpu::{BindGroupLayoutEntry, Device, Queue, TextureView};
 
+use crate::bindable::Bindable;
+
 #[derive(Debug)]
 pub struct BatTexDimensions {
     pub width: u32,
@@ -16,6 +18,27 @@ pub struct Texture<'a> {
     pub dim: BatTexDimensions,
     pub format: wgpu::TextureFormat,
     pub visibility: wgpu::ShaderStage,
+}
+
+impl<'a> Bindable<'a> for Texture<'a> {
+    fn get_layout(&self) -> BindGroupLayoutEntry {
+        wgpu::BindGroupLayoutEntry {
+            binding: 0, // will be renumbered later
+            visibility: self.visibility,
+            ty: wgpu::BindingType::Texture {
+                multisampled: false,
+                sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                view_dimension: wgpu::TextureViewDimension::D2,
+            },
+            count: None,
+        }
+    }
+    fn get_entry(&self, binding: u32) -> wgpu::BindGroupEntry {
+        wgpu::BindGroupEntry {
+            binding,
+            resource: wgpu::BindingResource::TextureView(self.view.as_ref().unwrap()),
+        }
+    }
 }
 
 impl<'a> Texture<'a> {
@@ -81,25 +104,6 @@ impl<'a> Texture<'a> {
             bytes: image.into_raw(),
         };
         t.transfer()
-    }
-
-    pub fn get_layout(&self) -> BindGroupLayoutEntry {
-        wgpu::BindGroupLayoutEntry {
-            binding: 0, // will be renumbered later
-            visibility: self.visibility,
-            ty: wgpu::BindingType::Texture {
-                multisampled: false,
-                sample_type: wgpu::TextureSampleType::Float { filterable: true },
-                view_dimension: wgpu::TextureViewDimension::D2,
-            },
-            count: None,
-        }
-    }
-    pub fn get_entry(&self, binding: u32) -> wgpu::BindGroupEntry {
-        wgpu::BindGroupEntry {
-            binding,
-            resource: wgpu::BindingResource::TextureView(self.view.as_ref().unwrap()),
-        }
     }
 
     fn transfer(mut self) -> Self {
