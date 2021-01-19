@@ -1,12 +1,12 @@
 use wgpu::{Device, Queue};
 
-use crate::texture::{BatTex, BatTexDimensions};
+use crate::texture::{BatTexDimensions, Texture};
 
 pub fn pix(i: u8) -> Vec<u8> {
     vec![i, 0, 0, 0]
 }
 
-pub fn mask_bit_tex<'a>(device: &'a Device, queue: &'a Queue) -> BatTex<'a> {
+pub fn mask_bit_tex<'a>(device: &'a Device, queue: &'a Queue) -> Texture<'a> {
     let bytes = vec![
         vec![
             10, 11, 11, 11, 11, 14, 11, 11, 15, 16, 16, 17, 11, 11, 14, 11, 11, 11, 11, 13,
@@ -71,7 +71,7 @@ pub fn mask_bit_tex<'a>(device: &'a Device, queue: &'a Queue) -> BatTex<'a> {
     ];
     let width = bytes[0].len();
     let height = bytes.len();
-    BatTex::from_code(
+    Texture::from_code(
         device,
         queue,
         bytes

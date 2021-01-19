@@ -8,7 +8,7 @@ pub struct BatTexDimensions {
 
 // simple rgba texture.
 #[derive(Debug)]
-pub struct BatTex<'a> {
+pub struct Texture<'a> {
     device: &'a wgpu::Device,
     queue: &'a wgpu::Queue,
     view: Option<TextureView>,
@@ -18,7 +18,7 @@ pub struct BatTex<'a> {
     pub visibility: wgpu::ShaderStage,
 }
 
-impl<'a> BatTex<'a> {
+impl<'a> Texture<'a> {
     pub fn from_code(
         device: &'a Device,
         queue: &'a Queue,
@@ -26,7 +26,7 @@ impl<'a> BatTex<'a> {
         dim: BatTexDimensions,
         visibility: wgpu::ShaderStage,
     ) -> Self {
-        BatTex {
+        Texture {
             queue,
             device,
             visibility,
@@ -42,8 +42,8 @@ impl<'a> BatTex<'a> {
         queue: &'a mut Queue,
         size: u32,
         visibility: wgpu::ShaderStage,
-    ) -> BatTex<'a> {
-        BatTex {
+    ) -> Texture<'a> {
+        Texture {
             queue,
             device,
             visibility,
@@ -64,9 +64,9 @@ impl<'a> BatTex<'a> {
         queue: &'a Queue,
         data: &'a [u8],
         visibility: wgpu::ShaderStage,
-    ) -> BatTex<'a> {
+    ) -> Texture<'a> {
         let image = image::load_from_memory(data).unwrap().into_rgba8();
-        BatTex {
+        Texture {
             device,
             queue,
             visibility,

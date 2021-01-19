@@ -4,7 +4,7 @@ use crate::{
     buffer::Buffer,
     pipeline::PipelineBuilder,
     sampler::Sampler,
-    texture::BatTex,
+    texture::Texture,
     utils::{self},
     vertex,
     world::mask_bit_tex,
@@ -44,7 +44,7 @@ impl crate::Renderer for TilesRenderer {
         device: &wgpu::Device,
         queue: &wgpu::Queue,
     ) -> Self {
-        let mut atlas = BatTex::image_tex(
+        let mut atlas = Texture::image_tex(
             device,
             queue,
             include_bytes!("../assets/Tileset_32x32_1.png"),
