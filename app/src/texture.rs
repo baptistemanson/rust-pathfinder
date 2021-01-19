@@ -21,9 +21,9 @@ pub struct Texture<'a> {
 }
 
 impl<'a> Bindable<'a> for Texture<'a> {
-    fn get_layout(&self) -> BindGroupLayoutEntry {
+    fn get_layout(&self, binding: u32) -> BindGroupLayoutEntry {
         wgpu::BindGroupLayoutEntry {
-            binding: 0, // will be renumbered later
+            binding, // will be renumbered later
             visibility: self.visibility,
             ty: wgpu::BindingType::Texture {
                 multisampled: false,

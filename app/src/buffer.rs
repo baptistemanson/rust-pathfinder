@@ -8,9 +8,9 @@ pub struct Buffer<'a> {
 }
 
 impl<'a> Bindable<'a> for Buffer<'a> {
-    fn get_layout(&self) -> wgpu::BindGroupLayoutEntry {
+    fn get_layout(&self, binding: u32) -> wgpu::BindGroupLayoutEntry {
         wgpu::BindGroupLayoutEntry {
-            binding: 0, // will be remapped
+            binding, // will be remapped
             visibility: wgpu::ShaderStage::FRAGMENT,
             ty: wgpu::BindingType::Buffer {
                 ty: wgpu::BufferBindingType::Uniform,
@@ -37,19 +37,6 @@ impl<'a> Buffer<'a> {
         Buffer {
             device,
             buffer: None,
-        }
-    }
-
-    pub fn get_layout(&self) -> wgpu::BindGroupLayoutEntry {
-        wgpu::BindGroupLayoutEntry {
-            binding: 0, // will be remapped
-            visibility: wgpu::ShaderStage::FRAGMENT,
-            ty: wgpu::BindingType::Buffer {
-                ty: wgpu::BufferBindingType::Uniform,
-                has_dynamic_offset: false,
-                min_binding_size: None,
-            },
-            count: None,
         }
     }
 

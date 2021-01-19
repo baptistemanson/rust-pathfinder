@@ -1,7 +1,7 @@
 use std::{collections::HashSet, time::Instant};
 
 use crate::{
-    bindable::Bindable,
+    bind_group::BindGroupBuilder,
     buffer::Buffer,
     pipeline::PipelineBuilder,
     sampler::Sampler,
@@ -35,6 +35,7 @@ impl crate::Renderer for TilesRenderer {
         device: &wgpu::Device,
         queue: &wgpu::Queue,
     ) -> Self {
+        // Textures
         let atlas = Texture::image_tex(
             device,
             queue,
@@ -62,34 +63,22 @@ impl crate::Renderer for TilesRenderer {
         let fs_module =
             device.create_shader_module(&wgpu::include_spirv!("./shaders/shader.frag.spv"));
 
-        let mut pipeline_builder = PipelineBuilder::<Vertex>::new(&device);
-        pipeline_builder.add_to_bind_group(atlas_dim.get_layout());
-        pipeline_builder.add_to_bind_group(atlas.get_layout());
-        pipeline_builder.add_to_bind_group(sampler.get_layout());
-        pipeline_builder.add_to_bind_group(blueprint.get_layout());
-        pipeline_builder.add_to_bind_group(blueprints_dim.get_layout());
-        pipeline_builder.add_to_bind_group(output_dim.get_layout());
-        pipeline_builder.add_to_bind_group(scroll.get_layout());
+        let mut bind_group_builder = BindGroupBuilder::new(&device);
+        bind_group_builder.set_resources(vec![
+            &sampler,
+            &atlas,
+            &blueprint,
+            &blueprints_dim,
+            &output_dim,
+            &atlas_dim,
+            &scroll,
+        ]);
 
-        pipeline_builder.set_vertex_shader(vs_module);
-        pipeline_builder.set_fragment_shader(fs_module);
-
-        let (pipeline, bind_group_layout) = pipeline_builder.build();
-
-        // Create a bind group, which is a collection of resources
-        let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
-            layout: &bind_group_layout,
-            entries: &[
-                atlas_dim.get_entry(0),
-                atlas.get_entry(1),
-                sampler.get_entry(2),
-                blueprint.get_entry(3),
-                blueprints_dim.get_entry(4),
-                output_dim.get_entry(5),
-                scroll.get_entry(6),
-            ],
-            label: None,
-        });
+        let pipeline = PipelineBuilder::<Vertex>::new(&device)
+            .set_bind_group_layout(bind_group_builder.get_layout())
+            .set_vertex_shader(vs_module)
+            .set_fragment_shader(fs_module)
+            .build();
 
         // Create the vertex and index buffers
         let (vertex_data, index_data) = vertex::quad();
@@ -112,7 +101,7 @@ impl crate::Renderer for TilesRenderer {
             vertex_buf,
             index_buf,
             index_count,
-            bind_group,
+            bind_group: bind_group_builder.get_bind_group(),
             scroll: scroll.buffer.unwrap(),
             curr_scroll: (0., 0.),
             last_update: Instant::now(),

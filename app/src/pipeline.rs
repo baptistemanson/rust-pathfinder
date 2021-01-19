@@ -1,12 +1,9 @@
 use crate::{utils::get_color_state, vertex_layout};
-use wgpu::{
-    BindGroupLayout, BindGroupLayoutEntry, Device, RenderPipeline, ShaderModule,
-    VertexStateDescriptor,
-};
+use wgpu::{BindGroupLayout, Device, RenderPipeline, ShaderModule, VertexStateDescriptor};
 
 pub struct PipelineBuilder<'a, Vertex> {
     device: &'a Device,
-    bind_group_layout_entries: Vec<BindGroupLayoutEntry>,
+    bind_group_layout: Option<BindGroupLayout>,
     _vertex_description: Option<Vertex>,
     vertex_shader: Option<ShaderModule>,
     fragment_shader: Option<ShaderModule>,
@@ -16,17 +13,15 @@ impl<'a, Vertex> PipelineBuilder<'a, Vertex> {
     pub fn new(device: &'a Device) -> Self {
         Self {
             device,
-            bind_group_layout_entries: vec![],
+            bind_group_layout: None,
             _vertex_description: None,
             vertex_shader: None,
             fragment_shader: None,
         }
     }
 
-    pub fn add_to_bind_group(&mut self, mut entry: BindGroupLayoutEntry) -> &mut Self {
-        // renumber bindings
-        entry.binding = self.bind_group_layout_entries.len() as u32;
-        self.bind_group_layout_entries.push(entry);
+    pub fn set_bind_group_layout(&mut self, layout: BindGroupLayout) -> &mut Self {
+        self.bind_group_layout = Some(layout);
         self
     }
 
@@ -40,7 +35,7 @@ impl<'a, Vertex> PipelineBuilder<'a, Vertex> {
         self
     }
 
-    pub fn build(self) -> (RenderPipeline, BindGroupLayout) {
+    pub fn build(&mut self) -> RenderPipeline {
         let vertex_state = vertex_layout![Vertex : 0 => Float4];
 
         let vs_module = &self
@@ -52,33 +47,26 @@ impl<'a, Vertex> PipelineBuilder<'a, Vertex> {
             .as_ref()
             .unwrap_or_else(|| panic!("fragment shader is mandatory"));
 
-        let bind_group_layout =
-            self.device
-                .create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-                    label: None,
-                    entries: &self.bind_group_layout_entries,
-                });
-
         let pipeline_layout = self
             .device
             .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
                 label: None,
-                bind_group_layouts: &[&bind_group_layout],
+                bind_group_layouts: &[self
+                    .bind_group_layout
+                    .as_ref()
+                    .expect("You need to set a bind group before building")],
                 push_constant_ranges: &[],
             });
 
-        (
-            self.device.create_render_pipeline(&get_pipeline_descriptor(
-                Some(&pipeline_layout),
-                vertex_state,
-                vs_module,
-                fs_module,
-                &[get_color_state(
-                    self.device.get_swap_chain_preferred_format(),
-                )],
-            )),
-            bind_group_layout,
-        )
+        self.device.create_render_pipeline(&get_pipeline_descriptor(
+            Some(&pipeline_layout),
+            vertex_state,
+            vs_module,
+            fs_module,
+            &[get_color_state(
+                self.device.get_swap_chain_preferred_format(),
+            )],
+        ))
     }
 }
 

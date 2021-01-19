@@ -6,9 +6,9 @@ pub struct Sampler<'a> {
 }
 
 impl<'a> Bindable<'a> for Sampler<'a> {
-    fn get_layout(&self) -> wgpu::BindGroupLayoutEntry {
+    fn get_layout(&self, binding: u32) -> wgpu::BindGroupLayoutEntry {
         wgpu::BindGroupLayoutEntry {
-            binding: 0, // will be remapped
+            binding, // will be remapped
             visibility: wgpu::ShaderStage::FRAGMENT,
             ty: wgpu::BindingType::Sampler {
                 comparison: false,
