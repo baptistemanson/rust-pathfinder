@@ -1,16 +1,18 @@
 use std::{collections::HashSet, time::Instant};
 
+use crate::{
+    buffer::Buffer,
+    pipeline::PipelineBuilder,
+    sampler::Sampler,
+    texture::BatTex,
+    utils::{self, create_sampler},
+    vertex,
+    world::mask_bit_tex,
+};
 use utils::cast_slice;
 use vertex::Vertex;
 use wgpu::util::DeviceExt;
 use winit::event::{self, WindowEvent};
-
-use crate::{
-    pipeline::PipelineBuilder,
-    utils::{self, create_sampler, create_texture},
-    vertex,
-    world::{image_tex, mask_bit_tex},
-};
 
 type KeyState = HashSet<event::VirtualKeyCode>;
 
@@ -42,143 +44,56 @@ impl crate::Renderer for TilesRenderer {
         device: &wgpu::Device,
         queue: &wgpu::Queue,
     ) -> Self {
-        // Describe bind group layout
-        let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-            label: None,
-            entries: &[
-                wgpu::BindGroupLayoutEntry {
-                    binding: 0,
-                    visibility: wgpu::ShaderStage::FRAGMENT,
-                    ty: wgpu::BindingType::Buffer {
-                        ty: wgpu::BufferBindingType::Uniform,
-                        has_dynamic_offset: false,
-                        min_binding_size: None,
-                    },
-                    count: None,
-                },
-                wgpu::BindGroupLayoutEntry {
-                    binding: 1,
-                    visibility: wgpu::ShaderStage::FRAGMENT,
-                    ty: wgpu::BindingType::Texture {
-                        multisampled: false,
-                        sample_type: wgpu::TextureSampleType::Float { filterable: true },
-                        view_dimension: wgpu::TextureViewDimension::D2,
-                    },
-                    count: None,
-                },
-                wgpu::BindGroupLayoutEntry {
-                    binding: 2,
-                    visibility: wgpu::ShaderStage::FRAGMENT,
-                    ty: wgpu::BindingType::Sampler {
-                        comparison: false,
-                        filtering: true,
-                    },
-                    count: None,
-                },
-                wgpu::BindGroupLayoutEntry {
-                    binding: 3,
-                    visibility: wgpu::ShaderStage::FRAGMENT,
-                    ty: wgpu::BindingType::Texture {
-                        multisampled: false,
-                        sample_type: wgpu::TextureSampleType::Float { filterable: true },
-                        view_dimension: wgpu::TextureViewDimension::D2,
-                    },
-                    count: None,
-                },
-                wgpu::BindGroupLayoutEntry {
-                    binding: 4, //
-                    visibility: wgpu::ShaderStage::FRAGMENT,
-                    ty: wgpu::BindingType::Buffer {
-                        ty: wgpu::BufferBindingType::Uniform,
-                        has_dynamic_offset: false,
-                        min_binding_size: None,
-                    },
-                    count: None,
-                },
-                wgpu::BindGroupLayoutEntry {
-                    binding: 5, //
-                    visibility: wgpu::ShaderStage::FRAGMENT,
-                    ty: wgpu::BindingType::Buffer {
-                        ty: wgpu::BufferBindingType::Uniform,
-                        has_dynamic_offset: false,
-                        min_binding_size: None,
-                    },
-                    count: None,
-                },
-                wgpu::BindGroupLayoutEntry {
-                    binding: 6, //
-                    visibility: wgpu::ShaderStage::FRAGMENT,
-                    ty: wgpu::BindingType::Buffer {
-                        ty: wgpu::BufferBindingType::Uniform,
-                        has_dynamic_offset: false,
-                        min_binding_size: None,
-                    },
-                    count: None,
-                },
-            ],
-        });
+        let mut pipeline_builder = PipelineBuilder::<Vertex>::new(&device);
 
+        let atlas = BatTex::image_tex(
+            include_bytes!("../assets/Tileset_32x32_1.png"),
+            wgpu::ShaderStage::FRAGMENT,
+        );
+        let blueprint = mask_bit_tex();
+        let sampler = Sampler {};
+        let mut atlas_dim = Buffer::new(&device);
+        let mut output_dim = Buffer::new(&device);
+        let mut blueprints_dim = Buffer::new(&device);
+        let mut scroll = Buffer::new(&device);
         // Load shaders
         let vs_module =
             device.create_shader_module(&wgpu::include_spirv!("./shaders/shader.vert.spv"));
         let fs_module =
             device.create_shader_module(&wgpu::include_spirv!("./shaders/shader.frag.spv"));
 
-        let mut pipeline_builder = PipelineBuilder::<Vertex>::new(&device);
-        let pipeline = pipeline_builder
-            .set_bind_group_layout(&bind_group_layout)
-            .set_fragment_shader(fs_module)
-            .set_vertex_shader(vs_module)
-            .build();
+        pipeline_builder.add_to_bind_group(atlas_dim.get_layout());
+        pipeline_builder.add_to_bind_group(atlas.get_layout());
+        pipeline_builder.add_to_bind_group(sampler.get_layout());
+        pipeline_builder.add_to_bind_group(blueprint.get_layout());
+        pipeline_builder.add_to_bind_group(blueprints_dim.get_layout());
+        pipeline_builder.add_to_bind_group(output_dim.get_layout());
+        pipeline_builder.add_to_bind_group(scroll.get_layout());
+
+        pipeline_builder.set_vertex_shader(vs_module);
+        pipeline_builder.set_fragment_shader(fs_module);
+
+        let (pipeline, bind_group_layout) = pipeline_builder.build();
 
         // Create resources
-        let texture_tiles = create_texture(
-            &device,
-            &queue,
-            image_tex(include_bytes!("../assets/Tileset_32x32_1.png")),
-        );
-        let texture_mask = create_texture(&device, &queue, mask_bit_tex());
+        let atlas_view = atlas.get_texture_view(&device, &queue);
+
+        let texture_mask = blueprint.get_texture_view(&device, &queue);
         let sampler = create_sampler(&device);
 
-        let atlas_dim = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Atlas Dimensions in number of tiles"),
-            contents: cast_slice(&[10. as f32, 10. as f32]), // [f32] => [u8]
-            usage: wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST,
-        });
-
-        let blueprints_dim = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Blueprint Dimensions in number of tiles"),
-            contents: cast_slice(&[20. as f32, 20. as f32]), // [f32] => [u8]
-            usage: wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST,
-        });
-
-        let output_dim = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Output Dimensions in number of tiles"),
-            contents: cast_slice(&[12. as f32, 10. as f32]), // [f32] => [u8]
-            usage: wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST,
-        });
-
-        let scroll = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Scroll"),
-            contents: cast_slice(&[0. as f32, 0. as f32]), // [f32] => [u8]
-            usage: wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST,
-        });
+        atlas_dim.set_data(cast_slice(&[10. as f32, 10. as f32]));
+        blueprints_dim.set_data(cast_slice(&[20. as f32, 20. as f32]));
+        output_dim.set_data(cast_slice(&[12. as f32, 10. as f32]));
+        scroll.set_data(cast_slice(&[0. as f32, 0. as f32]));
 
         // Create a bind group, which is a collection of resources
         let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
             layout: &bind_group_layout,
             entries: &[
-                wgpu::BindGroupEntry {
-                    binding: 0,
-                    resource: wgpu::BindingResource::Buffer {
-                        buffer: &atlas_dim,
-                        offset: 0,
-                        size: None,
-                    },
-                },
+                atlas_dim.get_entry(0),
                 wgpu::BindGroupEntry {
                     binding: 1,
-                    resource: wgpu::BindingResource::TextureView(&texture_tiles),
+                    resource: wgpu::BindingResource::TextureView(&atlas_view),
                 },
                 wgpu::BindGroupEntry {
                     binding: 2,
@@ -188,30 +103,9 @@ impl crate::Renderer for TilesRenderer {
                     binding: 3,
                     resource: wgpu::BindingResource::TextureView(&texture_mask),
                 },
-                wgpu::BindGroupEntry {
-                    binding: 4,
-                    resource: wgpu::BindingResource::Buffer {
-                        buffer: &blueprints_dim,
-                        offset: 0,
-                        size: None,
-                    },
-                },
-                wgpu::BindGroupEntry {
-                    binding: 5,
-                    resource: wgpu::BindingResource::Buffer {
-                        buffer: &output_dim,
-                        offset: 0,
-                        size: None,
-                    },
-                },
-                wgpu::BindGroupEntry {
-                    binding: 6,
-                    resource: wgpu::BindingResource::Buffer {
-                        buffer: &scroll,
-                        offset: 0,
-                        size: None,
-                    },
-                },
+                blueprints_dim.get_entry(4),
+                output_dim.get_entry(5),
+                scroll.get_entry(6),
             ],
             label: None,
         });
@@ -237,7 +131,7 @@ impl crate::Renderer for TilesRenderer {
             index_buf,
             index_count,
             bind_group,
-            scroll,
+            scroll: scroll.buffer.unwrap(),
             curr_scroll: (0., 0.),
             last_update: Instant::now(),
             key_state: KeyState::default(),

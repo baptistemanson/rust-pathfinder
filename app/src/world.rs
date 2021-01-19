@@ -1,18 +1,4 @@
-use crate::utils::{BatTex, BatTexDimensions};
-
-#[allow(dead_code)]
-pub fn procedural_tex(size: u32) -> BatTex {
-    BatTex {
-        format: wgpu::TextureFormat::Rgba8UnormSrgb,
-        dim: BatTexDimensions {
-            width: size,
-            height: size,
-        },
-        bytes: (0..size * size)
-            .flat_map(|i| vec![(i % 256) as u8, 0, 0, 0])
-            .collect::<Vec<u8>>(),
-    }
-}
+use crate::texture::{BatTex, BatTexDimensions};
 
 pub fn pix(i: u8) -> Vec<u8> {
     vec![i, 0, 0, 0]
@@ -84,6 +70,7 @@ pub fn mask_bit_tex() -> BatTex {
     let width = bytes[0].len();
     let height = bytes.len();
     BatTex {
+        visibility: wgpu::ShaderStage::FRAGMENT,
         dim: BatTexDimensions {
             width: width as u32,
             height: height as u32,
@@ -94,17 +81,5 @@ pub fn mask_bit_tex() -> BatTex {
             .flatten()
             .flat_map(|i| pix(i))
             .collect::<Vec<u8>>(),
-    }
-}
-
-pub fn image_tex(data: &[u8]) -> BatTex {
-    let image = image::load_from_memory(data).unwrap().into_rgba8();
-    BatTex {
-        format: wgpu::TextureFormat::Rgba8UnormSrgb,
-        dim: BatTexDimensions {
-            width: image.width(),
-            height: image.height(),
-        },
-        bytes: image.into_raw(),
     }
 }

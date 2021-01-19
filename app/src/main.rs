@@ -9,7 +9,10 @@ use winit::{
     event_loop::{ControlFlow, EventLoop},
 };
 mod boxes;
+mod buffer;
 mod pipeline;
+mod sampler;
+mod texture;
 mod tiles;
 mod utils;
 mod vertex;
