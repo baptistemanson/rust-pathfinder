@@ -1,6 +1,6 @@
 [package]
-name = "derive_builder"
-version = "0.0.0"
+name = "derive_vertex"
+version = "0.0.1"
 edition = "2018"
 autotests = false
 publish = false
@@ -20,4 +20,6 @@ trybuild = { version = "1.0", features = ["diff"] }
 syn = { version = "1", features = ["extra-traits"] }
 quote = "1.0"
 proc-macro2 = "1.0.24"
+wgpu = "0.6.2"
+
 

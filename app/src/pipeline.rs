@@ -8,7 +8,8 @@ pub struct PipelineBuilder<'a, Vertex> {
     vertex_shader: Option<ShaderModule>,
     fragment_shader: Option<ShaderModule>,
 }
-
+// rename to RenderPipelineBuilder
+// set_bind_group_layout => add_bind_group_layout
 impl<'a, Vertex> PipelineBuilder<'a, Vertex> {
     pub fn new(device: &'a Device) -> Self {
         Self {

@@ -21,14 +21,12 @@
 //   - An example of a derive macro implemented using Syn:
 //     https://github.com/dtolnay/syn/tree/master/examples/heapsize
 
-use derive_builder::Builder;
+use derive_vertex::Vertex;
 
-#[derive(Builder)]
-pub struct Command {
-    executable: String,
-    args: Vec<String>,
-    env: Vec<String>,
-    current_dir: String,
+//#[derive(Vertex)]
+pub struct VertexWithUV {
+    position: [f32; 4],
+    uv: [f32; 2],
 }
 
 fn main() {}
