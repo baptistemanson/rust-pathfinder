@@ -42,18 +42,17 @@
 //   - Joining together the type name + "Builder" to make the builder's name:
 //     https://docs.rs/syn/1.0/syn/struct.Ident.html
 
-use derive_builder::Builder;
+use derive_vertex::Vertex;
 
-#[derive(Builder)]
-pub struct Command {
-    executable: String,
-    args: Vec<String>,
-    env: Vec<String>,
-    current_dir: String,
+#[derive(Vertex)]
+pub struct VertexWithUV {
+    position: [f32; 4],
+    uv: [f32; 2],
 }
 
 fn main() {
-    let builder = Command::builder();
-
-    let _ = builder;
+    let test = VertexWithUV {
+        position: [1., 1., 1., 1.],
+        uv: [1., 1.],
+    };
 }

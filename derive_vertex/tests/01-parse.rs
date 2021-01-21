@@ -23,7 +23,7 @@
 
 use derive_vertex::Vertex;
 
-//#[derive(Vertex)]
+#[derive(Vertex)]
 pub struct VertexWithUV {
     position: [f32; 4],
     uv: [f32; 2],

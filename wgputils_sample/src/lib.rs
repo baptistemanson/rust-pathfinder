@@ -1,11 +1,5 @@
-use wgputils::*;
-
-make_answer!();
-
 #[allow(dead_code)]
-fn main() {
-    println!("{}", answer());
-}
+fn main() {}
 
 pub struct Vertex {
     pub pos: [f32; 4],
@@ -14,14 +8,8 @@ pub struct Vertex {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    #[test]
-    fn it_works() {
-        assert_eq!(answer(), 42);
-    }
     #[test]
     fn the_other_one() {
-        println!("{:?}", get_vertex_layout!(Vertex));
-        assert_eq!(true, false);
+        println!("{:?}", derive_vertex::get_vertex_layout!(Vertex));
     }
 }

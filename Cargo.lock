@@ -2486,8 +2486,8 @@ dependencies = [
 name = "test-wgpu-utils"
 version = "0.1.0"
 dependencies = [
+ "derive_vertex",
  "wgpu 0.6.0",
- "wgputils",
 ]
 
 [[package]]
