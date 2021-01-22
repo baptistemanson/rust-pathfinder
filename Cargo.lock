@@ -2488,6 +2488,7 @@ version = "0.1.0"
 dependencies = [
  "derive_vertex",
  "wgpu 0.6.0",
+ "wgputils",
 ]
 
 [[package]]
@@ -2931,6 +2932,7 @@ dependencies = [
 name = "wgputils"
 version = "0.1.0"
 dependencies = [
+ "derive_vertex",
  "wgpu 0.6.0",
 ]
 

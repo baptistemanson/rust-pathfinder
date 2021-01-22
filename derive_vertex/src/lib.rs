@@ -1,16 +1,6 @@
 use core::panic;
-//use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 use syn::{parse_macro_input, Data, DeriveInput};
-// use wgpu::VertexFormat;
-// wgpu::VertexStateDescriptor {
-//     index_format: Some(wgpu::IndexFormat::Uint16),
-//     vertex_buffers: &[wgpu::VertexBufferDescriptor {
-//         stride: std::mem::size_of::<$T>() as wgpu::BufferAddress,
-//         step_mode: wgpu::InputStepMode::Vertex,
-//         attributes: &wgpu::vertex_attr_array![$($loc => $fmt ,)*],
-//     }],
-// };
 
 // need to change the return type of VertexLike
 // also probably needs to be separated.
@@ -29,6 +19,16 @@ pub fn get_vertex_layout(_item: proc_macro::TokenStream) -> proc_macro::TokenStr
     .unwrap()
 }
 
+// use wgpu::VertexFormat;
+// wgpu::VertexStateDescriptor {
+//     index_format: Some(wgpu::IndexFormat::Uint16),
+//     vertex_buffers: &[wgpu::VertexBufferDescriptor {
+//         stride: std::mem::size_of::<$T>() as wgpu::BufferAddress,
+//         step_mode: wgpu::InputStepMode::Vertex,
+//         attributes: &wgpu::vertex_attr_array![$($loc => $fmt ,)*],
+//     }],
+// };
+
 // I could clean up by removing vecs fields from option types.
 #[proc_macro_derive(Vertex)]
 pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
@@ -38,21 +38,41 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         Data::Struct(s) => s,
         _ => panic!("Vertex needs to be structs"),
     };
-    let _vertex_descriptor = format_ident!("{}Descriptor", struct_name);
-    let mut corresponding_wgpu_vertex_types: Vec<proc_macro2::TokenStream> = vec![];
+
+    let mut vertex_attributes: Vec<proc_macro2::TokenStream> = vec![];
+    let mut offset: u64 = 0;
+    let mut i: u32 = 0;
 
     struct_desc.fields.iter().for_each(|field| {
         let _name = &field.ident;
         let ty = &field.ty;
-        let matching_type = get_matching_wgpu_type(&ty);
-        corresponding_wgpu_vertex_types.push(matching_type);
+        let (format, size) = get_matching_wgpu_type(&ty);
+        let escaped_format = format_ident!("{}", format);
+        let va = quote! {
+            ::wgpu::VertexAttributeDescriptor {
+                offset: #offset,
+                format: ::wgpu::VertexFormat::#escaped_format,
+                shader_location: #i,
+            }
+        };
+
+        vertex_attributes.push(quote!(#va));
+        offset += size;
+        i += 1;
     });
 
     let expanded = quote! {
-
-        impl app::VertexLike for #struct_name {
-            fn get_descriptor() -> i32 {
-                42
+        impl ::wgputils::Vertex for #struct_name {
+            fn get_descriptor() -> ::wgpu::VertexStateDescriptor<'static> {
+                ::wgpu::VertexStateDescriptor {
+                        index_format: Some(::wgpu::IndexFormat::Uint16),
+                        vertex_buffers: &[::wgpu::VertexBufferDescriptor {
+                            stride: std::mem::size_of::<#struct_name>() as ::wgpu::BufferAddress,
+                            step_mode: ::wgpu::InputStepMode::Vertex,
+                            attributes:&[#(#vertex_attributes, )*
+                            ]
+                        }],
+                    }
             }
         }
     };
@@ -61,7 +81,7 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     proc_macro::TokenStream::from(expanded)
 }
 
-fn get_matching_wgpu_type(ty: &syn::Type) -> proc_macro2::TokenStream {
+fn get_matching_wgpu_type(ty: &syn::Type) -> (&str, u64) {
     match &ty {
         syn::Type::Array(syn::TypeArray {
             elem,
@@ -79,9 +99,9 @@ fn get_matching_wgpu_type(ty: &syn::Type) -> proc_macro2::TokenStream {
                 let nb_elements: i32 = lit_int.to_string().parse().unwrap();
                 let the_type: &str = &segments.first().unwrap().ident.to_string();
                 match (the_type, nb_elements) {
-                    ("f32", 2) => quote!("::wgpu::VertexFormat::Float2"),
-                    ("f32", 3) => quote!("::wgpu::VertexFormat::Float3"),
-                    ("f32", 4) => quote!("::wgpu::VertexFormat::Float4"),
+                    ("f32", 2) => ("Float2", ::wgpu::VertexFormat::Float2.size()),
+                    ("f32", 3) => ("Float3", ::wgpu::VertexFormat::Float3.size()),
+                    ("f32", 4) => ("Float4", ::wgpu::VertexFormat::Float4.size()),
                     _ => {
                         panic!("dont understand this struct");
                     }

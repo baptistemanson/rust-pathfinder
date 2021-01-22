@@ -8,4 +8,5 @@ edition = "2018"
 
 [dependencies]
 derive_vertex = { path = "../derive_vertex" }
+wgputils = { path = "../wgputils" }
 wgpu = { git = "https://github.com/gfx-rs/wgpu-rs.git" }

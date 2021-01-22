@@ -18,7 +18,7 @@ key takeaways on performances:
 
 - [x] finish Bindable trait, BindGroup for binding position, and refactor the whole thing.
       --> will have to raise exception if the binding group doesnt follow the pipeline layout somehow later. or consume pipeline when building?
-- [ ] autogenerate vertex layout from struct via a macro
+- [x] autogenerate vertex layout from struct via a macro
 - [ ] do a pipeline for rendering sprites to test the API
 
 ## Graphics
@@ -32,7 +32,7 @@ key takeaways on performances:
 - [x] keyboard simple support
 - [x] import a map from tiled
 - [x] add notion of layers of different renderers
-- [ ] cleanup renderers, develop helpers etc
+- [x] cleanup renderers, develop helpers etc
 - [ ] add characters
 - [ ] do a pipeline for rendering boxes (text)
 - [ ] Bonus! click handler (with a target of render with colors from the rendering box render pass?)
