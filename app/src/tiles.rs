@@ -1,5 +1,3 @@
-use std::{collections::HashSet, time::Instant};
-
 use crate::{
     bind_group::BindGroupBuilder,
     buffer::Buffer,
@@ -10,9 +8,9 @@ use crate::{
     vertex,
     world::mask_bit_tex,
 };
+use std::{collections::HashSet, time::Instant};
 use utils::cast_slice;
-use vertex::Vertex;
-use wgpu::util::DeviceExt;
+use vertex::VertexPos;
 use winit::event::{self, WindowEvent};
 
 type KeyState = HashSet<event::VirtualKeyCode>;
@@ -46,16 +44,16 @@ impl crate::Renderer for TilesRenderer {
         let sampler = Sampler::new(&device);
 
         let mut blueprints_dim = Buffer::new(&device);
-        blueprints_dim.init_data(cast_slice(&[20. as f32, 20. as f32]));
+        blueprints_dim.init_buffer(cast_slice(&[20. as f32, 20. as f32]));
 
         let mut atlas_dim = Buffer::new(&device);
-        atlas_dim.init_data(cast_slice(&[10. as f32, 10. as f32]));
+        atlas_dim.init_buffer(cast_slice(&[10. as f32, 10. as f32]));
 
         let mut output_dim = Buffer::new(&device);
-        output_dim.init_data(cast_slice(&[12. as f32, 10. as f32]));
+        output_dim.init_buffer(cast_slice(&[12. as f32, 10. as f32]));
 
         let mut scroll = Buffer::new(&device);
-        scroll.init_data(cast_slice(&[0. as f32, 0. as f32]));
+        scroll.init_buffer(cast_slice(&[0. as f32, 0. as f32]));
 
         // Load shaders
         let vs_module =
@@ -74,27 +72,14 @@ impl crate::Renderer for TilesRenderer {
             &scroll,
         ]);
 
-        let pipeline = PipelineBuilder::<Vertex>::new(&device)
-            .set_bind_group_layout(bind_group_builder.get_layout())
+        let pipeline = PipelineBuilder::<VertexPos>::new(&device)
+            .add_bind_group_layout(&bind_group_builder.get_layout())
             .set_vertex_shader(vs_module)
             .set_fragment_shader(fs_module)
             .build();
 
         // Create the vertex and index buffers
-        let (vertex_data, index_data) = vertex::quad();
-
-        let vertex_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Vertex Buffer"),
-            contents: cast_slice(&vertex_data), // checks if a range of bytes can be turned into another and just do it. Works well to turn Struct into u8
-            usage: wgpu::BufferUsage::VERTEX,
-        });
-
-        let index_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Index Buffer"),
-            contents: cast_slice(&index_data),
-            usage: wgpu::BufferUsage::INDEX,
-        });
-        let index_count = index_data.len();
+        let (vertex_buf, index_buf, index_count) = vertex::quad(&device);
 
         TilesRenderer {
             pipeline,

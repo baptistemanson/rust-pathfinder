@@ -32,6 +32,7 @@ impl<'a> Bindable<'a> for Buffer<'a> {
         }
     }
 }
+
 impl<'a> Buffer<'a> {
     pub fn new(device: &'a Device) -> Self {
         Buffer {
@@ -40,7 +41,7 @@ impl<'a> Buffer<'a> {
         }
     }
 
-    pub fn init_data(&mut self, contents: &[u8]) {
+    pub fn init_buffer(&mut self, contents: &[u8]) {
         self.buffer = Some(
             self.device
                 .create_buffer_init(&wgpu::util::BufferInitDescriptor {

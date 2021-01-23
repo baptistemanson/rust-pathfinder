@@ -1,28 +1,29 @@
-use crate::{utils::get_color_state, vertex_layout};
+use crate::utils::get_color_state;
 use wgpu::{BindGroupLayout, Device, RenderPipeline, ShaderModule, VertexStateDescriptor};
+use wgputils::Vertex;
 
-pub struct PipelineBuilder<'a, Vertex> {
+pub struct PipelineBuilder<'a, T: Vertex> {
     device: &'a Device,
-    bind_group_layout: Option<BindGroupLayout>,
-    _vertex_description: Option<Vertex>,
+    bind_group_layouts: Vec<&'a BindGroupLayout>,
+    _vertex_description: Option<T>,
     vertex_shader: Option<ShaderModule>,
     fragment_shader: Option<ShaderModule>,
 }
 // rename to RenderPipelineBuilder
 // set_bind_group_layout => add_bind_group_layout
-impl<'a, Vertex> PipelineBuilder<'a, Vertex> {
+impl<'a, T: Vertex> PipelineBuilder<'a, T> {
     pub fn new(device: &'a Device) -> Self {
         Self {
             device,
-            bind_group_layout: None,
+            bind_group_layouts: vec![],
             _vertex_description: None,
             vertex_shader: None,
             fragment_shader: None,
         }
     }
 
-    pub fn set_bind_group_layout(&mut self, layout: BindGroupLayout) -> &mut Self {
-        self.bind_group_layout = Some(layout);
+    pub fn add_bind_group_layout(&mut self, layout: &'a BindGroupLayout) -> &mut Self {
+        self.bind_group_layouts.push(layout);
         self
     }
 
@@ -37,7 +38,7 @@ impl<'a, Vertex> PipelineBuilder<'a, Vertex> {
     }
 
     pub fn build(&mut self) -> RenderPipeline {
-        let vertex_state = vertex_layout![Vertex : 0 => Float4];
+        let vertex_state = T::get_descriptor();
 
         let vs_module = &self
             .vertex_shader
@@ -52,10 +53,7 @@ impl<'a, Vertex> PipelineBuilder<'a, Vertex> {
             .device
             .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
                 label: None,
-                bind_group_layouts: &[self
-                    .bind_group_layout
-                    .as_ref()
-                    .expect("You need to set a bind group before building")],
+                bind_group_layouts: &self.bind_group_layouts[..],
                 push_constant_ranges: &[],
             });
 

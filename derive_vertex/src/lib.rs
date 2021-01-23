@@ -62,6 +62,7 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     });
 
     let expanded = quote! {
+
         impl ::wgputils::Vertex for #struct_name {
             fn get_descriptor() -> ::wgpu::VertexStateDescriptor<'static> {
                 ::wgpu::VertexStateDescriptor {
@@ -73,6 +74,23 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                             ]
                         }],
                     }
+            }
+            fn create_index_buffer(device: &::wgpu::Device, data: &[u8]) -> ::wgpu::Buffer {
+                use ::wgpu::util::DeviceExt;
+                device.create_buffer_init(&::wgpu::util::BufferInitDescriptor {
+                    label: None,
+                    contents: data, // checks if a range of bytes can be turned into another and just do it. Works well to turn Struct into u8
+                    usage: ::wgpu::BufferUsage::INDEX,
+                })
+            }
+
+            fn create_vertex_buffer(device: &::wgpu::Device, data: &[u8]) -> ::wgpu::Buffer {
+                use ::wgpu::util::DeviceExt;
+                device.create_buffer_init(&::wgpu::util::BufferInitDescriptor {
+                    label: None,
+                    contents: data, // checks if a range of bytes can be turned into another and just do it. Works well to turn Struct into u8
+                    usage: ::wgpu::BufferUsage::VERTEX,
+                })
             }
         }
     };
