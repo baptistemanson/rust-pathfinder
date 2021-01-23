@@ -1,9 +1,18 @@
 use std::{error::Error, process::Command};
 
+#[cfg(target_os = "macos")]
+fn main() -> Result<(), Box<dyn Error>> {
+    Ok(())
+}
+
+#[cfg(not(target_os = "macos"))]
 enum ShaderType {
     Vertex,
     Fragment,
 }
+
+// didnt try to compile shaders on macos
+#[cfg(not(target_os = "macos"))]
 fn main() -> Result<(), Box<dyn Error>> {
     // Tell the build script to only run again if we change our source shaders
     // println!("cargo:rerun-if-changed=src/shaders");

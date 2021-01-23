@@ -117,11 +117,34 @@ fn get_matching_wgpu_type(ty: &syn::Type) -> (&str, u64) {
                 let nb_elements: i32 = lit_int.to_string().parse().unwrap();
                 let the_type: &str = &segments.first().unwrap().ident.to_string();
                 match (the_type, nb_elements) {
+                    ("f32", 1) => ("Float2", ::wgpu::VertexFormat::Float.size()),
                     ("f32", 2) => ("Float2", ::wgpu::VertexFormat::Float2.size()),
                     ("f32", 3) => ("Float3", ::wgpu::VertexFormat::Float3.size()),
                     ("f32", 4) => ("Float4", ::wgpu::VertexFormat::Float4.size()),
+
+                    ("u32", 1) => ("Uint", ::wgpu::VertexFormat::Uint.size()),
+                    ("u32", 2) => ("Uint2", ::wgpu::VertexFormat::Uint2.size()),
+                    ("u32", 3) => ("Uint3", ::wgpu::VertexFormat::Uint3.size()),
+                    ("u32", 4) => ("Uint4", ::wgpu::VertexFormat::Uint4.size()),
+
+                    ("i32", 1) => ("Int", ::wgpu::VertexFormat::Int.size()),
+                    ("i32", 2) => ("Int2", ::wgpu::VertexFormat::Int2.size()),
+                    ("i32", 3) => ("Int3", ::wgpu::VertexFormat::Int3.size()),
+                    ("i32", 4) => ("Int4", ::wgpu::VertexFormat::Int4.size()),
+
+                    ("u8", 2) => ("Uchar2", ::wgpu::VertexFormat::Uchar2.size()),
+                    ("u8", 4) => ("Uchar4", ::wgpu::VertexFormat::Uchar4.size()),
+
+                    ("i8", 2) => ("Char2", ::wgpu::VertexFormat::Char2.size()),
+                    ("i8", 4) => ("Char4", ::wgpu::VertexFormat::Char4.size()),
+
+                    ("u16", 2) => ("Ushort2", ::wgpu::VertexFormat::Ushort2.size()),
+                    ("u16", 4) => ("Ushort4", ::wgpu::VertexFormat::Ushort4.size()),
+                    
+                    ("i16", 2) => ("Short2", ::wgpu::VertexFormat::Short2.size()),
+                    ("i16", 4) => ("Short4", ::wgpu::VertexFormat::Short4.size()),
                     _ => {
-                        panic!("dont understand this struct");
+                        panic!("dont support this type of parameter.");
                     }
                 }
             }
@@ -136,14 +159,8 @@ fn get_matching_wgpu_type(ty: &syn::Type) -> (&str, u64) {
     }
 }
 
-// /// Two unsigned bytes (u8). `uvec2` in shaders.
-// Uchar2 = 0,
-// /// Four unsigned bytes (u8). `uvec4` in shaders.
-// Uchar4 = 1,
-// /// Two signed bytes (i8). `ivec2` in shaders.
-// Char2 = 2,
-// /// Four signed bytes (i8). `ivec4` in shaders.
-// Char4 = 3,
+// Currently not supported, would need annotation
+// norm not done, would need annotation
 // /// Two unsigned bytes (u8). [0, 255] converted to float [0, 1] `vec2` in shaders.
 // Uchar2Norm = 4,
 // /// Four unsigned bytes (u8). [0, 255] converted to float [0, 1] `vec4` in shaders.
@@ -152,14 +169,6 @@ fn get_matching_wgpu_type(ty: &syn::Type) -> (&str, u64) {
 // Char2Norm = 6,
 // /// Four signed bytes (i8). [-127, 127] converted to float [-1, 1] `vec4` in shaders.
 // Char4Norm = 7,
-// /// Two unsigned shorts (u16). `uvec2` in shaders.
-// Ushort2 = 8,
-// /// Four unsigned shorts (u16). `uvec4` in shaders.
-// Ushort4 = 9,
-// /// Two signed shorts (i16). `ivec2` in shaders.
-// Short2 = 10,
-// /// Four signed shorts (i16). `ivec4` in shaders.
-// Short4 = 11,
 // /// Two unsigned shorts (u16). [0, 65535] converted to float [0, 1] `vec2` in shaders.
 // Ushort2Norm = 12,
 // /// Four unsigned shorts (u16). [0, 65535] converted to float [0, 1] `vec4` in shaders.
@@ -168,31 +177,9 @@ fn get_matching_wgpu_type(ty: &syn::Type) -> (&str, u64) {
 // Short2Norm = 14,
 // /// Four signed shorts (i16). [-32767, 32767] converted to float [-1, 1] `vec4` in shaders.
 // Short4Norm = 15,
+
 // /// Two half-precision floats (no Rust equiv). `vec2` in shaders.
 // Half2 = 16,
 // /// Four half-precision floats (no Rust equiv). `vec4` in shaders.
 // Half4 = 17,
-// /// One single-precision float (f32). `float` in shaders.
-// Float = 18,
-// /// Two single-precision floats (f32). `vec2` in shaders.
-// Float2 = 19,
-// /// Three single-precision floats (f32). `vec3` in shaders.
-// Float3 = 20,
-// /// Four single-precision floats (f32). `vec4` in shaders.
-// Float4 = 21,
-// /// One unsigned int (u32). `uint` in shaders.
-// Uint = 22,
-// /// Two unsigned ints (u32). `uvec2` in shaders.
-// Uint2 = 23,
-// /// Three unsigned ints (u32). `uvec3` in shaders.
-// Uint3 = 24,
-// /// Four unsigned ints (u32). `uvec4` in shaders.
-// Uint4 = 25,
-// /// One signed int (i32). `int` in shaders.
-// Int = 26,
-// /// Two signed ints (i32). `ivec2` in shaders.
-// Int2 = 27,
-// /// Three signed ints (i32). `ivec3` in shaders.
-// Int3 = 28,
-// /// Four signed ints (i32). `ivec4` in shaders.
-// Int4 = 29,
+
