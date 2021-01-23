@@ -21,7 +21,7 @@ wgpu = { git = "https://github.com/gfx-rs/wgpu-rs.git" }
 wgputils = { path = "../wgputils" }
 pollster = "0.2"
 async-executor = "1.4.0"
-image = "0.23"
+
 
 [dependencies.wgt]
 package = "wgpu-types"

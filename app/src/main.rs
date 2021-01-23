@@ -7,15 +7,7 @@ use winit::{
     event::{self, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
 };
-
-mod bind_group;
-mod bindable;
-mod buffer;
-mod pipeline;
-mod sampler;
-mod texture;
 mod tiles;
-mod utils;
 mod vertex;
 mod world;
 

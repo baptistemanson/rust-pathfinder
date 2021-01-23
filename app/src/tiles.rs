@@ -1,16 +1,14 @@
 use crate::{
-    bind_group::BindGroupBuilder,
-    buffer::Buffer,
-    pipeline::PipelineBuilder,
-    sampler::Sampler,
-    texture::Texture,
-    utils::{self},
-    vertex,
+    vertex::{self, VertexPos},
     world::mask_bit_tex,
 };
 use std::{collections::HashSet, time::Instant};
-use utils::cast_slice;
-use vertex::VertexPos;
+use wgputils::cast_slice;
+
+use wgputils::{
+    bind_group::BindGroupBuilder, buffer::Buffer, pipeline::PipelineBuilder, sampler::Sampler,
+    texture::Texture,
+};
 use winit::event::{self, WindowEvent};
 
 type KeyState = HashSet<event::VirtualKeyCode>;

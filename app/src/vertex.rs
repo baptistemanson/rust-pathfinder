@@ -2,7 +2,7 @@ use wgpu::{Buffer, Device};
 // VERTEX BUFFER RELATED
 use wgputils::Vertex;
 
-use crate::utils::cast_slice;
+use wgputils::cast_slice;
 
 #[repr(C)]
 #[derive(Clone, Copy, Vertex)]

@@ -1,6 +1,6 @@
 use wgpu::{Device, Queue};
 
-use crate::texture::{BatTexDimensions, Texture};
+use wgputils::texture::{BatTexDimensions, Texture};
 
 pub fn pix(i: u8) -> Vec<u8> {
     vec![i, 0, 0, 0]

@@ -1,6 +1,6 @@
-use crate::utils::get_color_state;
+use crate::get_color_state;
+use crate::Vertex;
 use wgpu::{BindGroupLayout, Device, RenderPipeline, ShaderModule, VertexStateDescriptor};
-use wgputils::Vertex;
 
 pub struct PipelineBuilder<'a, T: Vertex> {
     device: &'a Device,
