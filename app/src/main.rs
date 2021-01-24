@@ -1,3 +1,4 @@
+use sprite::SpriteRenderer;
 use std::future::Future;
 #[cfg(not(target_arch = "wasm32"))]
 use std::time::{Duration, Instant};
@@ -7,6 +8,7 @@ use winit::{
     event::{self, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
 };
+mod sprite;
 mod tiles;
 mod vertex;
 mod world;
@@ -150,6 +152,7 @@ fn start(
 
     log::info!("Initializing the renderer...");
     let mut renderer1 = TilesRenderer::init(&sc_desc, &device, &queue);
+    let mut renderer2 = SpriteRenderer::init(&sc_desc, &device, &queue);
 
     #[cfg(not(target_arch = "wasm32"))]
     let mut last_update_inst = Instant::now();
@@ -197,6 +200,7 @@ fn start(
                 sc_desc.width = if size.width == 0 { 1 } else { size.width };
                 sc_desc.height = if size.height == 0 { 1 } else { size.height };
                 renderer1.resize(&sc_desc, &device, &queue);
+                renderer2.resize(&sc_desc, &device, &queue);
                 swap_chain = device.create_swap_chain(&surface, &sc_desc);
             }
             event::Event::WindowEvent { event, .. } => match event {
@@ -227,7 +231,9 @@ fn start(
                     }
                 };
                 renderer1.update_state();
+                renderer2.update_state();
                 renderer1.render(&frame.output, &device, &queue, &spawner);
+                renderer2.render(&frame.output, &device, &queue, &spawner);
             }
             _ => {}
         }
