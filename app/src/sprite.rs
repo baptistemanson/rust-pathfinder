@@ -14,7 +14,7 @@ use winit::event::{self, WindowEvent};
 
 type KeyState = HashSet<event::VirtualKeyCode>;
 
-pub struct TilesRenderer {
+pub struct SpriteRenderer {
     vertex_buf: wgpu::Buffer,
     index_buf: wgpu::Buffer,
     index_count: usize,
@@ -26,7 +26,7 @@ pub struct TilesRenderer {
     key_state: KeyState,
 }
 
-impl crate::Renderer for TilesRenderer {
+impl crate::Renderer for SpriteRenderer {
     fn init(
         _sc_desc: &wgpu::SwapChainDescriptor,
         device: &wgpu::Device,
@@ -39,48 +39,40 @@ impl crate::Renderer for TilesRenderer {
             include_bytes!("../assets/Tileset_32x32_1.png"),
             wgpu::ShaderStage::FRAGMENT,
         );
-        let blueprint = mask_bit_tex(&device, &queue);
         let sampler = Sampler::new(&device);
-
-        let mut blueprints_dim = Buffer::new(&device);
-        blueprints_dim.init_buffer(cast_slice(&[20. as f32, 20. as f32]));
 
         let mut atlas_dim = Buffer::new(&device);
         atlas_dim.init_buffer(cast_slice(&[10. as f32, 10. as f32]));
-
-        let mut output_dim = Buffer::new(&device);
-        output_dim.init_buffer(cast_slice(&[12. as f32, 10. as f32]));
 
         let mut scroll = Buffer::new(&device);
         scroll.init_buffer(cast_slice(&[0. as f32, 0. as f32]));
 
         // Load shaders
-        let module = device.create_shader_module(&wgpu::ShaderModuleDescriptor {
+        let vs_module = device.create_shader_module(&wgpu::ShaderModuleDescriptor {
             label: None,
-            source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(include_str!("./shaders/tile.wgsl"))),
+            source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(include_str!("./shaders/vertex.wgsl"))),
+            flags: ShaderFlags::VALIDATION,
+        });
+        let fs_module = device.create_shader_module(&wgpu::ShaderModuleDescriptor {
+            label: None,
+            source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(include_str!(
+                "./shaders/fragment.wgsl"
+            ))),
             flags: ShaderFlags::VALIDATION,
         });
         let mut bind_group_builder = BindGroupBuilder::new(&device);
-        bind_group_builder.set_resources(vec![
-            &sampler,
-            &atlas,
-            &blueprint,
-            &blueprints_dim,
-            &output_dim,
-            &atlas_dim,
-            &scroll,
-        ]);
+        bind_group_builder.set_resources(vec![&sampler, &atlas, &scroll]);
 
         let pipeline = PipelineBuilder::<VertexPos>::new(&device)
             .add_bind_group_layout(&bind_group_builder.get_layout())
-            .set_vertex_shader(&module)
-            .set_fragment_shader(&module)
+            .set_vertex_shader(vs_module)
+            .set_fragment_shader(fs_module)
             .build();
 
         // Create the vertex and index buffers
         let (vertex_buf, index_buf, index_count) = vertex::quad(&device);
 
-        TilesRenderer {
+        SpriteRenderer {
             pipeline,
             vertex_buf,
             index_buf,
