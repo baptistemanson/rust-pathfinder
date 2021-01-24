@@ -2,8 +2,12 @@ use core::panic;
 use quote::{format_ident, quote};
 use syn::{parse_macro_input, Data, DeriveInput};
 
-// need to change the return type of VertexLike
-// also probably needs to be separated.
+/**
+todo:
+- add support for Vec2 and Vec4 (convenience)
+- add support for normalized datastructure (required)
+- add support for half precision datastructure (required)
+*/
 
 #[proc_macro]
 pub fn get_vertex_layout(_item: proc_macro::TokenStream) -> proc_macro::TokenStream {
@@ -19,17 +23,6 @@ pub fn get_vertex_layout(_item: proc_macro::TokenStream) -> proc_macro::TokenStr
     .unwrap()
 }
 
-// use wgpu::VertexFormat;
-// wgpu::VertexStateDescriptor {
-//     index_format: Some(wgpu::IndexFormat::Uint16),
-//     vertex_buffers: &[wgpu::VertexBufferDescriptor {
-//         stride: std::mem::size_of::<$T>() as wgpu::BufferAddress,
-//         step_mode: wgpu::InputStepMode::Vertex,
-//         attributes: &wgpu::vertex_attr_array![$($loc => $fmt ,)*],
-//     }],
-// };
-
-// I could clean up by removing vecs fields from option types.
 #[proc_macro_derive(Vertex)]
 pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input_parsed = parse_macro_input!(input as DeriveInput);
@@ -140,7 +133,7 @@ fn get_matching_wgpu_type(ty: &syn::Type) -> (&str, u64) {
 
                     ("u16", 2) => ("Ushort2", ::wgpu::VertexFormat::Ushort2.size()),
                     ("u16", 4) => ("Ushort4", ::wgpu::VertexFormat::Ushort4.size()),
-                    
+
                     ("i16", 2) => ("Short2", ::wgpu::VertexFormat::Short2.size()),
                     ("i16", 4) => ("Short4", ::wgpu::VertexFormat::Short4.size()),
                     _ => {
@@ -182,4 +175,3 @@ fn get_matching_wgpu_type(ty: &syn::Type) -> (&str, u64) {
 // Half2 = 16,
 // /// Four half-precision floats (no Rust equiv). `vec4` in shaders.
 // Half4 = 17,
-

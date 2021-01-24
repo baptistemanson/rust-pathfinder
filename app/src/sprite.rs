@@ -17,6 +17,8 @@ pub struct SpriteRenderer {
     pipeline: wgpu::RenderPipeline,
 }
 
+
+
 impl crate::Renderer for SpriteRenderer {
     fn update(&mut self, _event: &WindowEvent) {}
     fn init(

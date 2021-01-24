@@ -8,7 +8,9 @@ use winit::{
     event::{self, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
 };
+mod algebra;
 mod sprite;
+mod sprite_atlas;
 mod tiles;
 mod vertex;
 mod world;
