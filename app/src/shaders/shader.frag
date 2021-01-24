@@ -42,11 +42,8 @@ void main() {
     float tile_nb = texture(sampler2D(tile_blueprint, s),position_in_blueprint).r *255.;
     // vec2(1.,2.) means the tile at position x=1, y=2. Starting from the top.
     vec2 tile_coordinates_in_tile = vec2( mod(tile_nb,tile_atlas_dim.x), tile_nb/tile_atlas_dim.y);
-
     vec2 tile_atlas_top_left = floor(tile_coordinates_in_tile) * tile_atlas_len;
     vec2 position_in_tile_atlas = tile_atlas_top_left +  tile_atlas_len * fract(scroll+uv.xy* output_dim);
-    //o_Target = vec4( tile_atlas_len * fract(scroll+uv.xy* output_dim), 0.,1.0);
-
     vec4 tex = texture(sampler2D(tile_atlas, s), position_in_tile_atlas);
     o_Target = vec4(tex.rgb,1.0);
 }

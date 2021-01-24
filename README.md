@@ -167,3 +167,6 @@ Weapons that can be modelled with simple callback based hashmap of timings (I sc
 - start of action - offer new actions / apply temp reaction status. Need to have previous action.
 - end of attack roll - allow to modify results.
 - end of damage - modify results.
+
+To validate shaders with Naga
+cargo run --example convert --features wgsl-in,spv-out -- ..\rust-pathfinder\app\src\shaders\fragment.wgsl ..\rust-pathfinder\app\src\shaders\hi.spv
