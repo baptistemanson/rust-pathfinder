@@ -60,9 +60,13 @@ impl crate::Renderer for TilesRenderer {
             source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(include_str!("./shaders/vertex.wgsl"))),
             flags: ShaderFlags::VALIDATION,
         });
-        let fs_module =
-            device.create_shader_module(&wgpu::include_spirv!("./shaders/shader.frag.spv"));
-
+        let fs_module = device.create_shader_module(&wgpu::ShaderModuleDescriptor {
+            label: None,
+            source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(include_str!(
+                "./shaders/fragment.wgsl"
+            ))),
+            flags: ShaderFlags::VALIDATION,
+        });
         let mut bind_group_builder = BindGroupBuilder::new(&device);
         bind_group_builder.set_resources(vec![
             &sampler,

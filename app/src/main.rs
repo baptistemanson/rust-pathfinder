@@ -2,7 +2,7 @@ use std::future::Future;
 #[cfg(not(target_arch = "wasm32"))]
 use std::time::{Duration, Instant};
 use tiles::TilesRenderer;
-use wgpu::{Features, Limits, TextureFormat};
+use wgpu::{Features, Limits};
 use winit::{
     event::{self, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
