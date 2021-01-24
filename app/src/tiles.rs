@@ -2,7 +2,8 @@ use crate::{
     vertex::{self, VertexPos},
     world::mask_bit_tex,
 };
-use std::{collections::HashSet, time::Instant};
+use std::{borrow::Cow, collections::HashSet, time::Instant};
+use wgpu::ShaderFlags;
 use wgputils::cast_slice;
 
 use wgputils::{
@@ -54,8 +55,11 @@ impl crate::Renderer for TilesRenderer {
         scroll.init_buffer(cast_slice(&[0. as f32, 0. as f32]));
 
         // Load shaders
-        let vs_module =
-            device.create_shader_module(&wgpu::include_spirv!("./shaders/shader.vert.spv"));
+        let vs_module = device.create_shader_module(&wgpu::ShaderModuleDescriptor {
+            label: None,
+            source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(include_str!("./shaders/vertex.wgsl"))),
+            flags: ShaderFlags::VALIDATION,
+        });
         let fs_module =
             device.create_shader_module(&wgpu::include_spirv!("./shaders/shader.frag.spv"));
 

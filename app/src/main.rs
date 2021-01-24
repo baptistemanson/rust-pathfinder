@@ -2,7 +2,7 @@ use std::future::Future;
 #[cfg(not(target_arch = "wasm32"))]
 use std::time::{Duration, Instant};
 use tiles::TilesRenderer;
-use wgpu::{Features, Limits};
+use wgpu::{Features, Limits, TextureFormat};
 use winit::{
     event::{self, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
@@ -141,7 +141,7 @@ fn start(
     let spawner = Spawner::new();
     let mut sc_desc = wgpu::SwapChainDescriptor {
         usage: wgpu::TextureUsage::RENDER_ATTACHMENT,
-        format: device.get_swap_chain_preferred_format(),
+        format: adapter.get_swap_chain_preferred_format(&surface),
         width: size.width,
         height: size.height,
         present_mode: wgpu::PresentMode::Mailbox,

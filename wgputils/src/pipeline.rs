@@ -62,9 +62,7 @@ impl<'a, T: Vertex> PipelineBuilder<'a, T> {
             vertex_state,
             vs_module,
             fs_module,
-            &[get_color_state(
-                self.device.get_swap_chain_preferred_format(),
-            )],
+            &[get_color_state(wgpu::TextureFormat::Bgra8UnormSrgb)], //@todo use the preferred_format function instead?
         ))
     }
 }
