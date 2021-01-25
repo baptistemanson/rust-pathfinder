@@ -1,9 +1,13 @@
 # Rust Pathfinder
 
 Rust pathfinder is a toy implementation of the basic rules of Pathfinder Second Edition.
-My goal is to learn Rust.
+My goal is to learn Rust, Webgpu and text rendering.
 
 MIT and everything. Author Baptiste Manson
+
+What sounds the most fun for me right now is to improve the visual engine a tad more, in order to have moving stuff on screen, and then make it playable.
+If I ever reach a state where I can start the game, select which action I want to do with my character, and finish the encounter, it will be mission accomplished.
+I have no ambition whatsoever around this project. It's just for fun.
 
 ## Sprite subproject
 
@@ -32,6 +36,10 @@ MIT and everything. Author Baptiste Manson
 - [ ] render text in boxes
 - [ ] make them scrollable?
 - [ ] make a click detector with a button class
+
+## UI subproject
+
+- [ ] implement the true game UI, with a map, units, text log, and actions panel. Just take BG's layout, it proved it is good.
 
 ## Graphics
 
