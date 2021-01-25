@@ -5,13 +5,14 @@ use wgpu::Device;
 pub struct Buffer<'a> {
     device: &'a Device,
     pub buffer: Option<wgpu::Buffer>,
+    visibility: wgpu::ShaderStage,
 }
 
 impl<'a> Bindable<'a> for Buffer<'a> {
     fn get_layout(&self, binding: u32) -> wgpu::BindGroupLayoutEntry {
         wgpu::BindGroupLayoutEntry {
             binding, // will be remapped
-            visibility: wgpu::ShaderStage::FRAGMENT,
+            visibility: self.visibility,
             ty: wgpu::BindingType::Buffer {
                 ty: wgpu::BufferBindingType::Uniform,
                 has_dynamic_offset: false,
@@ -34,10 +35,11 @@ impl<'a> Bindable<'a> for Buffer<'a> {
 }
 
 impl<'a> Buffer<'a> {
-    pub fn new(device: &'a Device) -> Self {
+    pub fn new(device: &'a Device, visibility: wgpu::ShaderStage) -> Self {
         Buffer {
             device,
             buffer: None,
+            visibility,
         }
     }
 
@@ -45,7 +47,7 @@ impl<'a> Buffer<'a> {
         self.buffer = Some(
             self.device
                 .create_buffer_init(&wgpu::util::BufferInitDescriptor {
-                    label: Some("Atlas Dimensions in number of tiles"),
+                    label: None,
                     contents, // [f32] => [u8]
                     usage: wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST,
                 }),

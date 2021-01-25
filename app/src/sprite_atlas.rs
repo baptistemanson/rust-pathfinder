@@ -50,6 +50,7 @@ pub struct SpriteWorld<'a> {
 }
 
 impl<'a> SpriteWorld<'a> {
+    #[allow(dead_code)]
     pub fn to_vertex(&self) -> Vec<SpriteVertex> {
         let mut acc: Vec<SpriteVertex> = vec![];
 
@@ -88,6 +89,7 @@ impl<'a> SpriteWorld<'a> {
 
 impl Atlas {
     // in world dimension. Could be the number of tiles for instance! aka == nb
+    #[allow(dead_code)]
     pub fn new_from_grid(dim: [f32; 2], nb: [u32; 2]) -> Self {
         let mut sprite_by_id: Vec<SpriteInAtlas> = vec![];
         let tile_width = dim[0] / nb[0] as f32;

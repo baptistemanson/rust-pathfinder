@@ -9,7 +9,7 @@ pub struct Box {
 pub fn div(first: Vec2, dim: Vec2) -> Vec2 {
     [first[0] / dim[0], first[1] / dim[1]]
 }
-
+#[allow(dead_code)]
 pub fn mul(first: Vec2, dim: Vec2) -> Vec2 {
     [first[0] * dim[0], first[1] * dim[1]]
 }
@@ -23,7 +23,7 @@ impl Box {
             bottom_right: div(self.bottom_right, dim),
         }
     }
-
+    #[allow(dead_code)]
     pub fn mul(&self, dim: Vec2) -> Box {
         Box {
             top_left: mul(self.top_left, dim),

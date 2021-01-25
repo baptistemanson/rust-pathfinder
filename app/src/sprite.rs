@@ -17,8 +17,6 @@ pub struct SpriteRenderer {
     pipeline: wgpu::RenderPipeline,
 }
 
-
-
 impl crate::Renderer for SpriteRenderer {
     fn update(&mut self, _event: &WindowEvent) {}
     fn init(
@@ -35,7 +33,7 @@ impl crate::Renderer for SpriteRenderer {
         );
         let sampler = Sampler::new(&device);
 
-        let mut atlas_dim = Buffer::new(&device);
+        let mut atlas_dim = Buffer::new(&device, wgpu::ShaderStage::FRAGMENT);
         atlas_dim.init_buffer(cast_slice(&[10. as f32, 10. as f32]));
 
         // Load shaders

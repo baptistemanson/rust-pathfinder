@@ -42,16 +42,16 @@ impl crate::Renderer for TilesRenderer {
         let blueprint = mask_bit_tex(&device, &queue);
         let sampler = Sampler::new(&device);
 
-        let mut blueprints_dim = Buffer::new(&device);
+        let mut blueprints_dim = Buffer::new(&device, wgpu::ShaderStage::FRAGMENT);
         blueprints_dim.init_buffer(cast_slice(&[20. as f32, 20. as f32]));
 
-        let mut atlas_dim = Buffer::new(&device);
+        let mut atlas_dim = Buffer::new(&device, wgpu::ShaderStage::FRAGMENT);
         atlas_dim.init_buffer(cast_slice(&[10. as f32, 10. as f32]));
 
-        let mut output_dim = Buffer::new(&device);
+        let mut output_dim = Buffer::new(&device, wgpu::ShaderStage::VERTEX);
         output_dim.init_buffer(cast_slice(&[12. as f32, 10. as f32]));
 
-        let mut scroll = Buffer::new(&device);
+        let mut scroll = Buffer::new(&device, wgpu::ShaderStage::VERTEX);
         scroll.init_buffer(cast_slice(&[0. as f32, 0. as f32]));
 
         // Load shaders
