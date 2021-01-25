@@ -5,21 +5,33 @@ My goal is to learn Rust.
 
 MIT and everything. Author Baptiste Manson
 
-Most interesting to code next: continue on visual!
-
-key takeaways on performances:
-
-- references help
-- clone on character is nothing, at least I dont see it
-- println! is more costly on windows
-- the performance I can reach with Rust I cannot with JS, by a factor x10-100.
-
-## Helpers subproject
+## Sprite subproject
 
 - [x] finish Bindable trait, BindGroup for binding position, and refactor the whole thing.
       --> will have to raise exception if the binding group doesnt follow the pipeline layout somehow later. or consume pipeline when building?
 - [x] autogenerate vertex layout from struct via a macro
-- [ ] do a pipeline for rendering sprites to test the API
+- [x] create a struct to manage a sprite atlas
+- [ ] load a demo sprite atlas
+- [ ] position 2 sprites
+
+## State and Animation Subproject
+
+- [ ] extract state of the app outside the renderers
+- [ ] create a notion of scene + resource manager to switch resources (check other frameworks for inspiration)
+- [ ] create an animation kernel
+- [ ] check with Cheng how he would do it
+- [ ] add smooth move
+- [ ] plug to rule engine via action descriptors
+
+## Vignette shader
+
+- [ ] create a renderer that vignettes / tilde shift the viewport at the end
+
+## Text renderer Subproject
+
+- [ ] render text in boxes
+- [ ] make them scrollable?
+- [ ] make a click detector with a button class
 
 ## Graphics
 
