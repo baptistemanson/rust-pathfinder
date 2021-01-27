@@ -17,8 +17,7 @@ pub struct SpriteRenderer {
     pipeline: wgpu::RenderPipeline,
 }
 
-impl crate::Renderer for SpriteRenderer {
-    fn update(&mut self, _event: &WindowEvent) {}
+impl SpriteRenderer {
     fn init(
         _sc_desc: &wgpu::SwapChainDescriptor,
         device: &wgpu::Device,
@@ -63,6 +62,9 @@ impl crate::Renderer for SpriteRenderer {
             bind_group: bind_group_builder.get_bind_group(),
         }
     }
+}
+impl crate::Renderer for SpriteRenderer {
+    fn update(&mut self, _event: &WindowEvent) {}
 
     fn resize(
         &mut self,
@@ -87,6 +89,7 @@ impl crate::Renderer for SpriteRenderer {
         device: &wgpu::Device,
         queue: &wgpu::Queue,
         _spawner: &crate::Spawner,
+        ops: wgpu::Operations<wgpu::Color>,
     ) {
         let mut encoder =
             device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
@@ -96,10 +99,7 @@ impl crate::Renderer for SpriteRenderer {
                 color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
                     attachment: &frame.view,
                     resolve_target: None,
-                    ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Load,
-                        store: true,
-                    },
+                    ops,
                 }],
                 depth_stencil_attachment: None,
             });

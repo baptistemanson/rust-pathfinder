@@ -9,38 +9,6 @@ What sounds the most fun for me right now is to improve the visual engine a tad 
 If I ever reach a state where I can start the game, select which action I want to do with my character, and finish the encounter, it will be mission accomplished.
 I have no ambition whatsoever around this project. It's just for fun.
 
-## Sprite subproject
-
-- [x] finish Bindable trait, BindGroup for binding position, and refactor the whole thing.
-      --> will have to raise exception if the binding group doesnt follow the pipeline layout somehow later. or consume pipeline when building?
-- [x] autogenerate vertex layout from struct via a macro
-- [x] create a struct to manage a sprite atlas
-- [ ] load a demo sprite atlas
-- [ ] position 2 sprites
-
-## State and Animation Subproject
-
-- [ ] extract state of the app outside the renderers
-- [ ] create a notion of scene + resource manager to switch resources (check other frameworks for inspiration)
-- [ ] create an animation kernel
-- [ ] check with Cheng how he would do it
-- [ ] add smooth move
-- [ ] plug to rule engine via action descriptors
-
-## Vignette shader
-
-- [ ] create a renderer that vignettes / tilde shift the viewport at the end
-
-## Text renderer Subproject
-
-- [ ] render text in boxes
-- [ ] make them scrollable?
-- [ ] make a click detector with a button class
-
-## UI subproject
-
-- [ ] implement the true game UI, with a map, units, text log, and actions panel. Just take BG's layout, it proved it is good.
-
 ## Graphics
 
 - [x] allow render dimension to be different from tile atlas
@@ -52,12 +20,44 @@ I have no ambition whatsoever around this project. It's just for fun.
 - [x] keyboard simple support
 - [x] import a map from tiled
 - [x] add notion of layers of different renderers
-- [x] cleanup renderers, develop helpers etc
-- [ ] add characters
-- [ ] do a pipeline for rendering boxes (text)
-- [ ] Bonus! click handler (with a target of render with colors from the rendering box render pass?)
+- [x] cleanup renderers, develop helpers etc6
 
-## General
+### Sprite subproject
+
+- [x] finish Bindable trait, BindGroup for binding position, and refactor the whole thing.
+      --> will have to raise exception if the binding group doesnt follow the pipeline layout somehow later. or consume pipeline when building?
+- [x] autogenerate vertex layout from struct via a macro
+- [x] create a struct to manage a sprite atlas
+- [ ] load a demo sprite atlas
+- [ ] position 2 sprites
+
+### State and Animation Subproject
+
+- [ ] extract state of the app outside the renderers
+- [ ] create a notion of scene + resource manager to switch resources (check other frameworks for inspiration)
+- [ ] create an animation kernel
+- [ ] check with Cheng how he would do it
+- [ ] add smooth move
+- [ ] plug to rule engine via action descriptors
+
+### Vignette shader Subproject
+
+- [ ] create a renderer that vignettes / tilde shift the viewport at the end
+
+### Text renderer Subproject
+
+- [ ] render text in boxes
+- [ ] make them scrollable?
+
+### Interactivity Subproject
+
+- [ ] make a click detector with a button class
+
+### GUI Subproject
+
+- [ ] implement the true game UI, with a map, units, text log, and actions panel. Just take BG's layout, it proved it is good.
+
+## General Rules
 
 - [x] add unit tests
 - [x] learn benchmarking

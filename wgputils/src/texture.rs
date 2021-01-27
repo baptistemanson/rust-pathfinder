@@ -22,17 +22,22 @@ pub struct Texture<'a> {
 
 impl<'a> Bindable<'a> for Texture<'a> {
     fn get_layout(&self, binding: u32) -> BindGroupLayoutEntry {
+        let sample_type = match self.format {
+            //  wgpu::TextureFormat::R16Uint => wgpu::TextureSampleType::Uint {},
+            _ => wgpu::TextureSampleType::Float { filterable: true },
+        };
         wgpu::BindGroupLayoutEntry {
             binding, // will be renumbered later
             visibility: self.visibility,
             ty: wgpu::BindingType::Texture {
                 multisampled: false,
-                sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                sample_type,
                 view_dimension: wgpu::TextureViewDimension::D2,
             },
             count: None,
         }
     }
+
     fn get_entry(&self, binding: u32) -> wgpu::BindGroupEntry {
         wgpu::BindGroupEntry {
             binding,
@@ -48,13 +53,14 @@ impl<'a> Texture<'a> {
         bytes: Vec<u8>,
         dim: BatTexDimensions,
         visibility: wgpu::ShaderStage,
+        format: wgpu::TextureFormat,
     ) -> Self {
         let t = Texture {
             queue,
             device,
             visibility,
             view: None,
-            format: wgpu::TextureFormat::Rgba8Unorm, // weird... should check
+            format,
             dim,
             bytes,
         };
@@ -127,6 +133,10 @@ impl<'a> Texture<'a> {
             wgpu::TextureFormat::R8Uint => 1,
             wgpu::TextureFormat::Rgba8UnormSrgb => 4,
             wgpu::TextureFormat::Rgba8Unorm => 4,
+            wgpu::TextureFormat::Rgba16Uint => 8,
+            wgpu::TextureFormat::R16Uint => 2,
+            wgpu::TextureFormat::R32Float => 4,
+            wgpu::TextureFormat::Rgba32Float => 16,
             _ => panic!("unknown format"),
         };
         // schedules the transfer of the texture data.

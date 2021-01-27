@@ -1,14 +1,10 @@
-use crate::{
-    vertex::{self, VertexPos},
-    world::mask_bit_tex,
-};
+use crate::vertex::{self, VertexPos};
 use std::{borrow::Cow, collections::HashSet, time::Instant};
 use wgpu::ShaderFlags;
 use wgputils::cast_slice;
 
 use wgputils::{
     bind_group::BindGroupBuilder, buffer::Buffer, pipeline::PipelineBuilder, sampler::Sampler,
-    texture::Texture,
 };
 use winit::event::{self, WindowEvent};
 
@@ -26,30 +22,28 @@ pub struct TilesRenderer {
     key_state: KeyState,
 }
 
-impl crate::Renderer for TilesRenderer {
-    fn init(
-        _sc_desc: &wgpu::SwapChainDescriptor,
-        device: &wgpu::Device,
-        queue: &wgpu::Queue,
+const WIDTH: f32 = 15.;
+const HEIGHT: f32 = 12.;
+
+impl TilesRenderer {
+    pub fn init<'a>(
+        device: &'a wgpu::Device,
+        _queue: &'a wgpu::Queue,
+        atlas: &'a wgputils::texture::Texture<'a>,
+        blueprint: &'a wgputils::texture::Texture<'a>,
     ) -> Self {
         // Textures
-        let atlas = Texture::image_tex(
-            device,
-            queue,
-            include_bytes!("../assets/Tileset_32x32_1.png"),
-            wgpu::ShaderStage::FRAGMENT,
-        );
-        let blueprint = mask_bit_tex(&device, &queue);
+
         let sampler = Sampler::new(&device);
 
         let mut blueprints_dim = Buffer::new(&device, wgpu::ShaderStage::FRAGMENT);
         blueprints_dim.init_buffer(cast_slice(&[20. as f32, 20. as f32]));
 
         let mut atlas_dim = Buffer::new(&device, wgpu::ShaderStage::FRAGMENT);
-        atlas_dim.init_buffer(cast_slice(&[10. as f32, 10. as f32]));
+        atlas_dim.init_buffer(cast_slice(&[32. as f32, 32. as f32]));
 
         let mut output_dim = Buffer::new(&device, wgpu::ShaderStage::VERTEX);
-        output_dim.init_buffer(cast_slice(&[12. as f32, 10. as f32]));
+        output_dim.init_buffer(cast_slice(&[WIDTH, HEIGHT]));
 
         let mut scroll = Buffer::new(&device, wgpu::ShaderStage::VERTEX);
         scroll.init_buffer(cast_slice(&[0. as f32, 0. as f32]));
@@ -63,8 +57,8 @@ impl crate::Renderer for TilesRenderer {
         let mut bind_group_builder = BindGroupBuilder::new(&device);
         bind_group_builder.set_resources(vec![
             &sampler,
-            &atlas,
-            &blueprint,
+            atlas,
+            blueprint,
             &blueprints_dim,
             &output_dim,
             &atlas_dim,
@@ -92,7 +86,8 @@ impl crate::Renderer for TilesRenderer {
             key_state: KeyState::default(),
         }
     }
-
+}
+impl crate::Renderer for TilesRenderer {
     fn update(&mut self, event: &winit::event::WindowEvent) {
         match event {
             WindowEvent::KeyboardInput {
@@ -148,10 +143,10 @@ impl crate::Renderer for TilesRenderer {
         self.curr_scroll = (
             (self.curr_scroll.0 + delta_right)
                 .max(0.)
-                .min(20. - 12. - epsilon),
+                .min(20. - WIDTH - epsilon),
             (self.curr_scroll.1 + delta_down)
                 .max(0.)
-                .min(20. - 10. - epsilon),
+                .min(20. - HEIGHT - epsilon),
         );
         self.last_update = Instant::now();
     }
@@ -169,6 +164,7 @@ impl crate::Renderer for TilesRenderer {
         device: &wgpu::Device,
         queue: &wgpu::Queue,
         _spawner: &crate::Spawner,
+        ops: wgpu::Operations<wgpu::Color>,
     ) {
         let mut encoder =
             device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
@@ -178,15 +174,7 @@ impl crate::Renderer for TilesRenderer {
                 color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
                     attachment: &frame.view,
                     resolve_target: None,
-                    ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(wgpu::Color {
-                            r: 0.1,
-                            g: 0.2,
-                            b: 0.3,
-                            a: 1.0,
-                        }),
-                        store: true,
-                    },
+                    ops,
                 }],
                 depth_stencil_attachment: None,
             });

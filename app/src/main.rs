@@ -1,13 +1,15 @@
-use sprite::SpriteRenderer;
+// use sprite::SpriteRenderer;
 use std::future::Future;
 #[cfg(not(target_arch = "wasm32"))]
 use std::time::{Duration, Instant};
 use tiles::TilesRenderer;
 use wgpu::{Features, Limits};
+use wgputils::texture::Texture;
 use winit::{
     event::{self, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
 };
+use world::{debug, lower, upper};
 mod algebra;
 mod sprite;
 mod sprite_atlas;
@@ -21,11 +23,6 @@ fn main() {
 
 // An App.
 pub trait Renderer: 'static + Sized {
-    fn init(
-        sc_desc: &wgpu::SwapChainDescriptor,
-        device: &wgpu::Device,
-        queue: &wgpu::Queue,
-    ) -> Self;
     fn resize(
         &mut self,
         sc_desc: &wgpu::SwapChainDescriptor,
@@ -40,6 +37,7 @@ pub trait Renderer: 'static + Sized {
         device: &wgpu::Device,
         queue: &wgpu::Queue,
         spawner: &Spawner,
+        ops: wgpu::Operations<wgpu::Color>,
     );
 }
 
@@ -153,8 +151,18 @@ fn start(
     let mut swap_chain = device.create_swap_chain(&surface, &sc_desc);
 
     log::info!("Initializing the renderer...");
-    let mut renderer1 = TilesRenderer::init(&sc_desc, &device, &queue);
-    let mut renderer2 = SpriteRenderer::init(&sc_desc, &device, &queue);
+    let atlas = Texture::image_tex(
+        &device,
+        &queue,
+        include_bytes!("../assets/0x72_v1.3.png"),
+        wgpu::ShaderStage::FRAGMENT,
+    );
+    let lower = lower(&device, &queue);
+    let upper = upper(&device, &queue);
+
+    let _debug_layer = debug(&device, &queue);
+    let mut renderer1 = TilesRenderer::init(&device, &queue, &atlas, &lower);
+    let mut renderer2 = TilesRenderer::init(&device, &queue, &atlas, &upper);
 
     #[cfg(not(target_arch = "wasm32"))]
     let mut last_update_inst = Instant::now();
@@ -220,6 +228,7 @@ fn start(
                 }
                 _ => {
                     renderer1.update(&event);
+                    renderer2.update(&event);
                 }
             },
             event::Event::RedrawRequested(_) => {
@@ -234,8 +243,32 @@ fn start(
                 };
                 renderer1.update_state();
                 renderer2.update_state();
-                renderer1.render(&frame.output, &device, &queue, &spawner);
-                renderer2.render(&frame.output, &device, &queue, &spawner);
+
+                renderer1.render(
+                    &frame.output,
+                    &device,
+                    &queue,
+                    &spawner,
+                    wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(wgpu::Color {
+                            r: 0.,
+                            g: 0.,
+                            b: 0.,
+                            a: 1.0,
+                        }),
+                        store: true,
+                    },
+                );
+                renderer2.render(
+                    &frame.output,
+                    &device,
+                    &queue,
+                    &spawner,
+                    wgpu::Operations {
+                        load: wgpu::LoadOp::Load,
+                        store: true,
+                    },
+                );
             }
             _ => {}
         }

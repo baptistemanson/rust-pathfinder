@@ -60,7 +60,7 @@ fn main() {
     var blueprint_position: vec2<f32> = world_position / blueprint_info.dim;
     var blueprint_value : vec4<f32> = textureSample(tile_blueprint, s, blueprint_position);
     // tile id from 0 to tile_atlas_dim.x * tile_atlas_dim.y
-    var tile_id: f32 = blueprint_value.x * 255.;
+    var tile_id: f32 = blueprint_value.x;
 
     // vec2(1.,2.) means the tile at position x=1, y=2. Starting from the top.
     var tile_id_pos_in_nbtile: vec2<f32> = vec2<f32>( tile_id % tile_atlas_info.dim.x, tile_id / tile_atlas_info.dim.y);
@@ -70,5 +70,6 @@ fn main() {
     // here it is assumed that 1 tile = 1 unit.
     var position_in_tile_atlas:vec2<f32> = tile_atlas_top_left +  fract(world_position) / tile_atlas_info.dim;
     var out_val: vec4<f32> = textureSample(tile_atlas, s, position_in_tile_atlas);
+    //debug var out_val: vec4<f32> = vec4<f32>(tile_id,tile_id,0.,1.0);
     out_target = vec4<f32>( out_val, 1.0);
 }
