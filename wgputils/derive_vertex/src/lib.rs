@@ -110,7 +110,7 @@ fn get_matching_wgpu_type(ty: &syn::Type) -> (&str, u64) {
                 let nb_elements: i32 = lit_int.to_string().parse().unwrap();
                 let the_type: &str = &segments.first().unwrap().ident.to_string();
                 match (the_type, nb_elements) {
-                    ("f32", 1) => ("Float2", ::wgpu::VertexFormat::Float.size()),
+                    ("f32", 1) => ("Float", ::wgpu::VertexFormat::Float.size()),
                     ("f32", 2) => ("Float2", ::wgpu::VertexFormat::Float2.size()),
                     ("f32", 3) => ("Float3", ::wgpu::VertexFormat::Float3.size()),
                     ("f32", 4) => ("Float4", ::wgpu::VertexFormat::Float4.size()),

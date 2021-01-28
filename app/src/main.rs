@@ -1,4 +1,5 @@
 // use sprite::SpriteRenderer;
+use sprite::SpriteRenderer;
 use std::future::Future;
 #[cfg(not(target_arch = "wasm32"))]
 use std::time::{Duration, Instant};
@@ -163,6 +164,7 @@ fn start(
     let _debug_layer = debug(&device, &queue);
     let mut renderer1 = TilesRenderer::init(&device, &queue, &atlas, &lower);
     let mut renderer2 = TilesRenderer::init(&device, &queue, &atlas, &upper);
+    let mut renderer3 = SpriteRenderer::init(&device, &queue);
 
     #[cfg(not(target_arch = "wasm32"))]
     let mut last_update_inst = Instant::now();
@@ -260,6 +262,16 @@ fn start(
                     },
                 );
                 renderer2.render(
+                    &frame.output,
+                    &device,
+                    &queue,
+                    &spawner,
+                    wgpu::Operations {
+                        load: wgpu::LoadOp::Load,
+                        store: true,
+                    },
+                );
+                renderer3.render(
                     &frame.output,
                     &device,
                     &queue,

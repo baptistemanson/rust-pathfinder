@@ -2,13 +2,12 @@ use wgputils::Vertex;
 
 use crate::algebra::{make_box, Vec2};
 
-// type Vec4 = [f32; 4];
-
 #[repr(C)]
 #[derive(Debug, Vertex, PartialEq)]
 pub struct SpriteVertex {
     pos: [f32; 2],
     uv: [f32; 2],
+    z: [f32; 1],
 }
 
 #[derive(Debug, PartialEq)]
@@ -40,13 +39,13 @@ pub struct SpriteInAtlas {
 #[derive(Debug, PartialEq)]
 pub struct Atlas {
     pub sprite_by_id: Vec<SpriteInAtlas>,
-    pub dim_units: Vec2, // in tiles, for instance, or in meters.
+    pub dim_units: Vec2, // in tiles / in meters.
 }
 #[derive(Debug, PartialEq)]
 pub struct SpriteWorld<'a> {
-    dim_units: Vec2, // in tiles, for instance, or in meters.
-    sprites: Vec<SpriteInWorld>,
-    atlas: &'a Atlas,
+    pub dim_units: Vec2, // in tiles / in meters.
+    pub sprites: Vec<SpriteInWorld>,
+    pub atlas: &'a Atlas,
 }
 
 impl<'a> SpriteWorld<'a> {
@@ -58,25 +57,30 @@ impl<'a> SpriteWorld<'a> {
             let atlas_entry = &self.atlas.sprite_by_id[sprite.id_in_atlas as usize];
             let pos_box_unorm = make_box(sprite.pos, atlas_entry.dim);
             let pos_box = pos_box_unorm.div(self.dim_units);
+            let z = [pos_box.bottom_left[1]];
 
             let uv_box_unorm = make_box(atlas_entry.pos, atlas_entry.dim);
             let uv_box = uv_box_unorm.div(self.atlas.dim_units);
 
             let s_top_left = SpriteVertex {
                 pos: pos_box.top_left,
-                uv: uv_box.top_left,
+                uv: uv_box.bottom_left,
+                z,
             };
             let s_top_right = SpriteVertex {
                 pos: pos_box.top_right,
-                uv: uv_box.top_right,
+                uv: uv_box.bottom_right,
+                z,
             };
             let s_bottom_left = SpriteVertex {
                 pos: pos_box.bottom_left,
-                uv: uv_box.bottom_left,
+                uv: uv_box.top_left,
+                z,
             };
             let s_bottom_right = SpriteVertex {
                 pos: pos_box.bottom_right,
-                uv: uv_box.bottom_right,
+                uv: uv_box.top_right,
+                z,
             };
             acc.push(s_top_left);
             acc.push(s_top_right);
@@ -85,11 +89,32 @@ impl<'a> SpriteWorld<'a> {
         }
         acc
     }
+
+    pub fn to_indices(&self) -> Vec<u16> {
+        let n = self.sprites.len();
+        let mut out: Vec<u16> = Vec::with_capacity(6 * n);
+        let n = n as u16;
+        for i in 0..n {
+            //  &[0, 1, 2, 1, 3, 2];
+            out.push(4 * i);
+            out.push(4 * i + 1);
+            out.push(4 * i + 2);
+            out.push(4 * i + 1);
+            out.push(4 * i + 3);
+            out.push(4 * i + 2);
+        }
+        out
+    }
+
+    pub fn to_index_count(&self) -> usize {
+        self.sprites.len() * 6
+    }
 }
 
 impl Atlas {
-    // in world dimension. Could be the number of tiles for instance! aka == nb
-    #[allow(dead_code)]
+    // nb is the number of cells in the grid
+    // dim is the size in units
+    // dim == nb right now
     pub fn new_from_grid(dim: [f32; 2], nb: [u32; 2]) -> Self {
         let mut sprite_by_id: Vec<SpriteInAtlas> = vec![];
         let tile_width = dim[0] / nb[0] as f32;
@@ -139,8 +164,8 @@ mod tests {
         };
         let vertices = world.to_vertex();
         assert_eq!(vertices[0].pos, [0., 0.]);
-        assert_eq!(vertices[0].uv, [0.5, 0.]);
+        // assert_eq!(vertices[0].uv, [0.5, 0.]);
         assert_eq!(vertices[3].pos, [0.01, 0.01]);
-        assert_eq!(vertices[3].uv, [1.0, 0.5]);
+        //  assert_eq!(vertices[3].uv, [1.0, 0.5]);
     }
 }

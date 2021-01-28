@@ -1,10 +1,14 @@
-use crate::vertex::{self, VertexPos};
+use crate::{
+    sprite_atlas::{Atlas, SpriteInWorld, SpriteVertex, SpriteWorld},
+    vertex::{quad, VertexPos},
+};
+use wgputils::Vertex;
+
 use std::borrow::Cow;
 use wgpu::ShaderFlags;
-use wgputils::cast_slice;
 
 use wgputils::{
-    bind_group::BindGroupBuilder, buffer::Buffer, pipeline::PipelineBuilder, sampler::Sampler,
+    bind_group::BindGroupBuilder, cast_slice, pipeline::PipelineBuilder, sampler::Sampler,
     texture::Texture,
 };
 use winit::event::WindowEvent;
@@ -18,22 +22,15 @@ pub struct SpriteRenderer {
 }
 
 impl SpriteRenderer {
-    fn init(
-        _sc_desc: &wgpu::SwapChainDescriptor,
-        device: &wgpu::Device,
-        queue: &wgpu::Queue,
-    ) -> Self {
+    pub fn init(device: &wgpu::Device, queue: &wgpu::Queue) -> Self {
         // Textures
         let atlas = Texture::image_tex(
             device,
             queue,
-            include_bytes!("../assets/Tileset_32x32_1.png"),
+            include_bytes!("../assets/0x72_v1.3.png"),
             wgpu::ShaderStage::FRAGMENT,
         );
         let sampler = Sampler::new(&device);
-
-        let mut atlas_dim = Buffer::new(&device, wgpu::ShaderStage::FRAGMENT);
-        atlas_dim.init_buffer(cast_slice(&[10. as f32, 10. as f32]));
 
         // Load shaders
         let module = device.create_shader_module(&wgpu::ShaderModuleDescriptor {
@@ -45,15 +42,37 @@ impl SpriteRenderer {
         let mut bind_group_builder = BindGroupBuilder::new(&device);
         bind_group_builder.set_resources(vec![&sampler, &atlas]);
 
-        let pipeline = PipelineBuilder::<VertexPos>::new(&device)
+        let pipeline = PipelineBuilder::<SpriteVertex>::new(&device)
             .add_bind_group_layout(&bind_group_builder.get_layout())
             .set_vertex_shader(&module)
             .set_fragment_shader(&module)
             .build();
 
-        // Create the vertex and index buffers
-        let (vertex_buf, index_buf, index_count) = vertex::quad(&device);
+        // vertex
+        let atlas = Atlas::new_from_grid([32., 32.], [32, 32]);
+        let sprites = vec![
+            SpriteInWorld {
+                id_in_atlas: 40,
+                ..SpriteInWorld::default()
+            },
+            SpriteInWorld {
+                id_in_atlas: 168,
+                pos: [3., 0.],
+                ..SpriteInWorld::default()
+            },
+        ];
 
+        let world = SpriteWorld {
+            atlas: &atlas,
+            dim_units: [6., 6.],
+            sprites,
+        };
+        let vertex_buf =
+            SpriteVertex::create_vertex_buffer(&device, cast_slice(&world.to_vertex()));
+        let index_buf = SpriteVertex::create_index_buffer(&device, cast_slice(&world.to_indices()));
+        let index_count = world.to_index_count();
+        dbg!(&world.to_vertex());
+        //  let (vertex_buf, index_buf, index_count) = quad(&device);
         SpriteRenderer {
             pipeline,
             vertex_buf,
@@ -112,7 +131,6 @@ impl crate::Renderer for SpriteRenderer {
             rpass.insert_debug_marker("Draw!");
             rpass.draw_indexed(0..self.index_count as u32, 0, 0..1);
         }
-
         queue.submit(Some(encoder.finish()));
     }
 }
