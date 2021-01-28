@@ -20,16 +20,20 @@ I have no ambition whatsoever around this project. It's just for fun.
 - [x] keyboard simple support
 - [x] import a map from tiled
 - [x] add notion of layers of different renderers
-- [x] cleanup renderers, develop helpers etc6
+- [x] cleanup renderers, develop helpers etc
 
 ### Sprite subproject
 
 - [x] finish Bindable trait, BindGroup for binding position, and refactor the whole thing.
-      --> will have to raise exception if the binding group doesnt follow the pipeline layout somehow later. or consume pipeline when building?
 - [x] autogenerate vertex layout from struct via a macro
 - [x] create a struct to manage a sprite atlas
-- [ ] load a demo sprite atlas
-- [ ] position 2 sprites
+- [x] load a demo sprite atlas
+- [x] position 2 sprites
+- [ ] fix scaling issues in sprite engine
+
+### Screen space project
+
+- [ ] Try to emulate light one way or another, in pure fragment shader!
 
 ### State and Animation Subproject
 
