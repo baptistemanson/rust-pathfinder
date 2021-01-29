@@ -12,6 +12,7 @@ use winit::{
 };
 use world::{debug, lower, upper};
 mod algebra;
+mod camera;
 mod sprite;
 mod sprite_atlas;
 mod tiles;
