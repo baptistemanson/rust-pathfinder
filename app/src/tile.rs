@@ -21,9 +21,6 @@ pub struct TilesRenderer {
     pipeline: wgpu::RenderPipeline,
 }
 
-const WORLD_WIDTH: f32 = 20.;
-const WORLD_HEIGHT: f32 = 20.;
-
 impl TilesRenderer {
     pub fn init<'a>(
         device: &'a wgpu::Device,
@@ -37,7 +34,7 @@ impl TilesRenderer {
         let sampler = Sampler::new(&device);
 
         let mut blueprints_dim = Buffer::new(&device, wgpu::ShaderStage::FRAGMENT);
-        blueprints_dim.init_buffer(cast_slice(&[WORLD_WIDTH, WORLD_HEIGHT]));
+        blueprints_dim.init_buffer(cast_slice(&[state.world_dim[0], state.world_dim[1]]));
 
         let mut atlas_dim = Buffer::new(&device, wgpu::ShaderStage::FRAGMENT);
         atlas_dim.init_buffer(cast_slice(&[32. as f32, 32. as f32]));
@@ -71,7 +68,8 @@ impl TilesRenderer {
             .build();
 
         // Create the vertex and index buffers
-        let (vertex_buf, index_buf, index_count) = vertex::quad(&device, WORLD_WIDTH, WORLD_HEIGHT);
+        let (vertex_buf, index_buf, index_count) =
+            vertex::quad(&device, state.world_dim[0], state.world_dim[1]);
 
         TilesRenderer {
             pipeline,

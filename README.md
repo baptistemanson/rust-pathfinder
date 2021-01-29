@@ -44,13 +44,13 @@ I have no ambition whatsoever around this project. It's just for fun.
 - [x] extract state of the app outside the renderers
 - [ ] create a notion of scene + resource manager to switch resources (check other frameworks for inspiration)
 - [ ] create an animation kernel
-- [ ] check with Cheng how he would do it
+- [x] check with Cheng how he would do it
 - [ ] add smooth move
 - [ ] plug to rule engine via action descriptors
 
 ### Vignette shader Subproject
 
-- [ ] create a renderer that vignettes / tilde shift the viewport at the end
+- [x] create a renderer that vignettes / tilde shift the viewport at the end
 
 ### Text renderer Subproject
 
@@ -197,4 +197,5 @@ Weapons that can be modelled with simple callback based hashmap of timings (I sc
 - end of damage - modify results.
 
 To validate shaders with Naga
-cargo run --example convert --features wgsl-in,spv-out -- ..\rust-pathfinder\app\src\shaders\fragment.wgsl ..\rust-pathfinder\app\src\shaders\hi.spv
+
+cargo run --example convert --features wgsl-in,spv-out -- ..\rust-pathfinder\app\src\postprocess\vignette.wgsl ..\rust-pathfinder\app\src\postprocess\vignette.spv

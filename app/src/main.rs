@@ -1,5 +1,6 @@
+use postprocess::PostprocessRenderer;
 // use sprite::SpriteRenderer;
-use sprite::SpriteRenderer;
+
 use state::State;
 use std::future::Future;
 #[cfg(not(target_arch = "wasm32"))]
@@ -14,8 +15,8 @@ use winit::{
 use world::{debug, lower, upper};
 mod algebra;
 mod camera;
+mod postprocess;
 mod sprite;
-mod sprite_atlas;
 mod state;
 mod tile;
 mod vertex;
@@ -168,6 +169,7 @@ fn start(
     let mut my_world_state = State::my_world();
     let mut renderer1 = TilesRenderer::init(&device, &queue, &atlas, &lower, &my_world_state);
     let mut renderer2 = TilesRenderer::init(&device, &queue, &atlas, &upper, &my_world_state);
+    let mut renderer3 = PostprocessRenderer::init(&device, &queue, &my_world_state);
     // let mut renderer3 = SpriteRenderer::init(&device, &queue);
 
     #[cfg(not(target_arch = "wasm32"))]
@@ -275,16 +277,17 @@ fn start(
                     },
                     &my_world_state,
                 );
-                // renderer3.render(
-                //     &frame.output,
-                //     &device,
-                //     &queue,
-                //     &spawner,
-                //     wgpu::Operations {
-                //         load: wgpu::LoadOp::Load,
-                //         store: true,
-                //     },
-                // );
+                renderer3.render(
+                    &frame.output,
+                    &device,
+                    &queue,
+                    &spawner,
+                    wgpu::Operations {
+                        load: wgpu::LoadOp::Load,
+                        store: true,
+                    },
+                    &my_world_state,
+                );
             }
             _ => {}
         }

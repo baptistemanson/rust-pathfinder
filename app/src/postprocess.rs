@@ -1,20 +1,14 @@
-mod sprite_atlas;
-
-use sprite_atlas::{Atlas, SpriteInWorld, SpriteVertex, SpriteWorld};
-
-use crate::state::State;
-use wgputils::Vertex;
-
+use crate::{
+    state::State,
+    vertex::{self},
+};
 use std::borrow::Cow;
+use vertex::VertexWithTex;
 use wgpu::ShaderFlags;
 
-use wgputils::{
-    bind_group::BindGroupBuilder, cast_slice, pipeline::PipelineBuilder, sampler::Sampler,
-    texture::Texture,
-};
-use winit::event::WindowEvent;
+use wgputils::{bind_group::BindGroupBuilder, pipeline::PipelineBuilder};
 
-pub struct SpriteRenderer {
+pub struct PostprocessRenderer {
     vertex_buf: wgpu::Buffer,
     index_buf: wgpu::Buffer,
     index_count: usize,
@@ -22,58 +16,27 @@ pub struct SpriteRenderer {
     pipeline: wgpu::RenderPipeline,
 }
 
-impl SpriteRenderer {
-    pub fn init(device: &wgpu::Device, queue: &wgpu::Queue) -> Self {
+impl PostprocessRenderer {
+    pub fn init<'a>(device: &'a wgpu::Device, _queue: &'a wgpu::Queue, _state: &State) -> Self {
         // Textures
-        let atlas = Texture::image_tex(
-            device,
-            queue,
-            include_bytes!("../assets/0x72_v1.3.png"),
-            wgpu::ShaderStage::FRAGMENT,
-        );
-        let sampler = Sampler::new(&device);
 
         // Load shaders
-        let module = device.create_shader_module(&wgpu::ShaderModuleDescriptor {
-            label: None,
-            source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(include_str!("./sprite/sprite.wgsl"))),
-            flags: ShaderFlags::VALIDATION,
-        });
+        let module =
+            device.create_shader_module(&wgpu::include_spirv!("./postprocess/vignette.spv"));
 
         let mut bind_group_builder = BindGroupBuilder::new(&device);
-        bind_group_builder.set_resources(vec![&sampler, &atlas]);
+        bind_group_builder.set_resources(vec![]);
 
-        let pipeline = PipelineBuilder::<SpriteVertex>::new(&device)
+        let pipeline = PipelineBuilder::<VertexWithTex>::new(&device)
             .add_bind_group_layout(&bind_group_builder.get_layout())
             .set_vertex_shader(&module)
             .set_fragment_shader(&module)
             .build();
 
-        // vertex
-        let atlas = Atlas::new_from_grid([32., 32.], [32, 32]);
-        let sprites = vec![
-            SpriteInWorld {
-                id_in_atlas: 40,
-                ..SpriteInWorld::default()
-            },
-            SpriteInWorld {
-                id_in_atlas: 168,
-                pos: [3., 0.],
-                ..SpriteInWorld::default()
-            },
-        ];
+        // Create the vertex and index buffers
+        let (vertex_buf, index_buf, index_count) = vertex::quad(&device, 2., 2.);
 
-        let world = SpriteWorld {
-            atlas: &atlas,
-            dim_units: [6., 6.],
-            sprites,
-        };
-        let vertex_buf =
-            SpriteVertex::create_vertex_buffer(&device, cast_slice(&world.to_vertex()));
-        let index_buf = SpriteVertex::create_index_buffer(&device, cast_slice(&world.to_indices()));
-        let index_count = world.to_index_count();
-        //  let (vertex_buf, index_buf, index_count) = quad(&device);
-        SpriteRenderer {
+        PostprocessRenderer {
             pipeline,
             vertex_buf,
             index_buf,
@@ -82,8 +45,8 @@ impl SpriteRenderer {
         }
     }
 }
-impl crate::Renderer for SpriteRenderer {
-    fn update(&mut self, _event: &WindowEvent) {}
+impl crate::Renderer for PostprocessRenderer {
+    fn update(&mut self, _event: &winit::event::WindowEvent) {}
 
     fn resize(
         &mut self,
@@ -107,7 +70,7 @@ impl crate::Renderer for SpriteRenderer {
         queue: &wgpu::Queue,
         _spawner: &crate::Spawner,
         ops: wgpu::Operations<wgpu::Color>,
-        state: &State,
+        _state: &State,
     ) {
         let mut encoder =
             device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });

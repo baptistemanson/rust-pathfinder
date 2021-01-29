@@ -86,6 +86,7 @@ pub fn quad(device: &Device, width: f32, height: f32) -> (Buffer, Buffer, usize)
         vertex(-hw, hh, 0., 0.),
         vertex(hw, hh, 1., 0.),
     ];
+    dbg!(vertex_data);
     let index_data: &[u16] = &[0, 1, 2, 1, 3, 2];
     let vertex_buf = VertexPos::create_vertex_buffer(&device, cast_slice(&vertex_data.to_vec())); // checks if a range of bytes can be turned into another and just do it. Works well to turn Struct into u8
     let index_buf = VertexPos::create_index_buffer(&device, cast_slice(&index_data.to_vec()));
