@@ -5,7 +5,7 @@ use wgputils::Vertex;
 use wgputils::cast_slice;
 
 #[repr(C)]
-#[derive(Clone, Copy, Vertex)]
+#[derive(Clone, Copy, Vertex, Debug)]
 pub struct VertexWithTex {
     _pos: [f32; 4],
     _tex_coord: [f32; 2],
@@ -65,25 +65,27 @@ pub fn cube() -> (Vec<VertexWithTex>, Vec<u16>) {
 }
 
 #[repr(C)]
-#[derive(Clone, Copy, Vertex)]
+#[derive(Clone, Copy, Vertex, Debug)]
 pub struct VertexPos {
     _pos: [f32; 4],
 }
 
-fn vertex(pos1: f32, pos2: f32) -> VertexPos {
-    VertexPos {
+fn vertex(pos1: f32, pos2: f32, x: f32, y: f32) -> VertexWithTex {
+    VertexWithTex {
         _pos: [pos1, pos2, 0., 1.0],
+        _tex_coord: [x, y],
     }
 }
 
-pub fn quad(device: &Device) -> (Buffer, Buffer, usize) {
+pub fn quad(device: &Device, width: f32, height: f32) -> (Buffer, Buffer, usize) {
+    let hw = width / 2.;
+    let hh = height / 2.;
     let vertex_data = [
-        vertex(-1., -1.),
-        vertex(1., -1.),
-        vertex(-1., 1.),
-        vertex(1., 1.),
+        vertex(-hw, -hh, 0., 1.),
+        vertex(hw, -hh, 1., 1.),
+        vertex(-hw, hh, 0., 0.),
+        vertex(hw, hh, 1., 0.),
     ];
-
     let index_data: &[u16] = &[0, 1, 2, 1, 3, 2];
     let vertex_buf = VertexPos::create_vertex_buffer(&device, cast_slice(&vertex_data.to_vec())); // checks if a range of bytes can be turned into another and just do it. Works well to turn Struct into u8
     let index_buf = VertexPos::create_index_buffer(&device, cast_slice(&index_data.to_vec()));

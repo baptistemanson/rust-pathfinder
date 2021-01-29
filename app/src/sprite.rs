@@ -71,7 +71,6 @@ impl SpriteRenderer {
             SpriteVertex::create_vertex_buffer(&device, cast_slice(&world.to_vertex()));
         let index_buf = SpriteVertex::create_index_buffer(&device, cast_slice(&world.to_indices()));
         let index_count = world.to_index_count();
-        dbg!(&world.to_vertex());
         //  let (vertex_buf, index_buf, index_count) = quad(&device);
         SpriteRenderer {
             pipeline,
