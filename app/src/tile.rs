@@ -1,8 +1,9 @@
 use crate::{
-    camera::generate_matrix,
-    vertex::{self, VertexPos},
+    camera::generate_cam_matrix,
+    state::State,
+    vertex::{self},
 };
-use std::{borrow::Cow, collections::HashSet};
+use std::borrow::Cow;
 use vertex::VertexWithTex;
 use wgpu::ShaderFlags;
 use wgputils::cast_slice;
@@ -10,18 +11,14 @@ use wgputils::cast_slice;
 use wgputils::{
     bind_group::BindGroupBuilder, buffer::Buffer, pipeline::PipelineBuilder, sampler::Sampler,
 };
-use winit::event::{self};
-
-// type KeyState = HashSet<event::VirtualKeyCode>;
 
 pub struct TilesRenderer {
     vertex_buf: wgpu::Buffer,
     index_buf: wgpu::Buffer,
+    world_to_cam: wgpu::Buffer,
     index_count: usize,
     bind_group: wgpu::BindGroup,
     pipeline: wgpu::RenderPipeline,
-    // last_update: Instant,
-    // key_state: KeyState,
 }
 
 const WORLD_WIDTH: f32 = 20.;
@@ -33,6 +30,7 @@ impl TilesRenderer {
         _queue: &'a wgpu::Queue,
         atlas: &'a wgputils::texture::Texture<'a>,
         blueprint: &'a wgputils::texture::Texture<'a>,
+        state: &State,
     ) -> Self {
         // Textures
 
@@ -44,15 +42,15 @@ impl TilesRenderer {
         let mut atlas_dim = Buffer::new(&device, wgpu::ShaderStage::FRAGMENT);
         atlas_dim.init_buffer(cast_slice(&[32. as f32, 32. as f32]));
 
-        let m = generate_matrix(4. / 3.);
-        let m_ref: &[f32; 16] = m.as_ref();
         let mut world_to_cam = Buffer::new(&device, wgpu::ShaderStage::VERTEX);
+        let m = generate_cam_matrix(4. / 3., state.cam_pos);
+        let m_ref: &[f32; 16] = m.as_ref();
         world_to_cam.init_buffer(cast_slice(m_ref));
 
         // Load shaders
         let module = device.create_shader_module(&wgpu::ShaderModuleDescriptor {
             label: None,
-            source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(include_str!("./shaders/tile.wgsl"))),
+            source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(include_str!("./tile/tile.wgsl"))),
             flags: ShaderFlags::VALIDATION,
         });
 
@@ -81,35 +79,12 @@ impl TilesRenderer {
             index_buf,
             index_count,
             bind_group: bind_group_builder.get_bind_group(),
-            //     last_update: Instant::now(),
-            //     key_state: KeyState::default(),
+            world_to_cam: world_to_cam.buffer.unwrap(),
         }
     }
 }
 impl crate::Renderer for TilesRenderer {
-    fn update(&mut self, _event: &winit::event::WindowEvent) {
-        // match event {
-        //     WindowEvent::KeyboardInput {
-        //         input:
-        //             event::KeyboardInput {
-        //                 virtual_keycode: Some(key),
-        //                 state,
-        //                 ..
-        //             },
-        //         ..
-        //     } => match state {
-        //         event::ElementState::Pressed => {
-        //             self.key_state.insert(key.clone());
-        //         }
-        //         event::ElementState::Released => {
-        //             if self.key_state.contains(&key) {
-        //                 self.key_state.remove(&key);
-        //             }
-        //         }
-        //     },
-        //     _ => {}
-        // }
-    }
+    fn update(&mut self, _event: &winit::event::WindowEvent) {}
 
     fn resize(
         &mut self,
@@ -117,37 +92,6 @@ impl crate::Renderer for TilesRenderer {
         _device: &wgpu::Device,
         _queue: &wgpu::Queue,
     ) {
-    }
-
-    fn update_state(&mut self) {
-        // let delta = self.last_update.elapsed().as_secs_f32() * 5.;
-        // let mut delta_down = 0.;
-        // let mut delta_right = 0.;
-        // self.key_state.iter().for_each(|key| match key {
-        //     event::VirtualKeyCode::Up => {
-        //         delta_down -= delta;
-        //     }
-        //     event::VirtualKeyCode::Down => {
-        //         delta_down += delta;
-        //     }
-        //     event::VirtualKeyCode::Left => {
-        //         delta_right -= delta;
-        //     }
-        //     event::VirtualKeyCode::Right => {
-        //         delta_right += delta;
-        //     }
-        //     _ => {}
-        // });
-        // let epsilon = 0.08;
-        // self.curr_scroll = (
-        //     (self.curr_scroll.0 + delta_right)
-        //         .max(0.)
-        //         .min(20. - WIDTH - epsilon),
-        //     (self.curr_scroll.1 + delta_down)
-        //         .max(0.)
-        //         .min(20. - HEIGHT - epsilon),
-        // );
-        // self.last_update = Instant::now();
     }
 
     // Create command encoder
@@ -164,6 +108,7 @@ impl crate::Renderer for TilesRenderer {
         queue: &wgpu::Queue,
         _spawner: &crate::Spawner,
         ops: wgpu::Operations<wgpu::Color>,
+        state: &State,
     ) {
         let mut encoder =
             device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
@@ -186,11 +131,11 @@ impl crate::Renderer for TilesRenderer {
             rpass.insert_debug_marker("Draw!");
             rpass.draw_indexed(0..self.index_count as u32, 0, 0..1);
         }
-        // queue.write_buffer(
-        //     &self.scroll,
-        //     0,
-        //     cast_slice(&[self.curr_scroll.0, self.curr_scroll.1]),
-        // );
+
+        let m = generate_cam_matrix(4. / 3., state.cam_pos);
+        let m_ref: &[f32; 16] = m.as_ref();
+        queue.write_buffer(&self.world_to_cam, 0, cast_slice(m_ref));
+
         queue.submit(Some(encoder.finish()));
     }
 }

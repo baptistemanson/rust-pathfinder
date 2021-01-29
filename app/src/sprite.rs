@@ -1,5 +1,6 @@
 use crate::{
     sprite_atlas::{Atlas, SpriteInWorld, SpriteVertex, SpriteWorld},
+    state::State,
     vertex::{quad, VertexPos},
 };
 use wgputils::Vertex;
@@ -35,7 +36,7 @@ impl SpriteRenderer {
         // Load shaders
         let module = device.create_shader_module(&wgpu::ShaderModuleDescriptor {
             label: None,
-            source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(include_str!("./shaders/sprite.wgsl"))),
+            source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(include_str!("./sprite/sprite.wgsl"))),
             flags: ShaderFlags::VALIDATION,
         });
 
@@ -92,8 +93,6 @@ impl crate::Renderer for SpriteRenderer {
     ) {
     }
 
-    fn update_state(&mut self) {}
-
     // Create command encoder
     // Create render pass
     // => Pick pipeline
@@ -108,6 +107,7 @@ impl crate::Renderer for SpriteRenderer {
         queue: &wgpu::Queue,
         _spawner: &crate::Spawner,
         ops: wgpu::Operations<wgpu::Color>,
+        state: &State,
     ) {
         let mut encoder =
             device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });

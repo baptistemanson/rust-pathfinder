@@ -22,6 +22,10 @@ I have no ambition whatsoever around this project. It's just for fun.
 - [x] add notion of layers of different renderers
 - [x] cleanup renderers, develop helpers etc
 
+### Camera subproject
+
+- [x] use a camera instead
+
 ### Sprite subproject
 
 - [x] finish Bindable trait, BindGroup for binding position, and refactor the whole thing.
@@ -37,7 +41,7 @@ I have no ambition whatsoever around this project. It's just for fun.
 
 ### State and Animation Subproject
 
-- [ ] extract state of the app outside the renderers
+- [x] extract state of the app outside the renderers
 - [ ] create a notion of scene + resource manager to switch resources (check other frameworks for inspiration)
 - [ ] create an animation kernel
 - [ ] check with Cheng how he would do it

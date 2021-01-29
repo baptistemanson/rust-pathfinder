@@ -1,0 +1,73 @@
+use std::{collections::HashSet, time::Instant};
+
+use winit::event::{self, WindowEvent};
+
+type KeyState = HashSet<event::VirtualKeyCode>;
+
+pub struct State {
+    pub cam_pos: [f32; 3],
+    pub world_dim: [f32; 2],
+    // pub char_pos: [f32; 3],
+    pub keys: KeyState,
+    pub last_update: Instant,
+}
+
+impl State {
+    pub fn my_world() -> Self {
+        State {
+            cam_pos: [0., 0., 20.],
+            world_dim: [20., 20.],
+            last_update: Instant::now(),
+            keys: HashSet::default(),
+        }
+    }
+    // if key press is less than a frame...? BUG
+    pub fn process_event(&mut self, event: &WindowEvent) {
+        match event {
+            WindowEvent::KeyboardInput {
+                input:
+                    event::KeyboardInput {
+                        virtual_keycode: Some(key),
+                        state,
+                        ..
+                    },
+                ..
+            } => match state {
+                event::ElementState::Pressed => {
+                    self.keys.insert(key.clone());
+                }
+                event::ElementState::Released => {
+                    if self.keys.contains(&key) {
+                        self.keys.remove(&key);
+                    }
+                }
+            },
+            _ => {}
+        }
+    }
+
+    pub fn update(&mut self) {
+        let delta = self.last_update.elapsed().as_secs_f32() * 5.;
+        let mut delta_down = 0.;
+        let mut delta_right = 0.;
+        self.keys.iter().for_each(|key| match key {
+            event::VirtualKeyCode::Up => {
+                delta_down += delta;
+            }
+            event::VirtualKeyCode::Down => {
+                delta_down -= delta;
+            }
+            event::VirtualKeyCode::Left => {
+                delta_right -= delta;
+            }
+            event::VirtualKeyCode::Right => {
+                delta_right += delta;
+            }
+            _ => {}
+        });
+
+        self.cam_pos[0] += delta_right;
+        self.cam_pos[1] += delta_down;
+        self.last_update = Instant::now();
+    }
+}

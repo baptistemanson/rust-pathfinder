@@ -1,9 +1,10 @@
 // use sprite::SpriteRenderer;
 use sprite::SpriteRenderer;
+use state::State;
 use std::future::Future;
 #[cfg(not(target_arch = "wasm32"))]
 use std::time::{Duration, Instant};
-use tiles::TilesRenderer;
+use tile::TilesRenderer;
 use wgpu::{Features, Limits};
 use wgputils::texture::Texture;
 use winit::{
@@ -15,7 +16,8 @@ mod algebra;
 mod camera;
 mod sprite;
 mod sprite_atlas;
-mod tiles;
+mod state;
+mod tile;
 mod vertex;
 mod world;
 
@@ -32,7 +34,6 @@ pub trait Renderer: 'static + Sized {
         queue: &wgpu::Queue,
     );
     fn update(&mut self, event: &WindowEvent);
-    fn update_state(&mut self);
     fn render(
         &mut self,
         frame: &wgpu::SwapChainTexture,
@@ -40,6 +41,7 @@ pub trait Renderer: 'static + Sized {
         queue: &wgpu::Queue,
         spawner: &Spawner,
         ops: wgpu::Operations<wgpu::Color>,
+        state: &State,
     );
 }
 
@@ -163,8 +165,9 @@ fn start(
     let upper = upper(&device, &queue);
 
     let _debug_layer = debug(&device, &queue);
-    let mut renderer1 = TilesRenderer::init(&device, &queue, &atlas, &lower);
-    let mut renderer2 = TilesRenderer::init(&device, &queue, &atlas, &upper);
+    let mut my_world_state = State::my_world();
+    let mut renderer1 = TilesRenderer::init(&device, &queue, &atlas, &lower, &my_world_state);
+    let mut renderer2 = TilesRenderer::init(&device, &queue, &atlas, &upper, &my_world_state);
     // let mut renderer3 = SpriteRenderer::init(&device, &queue);
 
     #[cfg(not(target_arch = "wasm32"))]
@@ -230,8 +233,7 @@ fn start(
                     *control_flow = ControlFlow::Exit;
                 }
                 _ => {
-                    renderer1.update(&event);
-                    renderer2.update(&event);
+                    my_world_state.process_event(&event);
                 }
             },
             event::Event::RedrawRequested(_) => {
@@ -244,8 +246,7 @@ fn start(
                             .expect("Failed to acquire next swap chain texture!")
                     }
                 };
-                renderer1.update_state();
-                renderer2.update_state();
+                my_world_state.update();
 
                 renderer1.render(
                     &frame.output,
@@ -261,6 +262,7 @@ fn start(
                         }),
                         store: true,
                     },
+                    &my_world_state,
                 );
                 renderer2.render(
                     &frame.output,
@@ -271,6 +273,7 @@ fn start(
                         load: wgpu::LoadOp::Load,
                         store: true,
                     },
+                    &my_world_state,
                 );
                 // renderer3.render(
                 //     &frame.output,
