@@ -23,7 +23,7 @@ pub struct SpriteRenderer {
 }
 
 impl SpriteRenderer {
-    pub fn init(device: &wgpu::Device, queue: &wgpu::Queue) -> Self {
+    pub fn _init(device: &wgpu::Device, queue: &wgpu::Queue) -> Self {
         // Textures
         let atlas = Texture::image_tex(
             device,
@@ -107,7 +107,7 @@ impl crate::Renderer for SpriteRenderer {
         queue: &wgpu::Queue,
         _spawner: &crate::Spawner,
         ops: wgpu::Operations<wgpu::Color>,
-        state: &State,
+        _state: &State,
     ) {
         let mut encoder =
             device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });

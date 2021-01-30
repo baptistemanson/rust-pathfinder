@@ -14,6 +14,7 @@ use winit::{
 };
 use world::{debug, lower, upper};
 mod algebra;
+mod animation;
 mod camera;
 mod postprocess;
 mod sprite;

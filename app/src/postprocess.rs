@@ -2,9 +2,7 @@ use crate::{
     state::State,
     vertex::{self},
 };
-use std::borrow::Cow;
 use vertex::VertexWithTex;
-use wgpu::ShaderFlags;
 
 use wgputils::{bind_group::BindGroupBuilder, pipeline::PipelineBuilder};
 

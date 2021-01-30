@@ -48,6 +48,7 @@ pub struct SpriteWorld<'a> {
     pub atlas: &'a Atlas,
 }
 
+#[allow(dead_code)]
 impl<'a> SpriteWorld<'a> {
     #[allow(dead_code)]
     pub fn to_vertex(&self) -> Vec<SpriteVertex> {
@@ -111,6 +112,7 @@ impl<'a> SpriteWorld<'a> {
     }
 }
 
+#[allow(dead_code)]
 impl Atlas {
     // nb is the number of cells in the grid
     // dim is the size in units
