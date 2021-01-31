@@ -24,7 +24,6 @@ pub struct TilesRenderer {
 impl TilesRenderer {
     pub fn init<'a>(
         device: &'a wgpu::Device,
-        _queue: &'a wgpu::Queue,
         atlas: &'a wgputils::texture::Texture<'a>,
         blueprint: &'a wgputils::texture::Texture<'a>,
         state: &State,

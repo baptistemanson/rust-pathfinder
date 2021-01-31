@@ -1,6 +1,7 @@
 use postprocess::PostprocessRenderer;
 // use sprite::SpriteRenderer;
 
+use sprite::SpriteRenderer;
 use state::State;
 use std::future::Future;
 #[cfg(not(target_arch = "wasm32"))]
@@ -157,7 +158,14 @@ fn start(
     let mut swap_chain = device.create_swap_chain(&surface, &sc_desc);
 
     log::info!("Initializing the renderer...");
-    let atlas = Texture::image_tex(
+    let tiles = Texture::image_tex(
+        &device,
+        &queue,
+        include_bytes!("../assets/0x72_v1.3.png"),
+        wgpu::ShaderStage::FRAGMENT,
+    );
+
+    let sprites = Texture::image_tex(
         &device,
         &queue,
         include_bytes!("../assets/0x72_v1.3.png"),
@@ -168,10 +176,10 @@ fn start(
 
     let _debug_layer = debug(&device, &queue);
     let mut my_world_state = State::my_world();
-    let mut renderer1 = TilesRenderer::init(&device, &queue, &atlas, &lower, &my_world_state);
-    let mut renderer2 = TilesRenderer::init(&device, &queue, &atlas, &upper, &my_world_state);
-    let mut renderer3 = PostprocessRenderer::init(&device, &queue, &my_world_state);
-    // let mut renderer3 = SpriteRenderer::init(&device, &queue);
+    let mut renderer1 = TilesRenderer::init(&device, &tiles, &lower, &my_world_state);
+    let mut renderer2 = TilesRenderer::init(&device, &tiles, &upper, &my_world_state);
+    let mut renderer3 = SpriteRenderer::init(&device, &sprites, &my_world_state);
+    let mut renderer4 = PostprocessRenderer::init(&device, &my_world_state);
 
     #[cfg(not(target_arch = "wasm32"))]
     let mut last_update_inst = Instant::now();
@@ -279,6 +287,17 @@ fn start(
                     &my_world_state,
                 );
                 renderer3.render(
+                    &frame.output,
+                    &device,
+                    &queue,
+                    &spawner,
+                    wgpu::Operations {
+                        load: wgpu::LoadOp::Load,
+                        store: true,
+                    },
+                    &my_world_state,
+                );
+                renderer4.render(
                     &frame.output,
                     &device,
                     &queue,

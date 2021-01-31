@@ -15,7 +15,7 @@ pub struct PostprocessRenderer {
 }
 
 impl PostprocessRenderer {
-    pub fn init<'a>(device: &'a wgpu::Device, _queue: &'a wgpu::Queue, _state: &State) -> Self {
+    pub fn init<'a>(device: &'a wgpu::Device, _state: &State) -> Self {
         // Textures
 
         // Load shaders

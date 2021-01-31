@@ -48,9 +48,7 @@ pub struct SpriteWorld<'a> {
     pub atlas: &'a Atlas,
 }
 
-#[allow(dead_code)]
 impl<'a> SpriteWorld<'a> {
-    #[allow(dead_code)]
     pub fn to_vertex(&self) -> Vec<SpriteVertex> {
         let mut acc: Vec<SpriteVertex> = vec![];
 

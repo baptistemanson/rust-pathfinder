@@ -2,15 +2,14 @@ mod sprite_atlas;
 
 use sprite_atlas::{Atlas, SpriteInWorld, SpriteVertex, SpriteWorld};
 
-use crate::state::State;
-use wgputils::Vertex;
+use crate::{camera::generate_cam_matrix, state::State};
+use wgputils::{buffer::Buffer, Vertex};
 
 use std::borrow::Cow;
 use wgpu::ShaderFlags;
 
 use wgputils::{
     bind_group::BindGroupBuilder, cast_slice, pipeline::PipelineBuilder, sampler::Sampler,
-    texture::Texture,
 };
 use winit::event::WindowEvent;
 
@@ -23,14 +22,13 @@ pub struct SpriteRenderer {
 }
 
 impl SpriteRenderer {
-    pub fn _init(device: &wgpu::Device, queue: &wgpu::Queue) -> Self {
+    pub fn init<'a>(
+        device: &'a wgpu::Device,
+        atlas: &'a wgputils::texture::Texture<'a>,
+        state: &State,
+    ) -> Self {
         // Textures
-        let atlas = Texture::image_tex(
-            device,
-            queue,
-            include_bytes!("../assets/0x72_v1.3.png"),
-            wgpu::ShaderStage::FRAGMENT,
-        );
+
         let sampler = Sampler::new(&device);
 
         // Load shaders
@@ -40,8 +38,13 @@ impl SpriteRenderer {
             flags: ShaderFlags::VALIDATION,
         });
 
+        let mut world_to_cam = Buffer::new(&device, wgpu::ShaderStage::VERTEX);
+        let m = generate_cam_matrix(4. / 3., state.cam_pos);
+        let m_ref: &[f32; 16] = m.as_ref();
+        world_to_cam.init_buffer(cast_slice(m_ref));
+
         let mut bind_group_builder = BindGroupBuilder::new(&device);
-        bind_group_builder.set_resources(vec![&sampler, &atlas]);
+        bind_group_builder.set_resources(vec![&sampler, atlas]);
 
         let pipeline = PipelineBuilder::<SpriteVertex>::new(&device)
             .add_bind_group_layout(&bind_group_builder.get_layout())
@@ -50,7 +53,7 @@ impl SpriteRenderer {
             .build();
 
         // vertex
-        let atlas = Atlas::new_from_grid([32., 32.], [32, 32]);
+        let atlas = Atlas::new_from_grid(state.world_dim, [32, 32]);
         let sprites = vec![
             SpriteInWorld {
                 id_in_atlas: 40,
