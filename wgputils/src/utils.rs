@@ -1,5 +1,3 @@
-use wgpu::TextureFormat;
-
 pub fn cast_slice<T>(data: &[T]) -> &[u8] {
     use std::{mem::size_of, slice::from_raw_parts};
 

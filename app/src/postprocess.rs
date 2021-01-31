@@ -1,12 +1,9 @@
-use std::borrow::Cow;
-
 use crate::{
     state::State,
     vertex::{self},
 };
 use vertex::VertexWithTex;
 
-use wgpu::ShaderFlags;
 use wgputils::{bind_group::BindGroupBuilder, pipeline::PipelineBuilder};
 
 pub struct PostprocessRenderer {
