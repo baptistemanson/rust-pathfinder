@@ -17,7 +17,7 @@ png = "0.16"
 winit = { version = "0.23.0", features = ["web-sys"] }
 rand = { version = "0.7.2", features = ["wasm-bindgen"] }
 noise = "0.6"
-wgpu = { git = "https://github.com/gfx-rs/wgpu-rs.git" }
+wgpu = { path = "../../wgpu-rs" }
 wgputils = { path = "../wgputils" }
 pollster = "0.2"
 async-executor = "1.4.0"

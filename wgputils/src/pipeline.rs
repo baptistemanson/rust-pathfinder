@@ -1,6 +1,6 @@
 use crate::get_color_state;
 use crate::Vertex;
-use wgpu::{BindGroupLayout, Device, RenderPipeline, ShaderModule, VertexStateDescriptor};
+use wgpu::{BindGroupLayout, Device, MultisampleState, RenderPipeline, ShaderModule, VertexState};
 
 pub struct PipelineBuilder<'a, T: Vertex> {
     device: &'a Device,
@@ -38,11 +38,10 @@ impl<'a, T: Vertex> PipelineBuilder<'a, T> {
     }
 
     pub fn build(&mut self) -> RenderPipeline {
-        let vertex_state = T::get_descriptor();
-
         let vs_module = &self
             .vertex_shader
             .unwrap_or_else(|| panic!("vertex shader is mandatory"));
+        let vertex_state = T::get_descriptor(&vs_module);
         let fs_module = self
             .fragment_shader
             .unwrap_or_else(|| panic!("fragment shader is mandatory"));
@@ -58,7 +57,6 @@ impl<'a, T: Vertex> PipelineBuilder<'a, T> {
         self.device.create_render_pipeline(&get_pipeline_descriptor(
             Some(&pipeline_layout),
             vertex_state,
-            vs_module,
             fs_module,
             &[get_color_state(wgpu::TextureFormat::Bgra8UnormSrgb)], //@todo use the preferred_format function instead?
         ))
@@ -68,33 +66,30 @@ impl<'a, T: Vertex> PipelineBuilder<'a, T> {
 // Get default pipeline descriptor
 pub fn get_pipeline_descriptor<'a>(
     pipeline_layout: Option<&'a wgpu::PipelineLayout>,
-    vertex_state: VertexStateDescriptor<'a>,
-    vs_module: &'a ShaderModule,
+    vertex_state: VertexState<'a>,
     fs_module: &'a ShaderModule,
-    color_states: &'a [wgpu::ColorStateDescriptor],
+    color_states: &'a [wgpu::ColorTargetState],
 ) -> wgpu::RenderPipelineDescriptor<'a> {
     wgpu::RenderPipelineDescriptor {
         label: None,
         layout: pipeline_layout,
-        vertex_stage: wgpu::ProgrammableStageDescriptor {
-            module: vs_module,
-            entry_point: "main",
-        },
-        fragment_stage: Some(wgpu::ProgrammableStageDescriptor {
+        vertex: vertex_state,
+        fragment: Some(wgpu::FragmentState {
             module: fs_module,
             entry_point: "main",
+            targets: color_states,
         }),
-        rasterization_state: Some(wgpu::RasterizationStateDescriptor {
+        primitive: wgpu::PrimitiveState {
+            topology: wgpu::PrimitiveTopology::TriangleList,
             front_face: wgpu::FrontFace::Ccw,
             cull_mode: wgpu::CullMode::Back,
             ..Default::default()
-        }),
-        primitive_topology: wgpu::PrimitiveTopology::TriangleList,
-        color_states,
-        depth_stencil_state: None,
-        vertex_state,
-        sample_count: 1,
-        sample_mask: !0,
-        alpha_to_coverage_enabled: false,
+        },
+        depth_stencil: None,
+        multisample: MultisampleState {
+            count: 1,
+            mask: !0,
+            alpha_to_coverage_enabled: false,
+        },
     }
 }

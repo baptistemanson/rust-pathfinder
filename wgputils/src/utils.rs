@@ -20,17 +20,3 @@ macro_rules! vertex_layout {
         };
     };
 }
-
-// Get default color state, ready to blend stuff
-pub fn get_color_state(format: TextureFormat) -> wgpu::ColorStateDescriptor {
-    wgpu::ColorStateDescriptor {
-        format: format,
-        color_blend: wgpu::BlendDescriptor {
-            operation: wgpu::BlendOperation::Add,
-            src_factor: wgpu::BlendFactor::SrcAlpha,
-            dst_factor: wgpu::BlendFactor::OneMinusSrcAlpha,
-        },
-        alpha_blend: wgpu::BlendDescriptor::REPLACE,
-        write_mask: wgpu::ColorWrite::ALL,
-    }
-}

@@ -2,27 +2,6 @@ use core::panic;
 use quote::{format_ident, quote};
 use syn::{parse_macro_input, Data, DeriveInput};
 
-/**
-todo:
-- add support for Vec2 and Vec4 (convenience)
-- add support for normalized datastructure (required)
-- add support for half precision datastructure (required)
-*/
-
-#[proc_macro]
-pub fn get_vertex_layout(_item: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    "::wgpu::VertexStateDescriptor {
-        index_format: Some(::wgpu::IndexFormat::Uint16),
-        vertex_buffers: &[::wgpu::VertexBufferDescriptor {
-            stride: 4 as ::wgpu::BufferAddress,
-            step_mode: ::wgpu::InputStepMode::Vertex,
-            attributes: &::wgpu::vertex_attr_array![0 => Float4],
-        }],
-    }"
-    .parse()
-    .unwrap()
-}
-
 #[proc_macro_derive(Vertex)]
 pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input_parsed = parse_macro_input!(input as DeriveInput);
@@ -42,7 +21,7 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         let (format, size) = get_matching_wgpu_type(&ty);
         let escaped_format = format_ident!("{}", format);
         let va = quote! {
-            ::wgpu::VertexAttributeDescriptor {
+            ::wgpu::VertexAttribute {
                 offset: #offset,
                 format: ::wgpu::VertexFormat::#escaped_format,
                 shader_location: #i,
@@ -57,11 +36,12 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let expanded = quote! {
 
         impl ::wgputils::Vertex for #struct_name {
-            fn get_descriptor() -> ::wgpu::VertexStateDescriptor<'static> {
-                ::wgpu::VertexStateDescriptor {
-                        index_format: Some(::wgpu::IndexFormat::Uint16),
-                        vertex_buffers: &[::wgpu::VertexBufferDescriptor {
-                            stride: std::mem::size_of::<#struct_name>() as ::wgpu::BufferAddress,
+            fn get_descriptor<'a>(module: &'a ::wgpu::ShaderModule) -> ::wgpu::VertexState<'a> {
+                ::wgpu::VertexState {
+                        module,
+                        entry_point: "main",
+                        buffers: &[::wgpu::VertexBufferLayout {
+                            array_stride: std::mem::size_of::<#struct_name>() as ::wgpu::BufferAddress,
                             step_mode: ::wgpu::InputStepMode::Vertex,
                             attributes:&[#(#vertex_attributes, )*
                             ]
