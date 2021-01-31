@@ -1,9 +1,12 @@
+use std::borrow::Cow;
+
 use crate::{
     state::State,
     vertex::{self},
 };
 use vertex::VertexWithTex;
 
+use wgpu::ShaderFlags;
 use wgputils::{bind_group::BindGroupBuilder, pipeline::PipelineBuilder};
 
 pub struct PostprocessRenderer {
@@ -19,6 +22,14 @@ impl PostprocessRenderer {
         // Textures
 
         // Load shaders
+        // let module = device.create_shader_module(&wgpu::ShaderModuleDescriptor {
+        //     label: None,
+        //     source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(include_str!(
+        //         "./postprocess/vignette.wgsl"
+        //     ))),
+        //     flags: ShaderFlags::VALIDATION,
+        // });
+
         let module =
             device.create_shader_module(&wgpu::include_spirv!("./postprocess/vignette.spv"));
 

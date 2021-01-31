@@ -76,7 +76,7 @@ fn main() {
     var tile_atlas_top_left: vec2<f32> = floor(tile_id_pos_in_nbtile) / tile_atlas_info.dim;
 
     // here it is assumed that 1 tile = 1 unit.
-    var position_in_tile_atlas:vec2<f32> = tile_atlas_top_left + fract(vec2<f32>(world_position.x, 0.0 - world_position.y)) / tile_atlas_info.dim;
+    var position_in_tile_atlas: vec2<f32> = tile_atlas_top_left + fract(vec2<f32>(world_position.x, 0.0 - world_position.y)) / tile_atlas_info.dim;
     var out_val: vec4<f32> = textureSample(tile_atlas, s, position_in_tile_atlas);
      out_target = vec4<f32>(out_val,1.0);
 }
