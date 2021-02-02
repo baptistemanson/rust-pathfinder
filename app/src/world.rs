@@ -184,28 +184,3 @@ pub fn upper<'a>(device: &'a Device, queue: &'a Queue) -> Texture<'a> {
         wgpu::TextureFormat::R32Float,
     )
 }
-
-pub fn pix(n: f32) -> Vec<f32> {
-    vec![n, 0., 0., 1.]
-}
-
-pub fn debug<'a>(device: &'a Device, queue: &'a Queue) -> Texture<'a> {
-    let bytes = vec![0., 1., 0.5, 2.];
-    let bytes = bytes
-        .into_iter()
-        .flat_map(|i| pix(i))
-        .flat_map(|i| (i as f32).to_le_bytes().to_vec())
-        .collect::<Vec<u8>>();
-
-    Texture::from_code(
-        device,
-        queue,
-        bytes,
-        BatTexDimensions {
-            width: 2,
-            height: 2,
-        },
-        wgpu::ShaderStage::FRAGMENT,
-        wgpu::TextureFormat::Rgba32Float,
-    )
-}
