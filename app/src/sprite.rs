@@ -90,5 +90,15 @@ impl Renderer for SpriteRenderer {
         let m = generate_cam_matrix(4. / 3., state.cam_pos);
         let m_ref: &[f32; 16] = m.as_ref();
         queue.write_buffer(&self.world_to_cam, 0, cast_slice(m_ref));
+        queue.write_buffer(
+            &self.vertex_buf,
+            0,
+            cast_slice(&state.sprite_pos.to_vertex()),
+        );
+        queue.write_buffer(
+            &self.index_buf,
+            0,
+            cast_slice(&state.sprite_pos.to_indices()),
+        );
     }
 }

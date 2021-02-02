@@ -1,4 +1,4 @@
-use crate::sprite_atlas::{Atlas, SpriteInWorld, SpriteWorld};
+use crate::sprite_atlas::{Atlas, Sprite, Sprites};
 use std::{collections::HashSet, time::Instant};
 
 use winit::event::{self, WindowEvent};
@@ -8,7 +8,7 @@ type KeyState = HashSet<event::VirtualKeyCode>;
 pub struct State {
     pub cam_pos: [f32; 3],
     pub world_dim: [f32; 2],
-    pub sprite_pos: SpriteWorld,
+    pub sprite_pos: Sprites,
     pub keys: KeyState,
     pub last_update: Instant,
 }
@@ -17,18 +17,18 @@ impl State {
     pub fn my_world() -> Self {
         let atlas = Atlas::new_from_grid([32., 32.], [32, 32]);
         let sprites = vec![
-            SpriteInWorld {
+            Sprite {
                 id_in_atlas: 40,
-                ..SpriteInWorld::default()
+                ..Sprite::default()
             },
-            SpriteInWorld {
+            Sprite {
                 id_in_atlas: 168,
                 pos: [3., 0.],
-                ..SpriteInWorld::default()
+                ..Sprite::default()
             },
         ];
 
-        let world = SpriteWorld {
+        let world = Sprites {
             atlas,
             dim_units: [6., 6.],
             sprites,
@@ -86,7 +86,10 @@ impl State {
             }
             _ => {}
         });
-
+        self.sprite_pos
+            .sprites
+            .iter_mut()
+            .for_each(|s| s.pos[0] = s.pos[0] + 0.01);
         self.cam_pos[0] += delta_right;
         self.cam_pos[1] += delta_down;
         self.last_update = Instant::now();

@@ -53,7 +53,7 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                 device.create_buffer_init(&::wgpu::util::BufferInitDescriptor {
                     label: None,
                     contents: data, // checks if a range of bytes can be turned into another and just do it. Works well to turn Struct into u8
-                    usage: ::wgpu::BufferUsage::INDEX,
+                    usage: ::wgpu::BufferUsage::INDEX | ::wgpu::BufferUsage::COPY_DST,
                 })
             }
 
@@ -62,7 +62,7 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                 device.create_buffer_init(&::wgpu::util::BufferInitDescriptor {
                     label: None,
                     contents: data, // checks if a range of bytes can be turned into another and just do it. Works well to turn Struct into u8
-                    usage: ::wgpu::BufferUsage::VERTEX,
+                    usage: ::wgpu::BufferUsage::VERTEX | ::wgpu::BufferUsage::COPY_DST,
                 })
             }
         }

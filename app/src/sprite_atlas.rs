@@ -11,7 +11,7 @@ pub struct SpriteVertex {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct SpriteInWorld {
+pub struct Sprite {
     pub pos: Vec2, // in tiles dimension
     pub scale: f32,
     pub id_in_atlas: u32,
@@ -19,9 +19,9 @@ pub struct SpriteInWorld {
     pub flip_y: bool,
 }
 
-impl Default for SpriteInWorld {
+impl Default for Sprite {
     fn default() -> Self {
-        SpriteInWorld {
+        Sprite {
             pos: [0., 0.],
             scale: 1.,
             id_in_atlas: 0,
@@ -42,13 +42,13 @@ pub struct Atlas {
     pub dim_units: Vec2, // in tiles / in meters.
 }
 #[derive(Debug, PartialEq)]
-pub struct SpriteWorld {
+pub struct Sprites {
     pub dim_units: Vec2, // in tiles / in meters.
-    pub sprites: Vec<SpriteInWorld>,
+    pub sprites: Vec<Sprite>,
     pub atlas: Atlas,
 }
 
-impl SpriteWorld {
+impl Sprites {
     pub fn to_vertex(&self) -> Vec<SpriteVertex> {
         let mut acc: Vec<SpriteVertex> = vec![];
 
@@ -151,11 +151,11 @@ mod tests {
     #[test]
     fn to_vertex() {
         let atlas = Atlas::new_from_grid([2., 2.], [2, 2]);
-        let sprites = vec![SpriteInWorld {
+        let sprites = vec![Sprite {
             id_in_atlas: 1,
-            ..SpriteInWorld::default()
+            ..Sprite::default()
         }];
-        let world = SpriteWorld {
+        let world = Sprites {
             atlas,
             dim_units: [100., 100.],
             sprites,
