@@ -1,23 +1,18 @@
-use postprocess::PostprocessRenderer;
-// use sprite::SpriteRenderer;
-
-use sprite::SpriteRenderer;
-use state::State;
+use renderer_chain::RendererChain;
 use std::future::Future;
 #[cfg(not(target_arch = "wasm32"))]
 use std::time::{Duration, Instant};
-use tile::TilesRenderer;
 use wgpu::{Features, Limits};
-use wgputils::texture::Texture;
 use winit::{
     event::{self, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
 };
-use world::{debug, lower, upper};
+
 mod algebra;
 mod animation;
 mod camera;
-mod postprocess;
+mod post_process;
+mod renderer_chain;
 mod sprite;
 mod state;
 mod tile;
@@ -29,24 +24,6 @@ fn main() {
 }
 
 // An App.
-pub trait Renderer: 'static + Sized {
-    fn resize(
-        &mut self,
-        sc_desc: &wgpu::SwapChainDescriptor,
-        device: &wgpu::Device,
-        queue: &wgpu::Queue,
-    );
-    fn update(&mut self, event: &WindowEvent);
-    fn render(
-        &mut self,
-        frame: &wgpu::SwapChainTexture,
-        device: &wgpu::Device,
-        queue: &wgpu::Queue,
-        spawner: &Spawner,
-        ops: wgpu::Operations<wgpu::Color>,
-        state: &State,
-    );
-}
 
 struct Setup {
     window: winit::window::Window,
@@ -158,29 +135,7 @@ fn start(
     let mut swap_chain = device.create_swap_chain(&surface, &sc_desc);
 
     log::info!("Initializing the renderer...");
-    let tiles = Texture::image_tex(
-        &device,
-        &queue,
-        include_bytes!("../assets/0x72_v1.3.png"),
-        wgpu::ShaderStage::FRAGMENT,
-    );
-
-    let sprites = Texture::image_tex(
-        &device,
-        &queue,
-        include_bytes!("../assets/0x72_v1.3.png"),
-        wgpu::ShaderStage::FRAGMENT,
-    );
-    let lower = lower(&device, &queue);
-    let upper = upper(&device, &queue);
-
-    let _debug_layer = debug(&device, &queue);
-    let mut my_world_state = State::my_world();
-    let mut renderer1 = TilesRenderer::init(&device, &tiles, &lower, &my_world_state);
-    let mut renderer2 = TilesRenderer::init(&device, &tiles, &upper, &my_world_state);
-    let mut renderer3 = SpriteRenderer::init(&device, &sprites, &my_world_state);
-    let mut renderer4 = PostprocessRenderer::init(&device, &my_world_state);
-
+    let mut renderer_chain = RendererChain::new(&device, &queue);
     #[cfg(not(target_arch = "wasm32"))]
     let mut last_update_inst = Instant::now();
 
@@ -226,8 +181,6 @@ fn start(
                 log::info!("Resizing to {:?}", size);
                 sc_desc.width = if size.width == 0 { 1 } else { size.width };
                 sc_desc.height = if size.height == 0 { 1 } else { size.height };
-                renderer1.resize(&sc_desc, &device, &queue);
-                renderer2.resize(&sc_desc, &device, &queue);
                 swap_chain = device.create_swap_chain(&surface, &sc_desc);
             }
             event::Event::WindowEvent { event, .. } => match event {
@@ -244,7 +197,7 @@ fn start(
                     *control_flow = ControlFlow::Exit;
                 }
                 _ => {
-                    my_world_state.process_event(&event);
+                    renderer_chain.state.process_event(&event);
                 }
             },
             event::Event::RedrawRequested(_) => {
@@ -257,57 +210,7 @@ fn start(
                             .expect("Failed to acquire next swap chain texture!")
                     }
                 };
-                my_world_state.update();
-
-                renderer1.render(
-                    &frame.output,
-                    &device,
-                    &queue,
-                    &spawner,
-                    wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(wgpu::Color {
-                            r: 0.,
-                            g: 0.,
-                            b: 0.,
-                            a: 1.0,
-                        }),
-                        store: true,
-                    },
-                    &my_world_state,
-                );
-                renderer2.render(
-                    &frame.output,
-                    &device,
-                    &queue,
-                    &spawner,
-                    wgpu::Operations {
-                        load: wgpu::LoadOp::Load,
-                        store: true,
-                    },
-                    &my_world_state,
-                );
-                renderer3.render(
-                    &frame.output,
-                    &device,
-                    &queue,
-                    &spawner,
-                    wgpu::Operations {
-                        load: wgpu::LoadOp::Load,
-                        store: true,
-                    },
-                    &my_world_state,
-                );
-                renderer4.render(
-                    &frame.output,
-                    &device,
-                    &queue,
-                    &spawner,
-                    wgpu::Operations {
-                        load: wgpu::LoadOp::Load,
-                        store: true,
-                    },
-                    &my_world_state,
-                );
+                renderer_chain.render(&frame, &device, &queue);
             }
             _ => {}
         }

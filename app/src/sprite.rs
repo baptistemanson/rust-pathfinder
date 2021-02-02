@@ -2,16 +2,15 @@ mod sprite_atlas;
 
 use sprite_atlas::{Atlas, SpriteInWorld, SpriteVertex, SpriteWorld};
 
-use crate::{camera::generate_cam_matrix, state::State};
+use crate::{camera::generate_cam_matrix, renderer_chain::Renderer, state::State};
 use wgputils::{buffer::Buffer, Vertex};
 
 use std::borrow::Cow;
-use wgpu::ShaderFlags;
+use wgpu::{RenderPass, ShaderFlags};
 
 use wgputils::{
     bind_group::BindGroupBuilder, cast_slice, pipeline::PipelineBuilder, sampler::Sampler,
 };
-use winit::event::WindowEvent;
 
 pub struct SpriteRenderer {
     world_to_cam: wgpu::Buffer,
@@ -87,17 +86,7 @@ impl SpriteRenderer {
         }
     }
 }
-impl crate::Renderer for SpriteRenderer {
-    fn update(&mut self, _event: &WindowEvent) {}
-
-    fn resize(
-        &mut self,
-        _sc_desc: &wgpu::SwapChainDescriptor,
-        _device: &wgpu::Device,
-        _queue: &wgpu::Queue,
-    ) {
-    }
-
+impl Renderer for SpriteRenderer {
     // Create command encoder
     // Create render pass
     // => Pick pipeline
@@ -105,40 +94,18 @@ impl crate::Renderer for SpriteRenderer {
     // => Pick index and vertex buffers
     // => Put Draw instruction in the render pass
     // Submit render pass to queue
-    fn render(
-        &mut self,
-        frame: &wgpu::SwapChainTexture,
-        device: &wgpu::Device,
-        queue: &wgpu::Queue,
-        _spawner: &crate::Spawner,
-        ops: wgpu::Operations<wgpu::Color>,
-        state: &State,
-    ) {
-        let mut encoder =
-            device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
-        {
-            let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                label: None,
-                color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
-                    attachment: &frame.view,
-                    resolve_target: None,
-                    ops,
-                }],
-                depth_stencil_attachment: None,
-            });
-            rpass.push_debug_group("Prepare data for draw.");
-            rpass.set_pipeline(&self.pipeline);
-            rpass.set_bind_group(0, &self.bind_group, &[]);
-            rpass.set_index_buffer(self.index_buf.slice(..), wgpu::IndexFormat::Uint16);
-            rpass.set_vertex_buffer(0, self.vertex_buf.slice(..));
-            rpass.pop_debug_group();
-            rpass.insert_debug_marker("Draw!");
-            rpass.draw_indexed(0..self.index_count as u32, 0, 0..1);
-        }
+    fn render<'a>(&'a mut self, mut rpass: RenderPass<'a>, queue: &wgpu::Queue, state: &State) {
+        rpass.push_debug_group("Prepare data for draw.");
+        rpass.set_pipeline(&self.pipeline);
+        rpass.set_bind_group(0, &self.bind_group, &[]);
+        rpass.set_index_buffer(self.index_buf.slice(..), wgpu::IndexFormat::Uint16);
+        rpass.set_vertex_buffer(0, self.vertex_buf.slice(..));
+        rpass.pop_debug_group();
+        rpass.insert_debug_marker("Draw!");
+        rpass.draw_indexed(0..self.index_count as u32, 0, 0..1);
+
         let m = generate_cam_matrix(4. / 3., state.cam_pos);
         let m_ref: &[f32; 16] = m.as_ref();
         queue.write_buffer(&self.world_to_cam, 0, cast_slice(m_ref));
-
-        queue.submit(Some(encoder.finish()));
     }
 }
