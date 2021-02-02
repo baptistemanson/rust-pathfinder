@@ -11,10 +11,17 @@ var<out> uv_var: vec2<f32>;
 [[builtin(position)]]
 var<out> out_position: vec4<f32>;
 
+[[block]]
+struct Locals {
+    transform: mat4x4<f32>;
+};
+[[group(0), binding(2)]]
+var r_locals: Locals;
+
 [[stage(vertex)]]
 fn main() {
     uv_var = uv_in;
-    out_position = vec4<f32>(in_position.x, in_position.y, z, 1.0);
+    out_position = r_locals.transform * vec4<f32>(in_position.x, in_position.y, z, 1.0);
 }
 
 [[location(0)]]
@@ -31,6 +38,6 @@ var s: sampler;
 [[stage(fragment)]]
 fn main() {
     var out_val: vec4<f32> = textureSample(sprite_atlas, s, uv_var);
-    // var out_val: vec4<f32> = vec4<f32>(1.0,0.,0.,1.);
+    //var out_val: vec4<f32> = vec4<f32>(1.0,0.,0.,1.);
     out_target = out_val;
 }

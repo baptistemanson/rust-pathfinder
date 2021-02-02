@@ -14,6 +14,7 @@ use wgputils::{
 use winit::event::WindowEvent;
 
 pub struct SpriteRenderer {
+    world_to_cam: wgpu::Buffer,
     vertex_buf: wgpu::Buffer,
     index_buf: wgpu::Buffer,
     index_count: usize,
@@ -44,7 +45,7 @@ impl SpriteRenderer {
         world_to_cam.init_buffer(cast_slice(m_ref));
 
         let mut bind_group_builder = BindGroupBuilder::new(&device);
-        bind_group_builder.set_resources(vec![&sampler, atlas]);
+        bind_group_builder.set_resources(vec![&sampler, atlas, &world_to_cam]);
 
         let pipeline = PipelineBuilder::<SpriteVertex>::new(&device)
             .add_bind_group_layout(&bind_group_builder.get_layout())
@@ -53,7 +54,7 @@ impl SpriteRenderer {
             .build();
 
         // vertex
-        let atlas = Atlas::new_from_grid(state.world_dim, [32, 32]);
+        let atlas = Atlas::new_from_grid([32., 32.], [32, 32]);
         let sprites = vec![
             SpriteInWorld {
                 id_in_atlas: 40,
@@ -82,6 +83,7 @@ impl SpriteRenderer {
             index_buf,
             index_count,
             bind_group: bind_group_builder.get_bind_group(),
+            world_to_cam: world_to_cam.buffer.unwrap(),
         }
     }
 }
@@ -110,7 +112,7 @@ impl crate::Renderer for SpriteRenderer {
         queue: &wgpu::Queue,
         _spawner: &crate::Spawner,
         ops: wgpu::Operations<wgpu::Color>,
-        _state: &State,
+        state: &State,
     ) {
         let mut encoder =
             device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
@@ -133,6 +135,10 @@ impl crate::Renderer for SpriteRenderer {
             rpass.insert_debug_marker("Draw!");
             rpass.draw_indexed(0..self.index_count as u32, 0, 0..1);
         }
+        let m = generate_cam_matrix(4. / 3., state.cam_pos);
+        let m_ref: &[f32; 16] = m.as_ref();
+        queue.write_buffer(&self.world_to_cam, 0, cast_slice(m_ref));
+
         queue.submit(Some(encoder.finish()));
     }
 }

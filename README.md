@@ -33,7 +33,7 @@ I have no ambition whatsoever around this project. It's just for fun.
 - [x] create a struct to manage a sprite atlas
 - [x] load a demo sprite atlas
 - [x] position 2 sprites
-- [ ] fix scaling issues in sprite engine
+- [x] fix scaling issues in sprite engine
 
 ### Screen space project
 
@@ -43,7 +43,7 @@ I have no ambition whatsoever around this project. It's just for fun.
 
 - [x] extract state of the app outside the renderers
 - [ ] create a notion of scene + resource manager to switch resources (check other frameworks for inspiration)
-- [ ] create an animation kernel
+- [x] create an animation kernel
 - [x] check with Cheng how he would do it
 - [ ] add smooth move
 - [ ] plug to rule engine via action descriptors

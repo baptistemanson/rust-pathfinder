@@ -54,12 +54,11 @@ impl<'a> SpriteWorld<'a> {
 
         for sprite in &self.sprites {
             let atlas_entry = &self.atlas.sprite_by_id[sprite.id_in_atlas as usize];
-            let pos_box_unorm = make_box(sprite.pos, atlas_entry.dim);
-            let pos_box = pos_box_unorm.div(self.dim_units);
-            let z = [pos_box.bottom_left[1]];
+            let pos_box = make_box(sprite.pos, atlas_entry.dim);
+            let z = [0.1]; //[pos_box.bottom_left[1]];
 
-            let uv_box_unorm = make_box(atlas_entry.pos, atlas_entry.dim);
-            let uv_box = uv_box_unorm.div(self.atlas.dim_units);
+            let uv_box = make_box(atlas_entry.pos, atlas_entry.dim);
+            let uv_box = uv_box.div(self.atlas.dim_units);
 
             let s_top_left = SpriteVertex {
                 pos: pos_box.top_left,
@@ -110,7 +109,6 @@ impl<'a> SpriteWorld<'a> {
     }
 }
 
-#[allow(dead_code)]
 impl Atlas {
     // nb is the number of cells in the grid
     // dim is the size in units
