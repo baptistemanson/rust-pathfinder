@@ -42,13 +42,13 @@ pub struct Atlas {
     pub dim_units: Vec2, // in tiles / in meters.
 }
 #[derive(Debug, PartialEq)]
-pub struct SpriteWorld<'a> {
+pub struct SpriteWorld {
     pub dim_units: Vec2, // in tiles / in meters.
     pub sprites: Vec<SpriteInWorld>,
-    pub atlas: &'a Atlas,
+    pub atlas: Atlas,
 }
 
-impl<'a> SpriteWorld<'a> {
+impl SpriteWorld {
     pub fn to_vertex(&self) -> Vec<SpriteVertex> {
         let mut acc: Vec<SpriteVertex> = vec![];
 
@@ -156,7 +156,7 @@ mod tests {
             ..SpriteInWorld::default()
         }];
         let world = SpriteWorld {
-            atlas: &atlas,
+            atlas,
             dim_units: [100., 100.],
             sprites,
         };

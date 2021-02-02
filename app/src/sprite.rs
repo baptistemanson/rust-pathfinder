@@ -1,13 +1,12 @@
-mod sprite_atlas;
-
-use sprite_atlas::{Atlas, SpriteInWorld, SpriteVertex, SpriteWorld};
-
-use crate::{camera::generate_cam_matrix, renderer_chain::Renderer, state::State};
-use wgputils::{buffer::Buffer, Vertex};
+use crate::{
+    camera::generate_cam_matrix, renderer_chain::Renderer, sprite_atlas::SpriteVertex, state::State,
+};
+use wgputils::buffer::Buffer;
 
 use std::borrow::Cow;
 use wgpu::{RenderPass, ShaderFlags};
 
+use wgputils::Vertex;
 use wgputils::{
     bind_group::BindGroupBuilder, cast_slice, pipeline::PipelineBuilder, sampler::Sampler,
 };
@@ -53,28 +52,12 @@ impl SpriteRenderer {
             .build();
 
         // vertex
-        let atlas = Atlas::new_from_grid([32., 32.], [32, 32]);
-        let sprites = vec![
-            SpriteInWorld {
-                id_in_atlas: 40,
-                ..SpriteInWorld::default()
-            },
-            SpriteInWorld {
-                id_in_atlas: 168,
-                pos: [3., 0.],
-                ..SpriteInWorld::default()
-            },
-        ];
 
-        let world = SpriteWorld {
-            atlas: &atlas,
-            dim_units: [6., 6.],
-            sprites,
-        };
         let vertex_buf =
-            SpriteVertex::create_vertex_buffer(&device, cast_slice(&world.to_vertex()));
-        let index_buf = SpriteVertex::create_index_buffer(&device, cast_slice(&world.to_indices()));
-        let index_count = world.to_index_count();
+            SpriteVertex::create_vertex_buffer(&device, cast_slice(&state.sprite_pos.to_vertex()));
+        let index_buf =
+            SpriteVertex::create_index_buffer(&device, cast_slice(&state.sprite_pos.to_indices()));
+        let index_count = state.sprite_pos.to_index_count();
         //  let (vertex_buf, index_buf, index_count) = quad(&device);
         SpriteRenderer {
             pipeline,

@@ -14,6 +14,7 @@ mod camera;
 mod post_process;
 mod renderer_chain;
 mod sprite;
+mod sprite_atlas;
 mod state;
 mod tile;
 mod vertex;
