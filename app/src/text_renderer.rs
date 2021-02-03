@@ -1,9 +1,6 @@
 use wgpu_glyph::{ab_glyph, GlyphBrush, GlyphBrushBuilder, Section, Text};
 
-use crate::{
-    renderer_chain::Renderer,
-    state::{self, State},
-};
+use crate::{renderer_chain::Renderer, state::State};
 
 use wgpu::util::StagingBelt;
 
