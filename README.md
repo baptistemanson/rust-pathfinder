@@ -9,7 +9,12 @@ What sounds the most fun for me right now is to improve the visual engine a tad 
 If I ever reach a state where I can start the game, select which action I want to do with my character, and finish the encounter, it will be mission accomplished.
 I have no ambition whatsoever around this project. It's just for fun.
 
-## Graphics
+- [ ] plug to rule engine via action descriptors, which goes to the next turn when pressing the space bar
+- [ ] design true game UI
+- [ ] implement the true game UI, with a map, units, text log, and actions panel. Just take BG's layout, it proved it is good.
+- [ ] make a click detector with a button class
+
+## Graphics (30% done)
 
 - [x] allow render dimension to be different from tile atlas
 - [x] add notion of scroll
@@ -26,7 +31,7 @@ I have no ambition whatsoever around this project. It's just for fun.
 
 - [x] use a camera instead
 
-### Sprite subproject
+### Sprite subproject (done!)
 
 - [x] finish Bindable trait, BindGroup for binding position, and refactor the whole thing.
 - [x] autogenerate vertex layout from struct via a macro
@@ -38,15 +43,15 @@ I have no ambition whatsoever around this project. It's just for fun.
 ### Screen space project
 
 - [ ] Try to emulate light one way or another, in pure fragment shader!
+- [x] add screen space shaders
 
 ### State and Animation Subproject
 
-- [x] extract state of the app outside the renderers
 - [ ] create a notion of scene + resource manager to switch resources (check other frameworks for inspiration)
+- [ ] add smooth move
+- [x] extract state of the app outside the renderers
 - [x] create an animation kernel
 - [x] check with Cheng how he would do it
-- [ ] add smooth move
-- [ ] plug to rule engine via action descriptors
 
 ### Vignette shader Subproject
 
@@ -54,25 +59,16 @@ I have no ambition whatsoever around this project. It's just for fun.
 
 ### Text renderer Subproject
 
-- [ ] render text in boxes
-- [ ] make them scrollable?
-
-### Interactivity Subproject
-
-- [ ] make a click detector with a button class
-
-### GUI Subproject
-
-- [ ] implement the true game UI, with a map, units, text log, and actions panel. Just take BG's layout, it proved it is good.
+- [x] render text in boxes
 
 ## General Rules
 
+- [ ] test the weapon traits
 - [x] add unit tests
 - [x] learn benchmarking
 - [x] learn profiling
 - [x] setup webgpu
 - [x] optimize (went from 80ms to 0.064ms)
-- [ ] test the weapon traits
 
 ### Rules engine
 
