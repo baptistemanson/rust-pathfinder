@@ -8,6 +8,7 @@ type KeyState = HashSet<event::VirtualKeyCode>;
 pub struct State {
     pub cam_pos: [f32; 3],
     pub world_dim: [f32; 2],
+    pub window_dim: [u32; 2],
     pub sprite_pos: Sprites,
     pub keys: KeyState,
     pub last_update: Instant,
@@ -38,6 +39,7 @@ impl State {
             sprite_pos: world,
             cam_pos: [0., 0., 20.],
             world_dim: [20., 20.],
+            window_dim: [0, 0],
             last_update: Instant::now(),
             keys: HashSet::default(),
         }

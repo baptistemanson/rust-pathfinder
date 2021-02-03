@@ -140,7 +140,7 @@ fn start(
     let mut swap_chain = device.create_swap_chain(&surface, &sc_desc);
 
     log::info!("Initializing the renderer...");
-    let mut renderer_chain = RendererChain::new(&device, &queue);
+    let mut renderer_chain = RendererChain::new(&device, &queue, [size.width, size.height]);
     #[cfg(not(target_arch = "wasm32"))]
     let mut last_update_inst = Instant::now();
 
@@ -187,6 +187,7 @@ fn start(
                 sc_desc.width = if size.width == 0 { 1 } else { size.width };
                 sc_desc.height = if size.height == 0 { 1 } else { size.height };
                 swap_chain = device.create_swap_chain(&surface, &sc_desc);
+                renderer_chain.state.window_dim = [size.width, size.height];
             }
             event::Event::WindowEvent { event, .. } => match event {
                 WindowEvent::KeyboardInput {

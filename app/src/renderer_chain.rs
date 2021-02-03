@@ -5,12 +5,21 @@ use crate::{
     post_process_renderer::PostprocessRenderer,
     sprite_renderer::SpriteRenderer,
     state::State,
+    text_renderer::TextRenderer,
     tile_renderer::TilesRenderer,
     world::{lower, upper},
 };
 
 pub trait Renderer {
-    fn render<'a>(&'a mut self, rpass: RenderPass<'a>, queue: &wgpu::Queue, state: &State);
+    fn render<'a>(&'a mut self, _rpass: RenderPass<'a>, _queue: &wgpu::Queue, _state: &State) {}
+    fn render_low<'a>(
+        &'a mut self,
+        _device: &'a wgpu::Device,
+        _queue: &'a wgpu::Queue,
+        _frame: &'a wgpu::SwapChainTexture,
+        _state: &State,
+    ) {
+    }
 }
 
 pub struct RendererChain {
@@ -19,7 +28,7 @@ pub struct RendererChain {
 }
 
 impl RendererChain {
-    pub fn new(device: &Device, queue: &Queue) -> Self {
+    pub fn new(device: &Device, queue: &Queue, size: [u32; 2]) -> Self {
         let tiles = Texture::image_tex(
             device,
             queue,
@@ -36,11 +45,13 @@ impl RendererChain {
         let lower = lower(device, queue);
         let upper = upper(device, queue);
 
-        let my_world_state = State::my_world();
+        let mut my_world_state = State::my_world();
+        my_world_state.window_dim = size;
         let renderer1 = TilesRenderer::init(&device, &tiles, &lower, &my_world_state);
         let renderer2 = TilesRenderer::init(&device, &tiles, &upper, &my_world_state);
         let renderer3 = SpriteRenderer::init(&device, &sprites, &my_world_state);
         let renderer4 = PostprocessRenderer::init(&device, &my_world_state);
+        let renderer5 = TextRenderer::init(&device, &my_world_state);
 
         Self {
             renderers: vec![
@@ -48,6 +59,7 @@ impl RendererChain {
                 Box::new(renderer2),
                 Box::new(renderer3),
                 Box::new(renderer4),
+                Box::new(renderer5),
             ],
             state: my_world_state,
         }
@@ -106,6 +118,8 @@ impl RendererChain {
 
             renderer.render(rpass, &queue, &self.state);
             queue.submit(Some(encoder.finish()));
+
+            renderer.render_low(&device, &queue, &frame.output, &self.state);
         }
     }
 }
