@@ -2,10 +2,10 @@ use wgpu::{Device, Queue, RenderPass};
 use wgputils::texture::Texture;
 
 use crate::{
-    post_process::PostprocessRenderer,
-    sprite::SpriteRenderer,
+    post_process_renderer::PostprocessRenderer,
+    sprite_renderer::SpriteRenderer,
     state::State,
-    tile::TilesRenderer,
+    tile_renderer::TilesRenderer,
     world::{lower, upper},
 };
 

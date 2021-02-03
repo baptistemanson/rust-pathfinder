@@ -21,10 +21,6 @@ wgpu = { path = "../../wgpu-rs" }
 wgputils = { path = "../wgputils" }
 pollster = "0.2"
 async-executor = "1.4.0"
+wgpu_glyph = { path = "../../wgpu_glyph"}
 
-
-[dependencies.wgt]
-package = "wgpu-types"
-git = "https://github.com/gfx-rs/wgpu"
-rev = "4ebe1f50b057046e4d4f015eb006330d62f5fe91"
 

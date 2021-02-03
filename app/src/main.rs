@@ -8,15 +8,19 @@ use winit::{
     event_loop::{ControlFlow, EventLoop},
 };
 
+mod post_process_renderer;
+mod renderer_chain;
+mod sprite_renderer;
+mod text_renderer;
+mod tile_renderer;
+
+// other
 mod algebra;
 mod animation;
 mod camera;
-mod post_process;
-mod renderer_chain;
-mod sprite;
 mod sprite_atlas;
 mod state;
-mod tile;
+
 mod vertex;
 mod world;
 
