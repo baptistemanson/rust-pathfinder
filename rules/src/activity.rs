@@ -1,4 +1,4 @@
-use crate::{character::Character, world::World};
+use crate::{character::Character, fact, world::World};
 
 mod attack;
 mod bless;
@@ -16,7 +16,7 @@ pub trait Activity: fmt::Debug {
         character.hp > 0
     }
     fn ai_playing_value(&self, character: &Character, context: &World) -> i64;
-    fn resolve(&mut self, character: &Character, context: &mut World);
+    fn resolve(&mut self, character: &Character, context: &mut World, facts: &mut fact::Facts);
     fn get_name(&self) -> &str;
     fn get_cost(&self) -> i64 {
         1

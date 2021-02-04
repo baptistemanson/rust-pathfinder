@@ -2,6 +2,7 @@ use dice::Roll;
 
 use crate::{
     character::Character,
+    fact,
     status::{Duration, StatusEffect, StatusType},
     ui::log,
     world::World,
@@ -26,7 +27,12 @@ impl Activity for Action {
         Roll::d("", 1, 20).roll() / 4
     }
 
-    fn resolve<'lworld>(&mut self, character: &Character, world: &mut World) {
+    fn resolve<'lworld>(
+        &mut self,
+        character: &Character,
+        world: &mut World,
+        facts: &mut fact::Facts,
+    ) {
         let keys: Vec<String> = find_all_friends(&character.party, world);
         let mut target_names: Vec<String> = vec![];
         for key in &keys {
@@ -37,7 +43,7 @@ impl Activity for Action {
             });
             target_names.push(target.name.clone());
         }
-        log(&format!(
+        facts.info(&format!(
             "\t{} blessed {}",
             character.name,
             target_names.join(", ")

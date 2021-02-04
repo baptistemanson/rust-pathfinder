@@ -125,8 +125,9 @@ impl State {
 
         // update game state
         if should_move_sim_forward {
-            let display = self.game_state.tick();
-            println!("{}", display);
+            let facts = self.game_state.tick();
+            // act on them
+            dbg!(&facts);
         }
         self.last_update = Instant::now();
     }

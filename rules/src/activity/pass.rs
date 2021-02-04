@@ -1,4 +1,4 @@
-use crate::{character::Character, world::World};
+use crate::{character::Character, fact, world::World};
 
 use super::Activity;
 
@@ -20,7 +20,13 @@ impl Activity for Action {
         1
     }
 
-    fn resolve<'lworld>(&mut self, _character: &Character, _world: &mut World) {}
+    fn resolve<'lworld>(
+        &mut self,
+        _character: &Character,
+        _world: &mut World,
+        facts: &mut fact::Facts,
+    ) {
+    }
 
     fn get_name(&self) -> &str {
         "Pass"

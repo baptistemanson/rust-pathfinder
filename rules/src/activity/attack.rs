@@ -2,13 +2,13 @@ use dice::Roll;
 
 use crate::{
     character::Character,
+    fact,
     item::{
         weapon::{CombatProperties, DamageType, WeaponItem},
         AnyItem,
     },
     rules::Rule,
     status::StatusType,
-    ui::log,
     utils::get_armor,
     world::World,
 };
@@ -30,7 +30,7 @@ impl Activity for Action {
         Roll::d("", 1, 20).roll()
     }
 
-    fn resolve<'lworld>(&mut self, source: &Character, world: &mut World) {
+    fn resolve<'lworld>(&mut self, source: &Character, world: &mut World, facts: &mut fact::Facts) {
         let target_id = find_first_conscious_enemy(&source.party, world);
         match target_id {
             None => {
@@ -44,7 +44,7 @@ impl Activity for Action {
                 let ac_bonus = compute_ac(target, world);
 
                 if ac_bonus > attack_roll.value {
-                    log(&format!(
+                    facts.info(&format!(
                         "\t{} missed {} with {} ({} = {} vs {} AC)",
                         source.name,
                         target.name,
@@ -57,7 +57,7 @@ impl Activity for Action {
                 }
                 // p278 critical hits
                 let is_critical = attack_roll.natural_20 || (attack_roll.value - ac_bonus) >= 10;
-                log(&format!(
+                facts.info(&format!(
                     "\t{} {}hits {} with {} ({} = {} vs {} AC)",
                     source.name,
                     if is_critical { "critically " } else { "" },
@@ -73,7 +73,7 @@ impl Activity for Action {
                     DamageType::Piercing => "was pierced for",
                     DamageType::Slashing => "was slashed for",
                 };
-                log(&format!(
+                facts.info(&format!(
                     "\t{} {} {} damage ({})",
                     target.name, verb, dmg.value, dmg.details,
                 ));

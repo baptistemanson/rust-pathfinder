@@ -1,6 +1,6 @@
 use dice::Roll;
 
-use crate::{character::Character, ui::log, world::World};
+use crate::{character::Character, fact, ui::log, world::World};
 
 use super::{find_target::find_first_conscious_enemy, Activity};
 
@@ -17,7 +17,7 @@ impl Activity for Action {
         10
     }
 
-    fn resolve(&mut self, character: &Character, world: &mut World) {
+    fn resolve(&mut self, character: &Character, world: &mut World, facts: &mut fact::Facts) {
         let dmg = Roll::d("", 1, 20).roll();
         let target_id = find_first_conscious_enemy(&character.party, world);
         match target_id {
@@ -26,7 +26,7 @@ impl Activity for Action {
             }
             Some(id) => {
                 let target: &mut Character = world.get_mut_character(&id);
-                log(&format!(
+                facts.info(&format!(
                     "\t{} casts a magic missile to {} for {} dmg",
                     character.name, target.name, dmg
                 ));

@@ -24,8 +24,6 @@ dice = { path = "../dice" }
 [dev-dependencies]
 criterion = "0.3.3"
 
-[[bench]]
-name = "bench"
-harness = false
+
 
 
