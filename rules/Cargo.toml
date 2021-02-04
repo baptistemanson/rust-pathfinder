@@ -5,14 +5,10 @@ authors = ["Baptiste Manson <baptiste.manson@gmail.com>"]
 edition = "2018"
 
 [lib]
-name = "pathfinder"
+name = "rules"
 path = "src/lib.rs"
 bench = false
 
-[[bin]]
-name = "rules-cli"
-path = "src/main.rs"
-bench = false
 
 [profile.release]
 debug = true

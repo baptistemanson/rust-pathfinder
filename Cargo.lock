@@ -65,6 +65,7 @@ dependencies = [
  "log",
  "png",
  "pollster",
+ "rules",
  "wgpu 0.7.0",
  "wgpu_glyph",
  "wgputils",

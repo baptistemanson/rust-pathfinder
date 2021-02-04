@@ -35,7 +35,7 @@ pub struct Timeline {
     activated: Vec<String>,
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub struct Activation {
     pub character_id: CharacterId,
     pub party: PartyId,

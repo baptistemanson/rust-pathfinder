@@ -10,9 +10,10 @@ If I ever reach a state where I can start the game, select which action I want t
 I have no ambition whatsoever around this project. It's just for fun.
 
 - [ ] plug to rule engine via action descriptors, which goes to the next turn when pressing the space bar
+- [ ] plug text in state
+- [ ] make interactive box renderer (render a box, that can detect click) - aka buttons
 - [ ] design true game UI
 - [ ] implement the true game UI, with a map, units, text log, and actions panel. Just take BG's layout, it proved it is good.
-- [ ] make a click detector with a button class
 
 ## Graphics (30% done)
 

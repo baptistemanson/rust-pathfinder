@@ -16,9 +16,8 @@ log = "0.4"
 png = "0.16"
 winit = { version = "0.23.0", features = ["web-sys"] }
 wgpu = { path = "../../wgpu-rs" }
+rules = { path = "../rules" }
 wgputils = { path = "../wgputils" }
 pollster = "0.2"
 async-executor = "1.4.0"
 wgpu_glyph = { path = "../../wgpu_glyph"}
-
-
