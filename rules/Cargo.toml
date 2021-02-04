@@ -7,7 +7,6 @@ edition = "2018"
 [lib]
 name = "rules"
 path = "src/lib.rs"
-bench = false
 
 
 [profile.release]
@@ -20,9 +19,6 @@ regex = "1"
 snowflake = "1.2"
 dice = { path = "../dice" }
 
-
-[dev-dependencies]
-criterion = "0.3.3"
 
 
 

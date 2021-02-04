@@ -1,6 +1,6 @@
 use dice::Roll;
 
-use crate::{character::Character, fact, ui::log, world::World};
+use crate::{character::Character, fact, world::World};
 
 use super::{find_target::find_first_conscious_enemy, Activity};
 

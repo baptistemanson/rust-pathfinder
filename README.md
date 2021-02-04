@@ -9,7 +9,7 @@ What sounds the most fun for me right now is to improve the visual engine a tad 
 If I ever reach a state where I can start the game, select which action I want to do with my character, and finish the encounter, it will be mission accomplished.
 I have no ambition whatsoever around this project. It's just for fun.
 
-- [ ] plug to rule engine via action descriptors, which goes to the next turn when pressing the space bar
+- [x] plug to rule engine via action descriptors, which goes to the next turn when pressing the space bar
 - [ ] plug text in state
 - [ ] make interactive box renderer (render a box, that can detect click) - aka buttons
 - [ ] design true game UI

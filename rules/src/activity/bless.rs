@@ -4,7 +4,6 @@ use crate::{
     character::Character,
     fact,
     status::{Duration, StatusEffect, StatusType},
-    ui::log,
     world::World,
 };
 

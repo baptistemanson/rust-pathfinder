@@ -24,7 +24,7 @@ impl Activity for Action {
         &mut self,
         _character: &Character,
         _world: &mut World,
-        facts: &mut fact::Facts,
+        _facts: &mut fact::Facts,
     ) {
     }
 
